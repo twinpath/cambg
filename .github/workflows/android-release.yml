@@ -46,7 +46,8 @@ jobs:
 
       - name: Build Android Release Artifacts (APK & AAB)
         run: |
-          gradle assembleRelease bundleRelease
+          gradle assembleRelease
+          gradle clean bundleRelease
           TAG_NAME="${{ github.ref_name }}"
           APK_DIR="app/build/outputs/apk/release"
           AAB_DIR="app/build/outputs/bundle/release"
