@@ -3,6 +3,18 @@ const path = require('path');
 const { execSync } = require('child_process');
 
 async function run() {
+  // Load .env if GEMINI_API_KEY is not set in environment (for local testing)
+  if (!process.env.GEMINI_API_KEY) {
+    const envPath = path.join(process.cwd(), '.env');
+    if (fs.existsSync(envPath)) {
+      const envContent = fs.readFileSync(envPath, 'utf8');
+      const match = envContent.match(/^GEMINI_API_KEY=(.+)$/m);
+      if (match) {
+        process.env.GEMINI_API_KEY = match[1].trim();
+      }
+    }
+  }
+
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     console.error('Error: GEMINI_API_KEY environment variable is not set.');
@@ -45,17 +57,14 @@ async function run() {
   console.log('------------------------------------');
 
   // 3. Request Gemini API with fallback models and retry mechanism
-  const candidateModels = ['gemini-flash-latest', 'gemini-3.5-flash', 'gemini-3.6-flash'];
+  const candidateModels = ['gemini-flash-latest', 'gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-2.5-flash'];
   let generatedText = null;
 
-  const githubRepository = process.env.GITHUB_REPOSITORY || 'owner/repo';
+  const githubRepository = process.env.GITHUB_REPOSITORY || 'twinpath/cambg-record';
   const releaseVersion = process.env.GITHUB_REF_NAME || 'v1.0.0';
   const artifactTable = generateArtifactTable(githubRepository, releaseVersion);
 
   try {
-    const candidateModels = ['gemini-flash-latest', 'gemini-3.5-flash', 'gemini-3.6-flash'];
-    let generatedText = null;
-
     const requestBody = {
       contents: [
         {
