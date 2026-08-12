@@ -94,6 +94,8 @@ import com.twinpath.cambg_record.model.AppSettings
 import com.twinpath.cambg_record.model.CameraUiState
 import com.twinpath.cambg_record.model.RecordingState
 import com.twinpath.cambg_record.model.StorageLocation
+import com.twinpath.cambg_record.ui.components.CameraControls
+import com.twinpath.cambg_record.ui.components.CameraSettingsSheet
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -591,290 +593,27 @@ fun CameraScreen(
         }
 
         // --- Bottom Controls Section ---
-        Column(
-            modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .fillMaxWidth()
-                .background(Color.Black.copy(alpha = 0.4f))
-                .padding(bottom = 96.dp, top = 16.dp, start = 24.dp, end = 24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            // Zoom Slider Row
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "1x",
-                    color = Color.White.copy(alpha = 0.7f),
-                    style = MaterialTheme.typography.labelMedium
-                )
-                Slider(
-                    value = uiState.zoomRatio,
-                    onValueChange = onSetZoomRatio,
-                    valueRange = 1.0f..5.0f,
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 12.dp)
-                        .testTag("zoom_slider")
-                )
-                Text(
-                    text = "5x",
-                    color = Color.White.copy(alpha = 0.7f),
-                    style = MaterialTheme.typography.labelMedium
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Recording Controls Row (Pause/Resume, Main Record FAB, Stealth Toggle)
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceEvenly,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Left Action: Pause / Resume (Visible during recording/pause)
-                if (uiState.recordingState != RecordingState.IDLE) {
-                    IconButton(
-                        onClick = {
-                            if (uiState.recordingState == RecordingState.RECORDING) {
-                                handlePauseRecord()
-                            } else {
-                                handleResumeRecord()
-                            }
-                        },
-                        modifier = Modifier
-                            .size(56.dp)
-                            .background(Color.White.copy(alpha = 0.2f), CircleShape)
-                            .testTag("pause_resume_button")
-                    ) {
-                        Icon(
-                            imageVector = if (uiState.recordingState == RecordingState.RECORDING)
-                                Icons.Default.Pause else Icons.Default.PlayArrow,
-                            contentDescription = "Pause/Resume",
-                            tint = Color.White,
-                            modifier = Modifier.size(28.dp)
-                        )
-                    }
-                } else {
-                    // Quick Stealth Toggle button
-                    IconButton(
-                        onClick = onToggleStealth,
-                        modifier = Modifier
-                            .size(56.dp)
-                            .background(
-                                if (uiState.isStealthMode) Color(0xFF1A73E8) else Color.White.copy(alpha = 0.2f),
-                                CircleShape
-                            )
-                            .testTag("stealth_mode_button")
-                    ) {
-                        Icon(
-                            imageVector = if (uiState.isStealthMode)
-                                Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                            contentDescription = "Stealth Mode",
-                            tint = Color.White,
-                            modifier = Modifier.size(24.dp)
-                        )
-                    }
-                }
-
-                // Center Primary Action FAB
-                when (uiState.recordingState) {
-                    RecordingState.IDLE -> {
-                        ExtendedFloatingActionButton(
-                            onClick = handleStartRecord,
-                            icon = {
-                                Icon(
-                                    imageVector = Icons.Default.Videocam,
-                                    contentDescription = "Record",
-                                    tint = Color.White
-                                )
-                            },
-                            text = {
-                                Text(
-                                    text = "Record",
-                                    color = Color.White,
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 16.sp
-                                )
-                            },
-                            containerColor = Color(0xFFEA4335), // Google Red
-                            modifier = Modifier
-                                .height(64.dp)
-                                .testTag("start_record_fab")
-                        )
-                    }
-
-                    RecordingState.RECORDING, RecordingState.PAUSED -> {
-                        // Morph into Stop Button
-                        FloatingActionButton(
-                            onClick = handleStopRecord,
-                            containerColor = Color(0xFFEA4335),
-                            shape = CircleShape,
-                            modifier = Modifier
-                                .size(72.dp)
-                                .testTag("stop_record_fab")
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Stop,
-                                contentDescription = "Stop Recording",
-                                tint = Color.White,
-                                modifier = Modifier.size(36.dp)
-                            )
-                        }
-                    }
-                }
-
-                // Right Action: Grid lines toggle
-                IconButton(
-                    onClick = onToggleGrid,
-                    modifier = Modifier
-                        .size(56.dp)
-                        .background(
-                            if (uiState.showGridOverlay) Color(0xFF1A73E8) else Color.White.copy(alpha = 0.2f),
-                            CircleShape
-                        )
-                        .testTag("grid_toggle_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Grid4x4,
-                        contentDescription = "Grid Overlay",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
-            }
-        }
+        CameraControls(
+            uiState = uiState,
+            onSetZoomRatio = onSetZoomRatio,
+            onToggleStealth = onToggleStealth,
+            onToggleGrid = onToggleGrid,
+            onStartRecord = handleStartRecord,
+            onPauseRecord = handlePauseRecord,
+            onResumeRecord = handleResumeRecord,
+            onStopRecord = handleStopRecord,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
 
         // --- Quick Settings Modal Bottom Sheet ---
         if (showSettingsSheet) {
-            ModalBottomSheet(
+            CameraSettingsSheet(
+                uiState = uiState,
                 onDismissRequest = { showSettingsSheet = false },
-                sheetState = rememberModalBottomSheetState()
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(24.dp)
-                ) {
-                    Text(
-                        text = "Quick Recording Controls",
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurface
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Quality Selection Row
-                    Text(
-                        text = "Video Resolution",
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.primary
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        listOf("480p", "720p", "1080p", "4K").forEach { qualityOpt ->
-                            val isSelected = uiState.quality == qualityOpt
-                            AssistChip(
-                                onClick = { onSetQuality(qualityOpt) },
-                                label = { Text(qualityOpt) },
-                                colors = AssistChipDefaults.assistChipColors(
-                                    containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer
-                                    else MaterialTheme.colorScheme.surfaceVariant,
-                                    labelColor = if (isSelected) MaterialTheme.colorScheme.onPrimaryContainer
-                                    else MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // Audio Toggle Row
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(12.dp))
-                            .clickable { onToggleAudio() }
-                            .padding(vertical = 12.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = if (uiState.isAudioEnabled) Icons.Default.Mic else Icons.Default.MicOff,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column {
-                                Text(
-                                    text = "Audio Recording",
-                                    style = MaterialTheme.typography.titleMedium
-                                )
-                                Text(
-                                    text = if (uiState.isAudioEnabled) "Enabled (Camcorder mic)" else "Muted (Video only)",
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    // MediaProjection Screen Capture Option
-                    Surface(
-                        onClick = {
-                            showSettingsSheet = false
-                            handleStartScreenCaptureRecord()
-                        },
-                        shape = RoundedCornerShape(12.dp),
-                        color = MaterialTheme.colorScheme.primaryContainer,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(16.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Videocam,
-                                contentDescription = "MediaProjection Screen Record",
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column {
-                                Text(
-                                    text = "Start Screen Capture (MediaProjection)",
-                                    style = MaterialTheme.typography.titleSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer
-                                )
-                                Text(
-                                    text = "Record screen and audio via foreground service",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
-                                )
-                            }
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    TextButton(
-                        onClick = { showSettingsSheet = false },
-                        modifier = Modifier.align(Alignment.End)
-                    ) {
-                        Text("Done")
-                    }
-                }
-            }
+                onSetQuality = onSetQuality,
+                onToggleAudio = onToggleAudio,
+                onStartScreenCaptureRecord = handleStartScreenCaptureRecord
+            )
         }
     }
 }
