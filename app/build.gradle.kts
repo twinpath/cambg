@@ -79,6 +79,26 @@ android {
     includeInApk = false
     includeInBundle = true
   }
+
+  splits {
+    abi {
+      isEnable = true
+      reset()
+      include("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
+      isUniversalApk = true
+    }
+  }
+
+  applicationVariants.all {
+    val variant = this
+    val tag = System.getenv("RELEASE_TAG") ?: "v${variant.versionName}"
+    variant.outputs.all {
+      val output = this as com.android.build.gradle.internal.api.ApkVariantOutputImpl
+      val abiFilter = output.getFilter(com.android.build.OutputFile.ABI)
+      val arch = if (abiFilter.isNullOrEmpty()) "universal" else abiFilter
+      output.outputFileName = "camera-background-twinpath-labs-$tag-$arch-nodpi.apk"
+    }
+  }
 }
 
 // Configure the Secrets Gradle Plugin to use .env and .env.example files

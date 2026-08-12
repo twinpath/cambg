@@ -13,11 +13,8 @@ Instructions:
 3. Use bullet points for changes.
 4. Do not include commit hashes or author names.
 5. Output using clean Markdown syntax without markdown code block wrappers around the entire response.
-6. Always append the following Markdown table at the end of the changelog to provide build artifact details, preserving the exact placeholders:
+6. Always append the following section at the end of the changelog to provide build artifact details, preserving the exact placeholder `{{ARTIFACT_TABLE}}`:
 
 ### Build Artifacts
 
-| File Name | Format | Download Link |
-| --- | --- | --- |
-| app-release.apk | APK (Universal) | [Download](https://github.com/{{GITHUB_REPOSITORY}}/releases/download/{{RELEASE_VERSION}}/app-release.apk) |
-| app-release.aab | AAB (Google Play Bundle) | [Download](https://github.com/{{GITHUB_REPOSITORY}}/releases/download/{{RELEASE_VERSION}}/app-release.aab) |
+{{ARTIFACT_TABLE}}

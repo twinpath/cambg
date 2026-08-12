@@ -45,7 +45,7 @@ async function run() {
   console.log('------------------------------------');
 
   // 3. Request Gemini API
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
   const requestBody = {
     contents: [
       {
@@ -57,6 +57,10 @@ async function run() {
       }
     ]
   };
+
+  const githubRepository = process.env.GITHUB_REPOSITORY || 'owner/repo';
+  const releaseVersion = process.env.GITHUB_REF_NAME || 'v1.0.0';
+  const artifactTable = generateArtifactTable(githubRepository, releaseVersion);
 
   try {
     const response = await fetch(url, {
@@ -80,24 +84,69 @@ async function run() {
     }
 
     let finalNotes = generatedText;
-    const githubRepository = process.env.GITHUB_REPOSITORY || 'owner/repo';
-    const releaseVersion = process.env.GITHUB_REF_NAME || 'v1.0.0';
 
     finalNotes = finalNotes
       .replace(/\{\{GITHUB_REPOSITORY\}\}/g, githubRepository)
-      .replace(/\{\{RELEASE_VERSION\}\}/g, releaseVersion);
+      .replace(/\{\{RELEASE_VERSION\}\}/g, releaseVersion)
+      .replace(/\{\{ARTIFACT_TABLE\}\}/g, artifactTable);
 
     // 4. Output the release notes to a file for use in next steps
     const outputPath = path.join(process.cwd(), 'release_notes.md');
     fs.writeFileSync(outputPath, finalNotes, 'utf8');
     console.log(`Release notes successfully generated and written to ${outputPath}`);
   } catch (error) {
-    console.error('Failed to generate release notes:', error.message);
+    console.error('Failed to generate release notes via Gemini API:', error.message);
     // Fallback release notes file to prevent workflow failure
     const outputPath = path.join(process.cwd(), 'release_notes.md');
-    fs.writeFileSync(outputPath, `### Commits in this Release\n\n\`\`\`\n${commitLog}\n\`\`\``, 'utf8');
+    const fallbackNotes = `### Release Summary (${releaseVersion})\n\n### Commits in this Release\n\n\`\`\`\n${commitLog}\n\`\`\`\n\n### Build Artifacts\n\n${artifactTable}`;
+    fs.writeFileSync(outputPath, fallbackNotes, 'utf8');
     console.log(`Fallback release notes written to ${outputPath}`);
   }
+}
+
+function generateArtifactTable(githubRepository, releaseVersion) {
+  const apkDir = path.join(process.cwd(), 'app', 'build', 'outputs', 'apk', 'release');
+  const aabDir = path.join(process.cwd(), 'app', 'build', 'outputs', 'bundle', 'release');
+
+  const files = [];
+
+  if (fs.existsSync(apkDir)) {
+    const apkFiles = fs.readdirSync(apkDir).filter(f => f.endsWith('.apk'));
+    for (const f of apkFiles) {
+      files.push({ name: f, type: 'APK' });
+    }
+  }
+
+  if (fs.existsSync(aabDir)) {
+    const aabFiles = fs.readdirSync(aabDir).filter(f => f.endsWith('.aab'));
+    for (const f of aabFiles) {
+      files.push({ name: f, type: 'AAB' });
+    }
+  }
+
+  if (files.length === 0) {
+    return 'No artifacts found.';
+  }
+
+  files.sort((a, b) => a.name.localeCompare(b.name));
+
+  let table = '| File Name | Architecture / Description | Download Link |\n| --- | --- | --- |\n';
+  for (const file of files) {
+    let arch = 'Universal';
+    if (file.name.includes('arm64-v8a')) arch = 'ARM64 (v8a)';
+    else if (file.name.includes('armeabi-v7a')) arch = 'ARMv7 (32-bit)';
+    else if (file.name.includes('x86_64')) arch = 'Intel x86_64';
+    else if (file.name.includes('x86')) arch = 'Intel x86';
+
+    if (file.type === 'AAB') {
+      arch += ' (App Bundle)';
+    }
+
+    const downloadUrl = `https://github.com/${githubRepository}/releases/download/${releaseVersion}/${file.name}`;
+    table += `| \`${file.name}\` | ${arch} | [Download](${downloadUrl}) |\n`;
+  }
+
+  return table;
 }
 
 run();
