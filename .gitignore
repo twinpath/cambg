@@ -18,3 +18,7 @@ local.properties
 debug.keystore
 *.jks
 release_notes.md
+
+# Node.js dependencies
+**/node_modules/
+scripts/node_modules/

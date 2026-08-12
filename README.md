@@ -1,4 +1,8 @@
 <p align="center">
+  <img src="assets/branding/logo.svg" width="160" alt="CamBG Record Logo">
+</p>
+
+<p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="https://img.shields.io/badge/CamBG_Record-Background_Video_Recorder-6C3AED?style=for-the-badge&labelColor=1a1a2e&logo=android&logoColor=white">
     <img alt="CamBG Record" src="https://img.shields.io/badge/CamBG_Record-Background_Video_Recorder-6C3AED?style=for-the-badge&labelColor=1a1a2e&logo=android&logoColor=white">

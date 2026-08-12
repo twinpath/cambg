@@ -4,16 +4,25 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Camera Body -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M30,38 h36 c3.3,0 6,2.7 6,6 v20 c0,3.3 -2.7,6 -6,6 h-36 c-3.3,0 -6,-2.7 -6,-6 v-20 c0,-3.3 2.7,-6 6,-6 z" />
-    <!-- Camera Lens / Side Cone -->
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M72,46 l14,-8 v32 l-14,-8 z" />
-    <!-- Recording Red Badge -->
-    <path
-        android:fillColor="#EA4335"
-        android:pathData="M54,54 m-7,0 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0" />
+    <group android:translateX="4" android:translateY="4">
+        <!-- Shield (Green) -->
+        <path
+            android:pathData="M 50 10 L 82 23 L 82 50 C 82 70 68 85 50 92 C 32 85 18 70 18 50 L 18 23 Z"
+            android:strokeColor="#34A853"
+            android:strokeWidth="7"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+        <!-- Camera Body (Blue) -->
+        <path
+            android:pathData="M36,38 h16 a6,6 0 0 1 6,6 v12 a6,6 0 0 1 -6,6 h-16 a6,6 0 0 1 -6,-6 v-12 a6,6 0 0 1 6,-6 z"
+            android:fillColor="#4285F4" />
+        <!-- Camera Lens (Yellow) -->
+        <path
+            android:pathData="M 56 50 L 70 41 C 72 40 75 41 75 44 L 75 56 C 75 59 72 60 70 59 L 56 50 Z"
+            android:fillColor="#FBBC05" />
+        <!-- Recording Dot (Red) -->
+        <path
+            android:pathData="M 39,46 C 41.2,46 43,47.8 43,50 C 43,52.2 41.2,54 39,54 C 36.8,54 35,52.2 35,50 C 35,47.8 36.8,46 39,46 Z"
+            android:fillColor="#EA4335" />
+    </group>
 </vector>
