@@ -32,19 +32,29 @@
 
 ## Table of Contents
 
-```
-  I.    Overview
-  II.   Core Capabilities
-  III.  Technology Stack
-  IV.   Architecture
-  V.    Project Structure
-  VI.   Prerequisites
-  VII.  Getting Started
-  VIII. Build Variants and Signing
-  IX.   Automated Release Pipeline
-  X.    Versioning
-  XI.   License
-```
+- [I. Overview](#i-overview)
+- [II. Core Capabilities](#ii-core-capabilities)
+  - [Background Service Execution](#background-service-execution)
+  - [Camera and Recording Configuration](#camera-and-recording-configuration)
+  - [Intelligent Detection](#intelligent-detection)
+  - [User Interface and Theming](#user-interface-and-theming)
+- [III. Technology Stack](#iii-technology-stack)
+- [IV. Architecture](#iv-architecture)
+- [V. Project Structure](#v-project-structure)
+- [VI. Prerequisites](#vi-prerequisites)
+- [VII. Getting Started](#vii-getting-started)
+  - [1. Clone the Repository](#1-clone-the-repository)
+  - [2. Configure Environment Variables](#2-configure-environment-variables)
+  - [3. Build the Project](#3-build-the-project)
+  - [4. Run on a Device or Emulator](#4-run-on-a-device-or-emulator)
+- [VIII. Build Variants and Signing](#viii-build-variants-and-signing)
+  - [Debug Builds](#debug-builds)
+  - [Release Builds](#release-builds)
+- [IX. Automated Release Pipeline](#ix-automated-release-pipeline)
+  - [Pipeline Stages](#pipeline-stages)
+  - [Required Repository Secrets](#required-repository-secrets)
+- [X. Versioning](#x-versioning)
+- [XI. License](#xi-license)
 
 <br>
 
