@@ -20,7 +20,10 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -47,6 +50,13 @@ fun CameraViewfinder(
 ) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
+    val serviceState by com.twinpath.cambg_record.service.BackgroundRecordingService.serviceState.collectAsState()
+
+    DisposableEffect(Unit) {
+        onDispose {
+            com.twinpath.cambg_record.service.BackgroundRecordingService.setPreviewView(null)
+        }
+    }
 
     Box(
         modifier = modifier
@@ -68,27 +78,39 @@ fun CameraViewfinder(
                 modifier = Modifier.fillMaxSize()
             )
 
-            // Bind camera only when camera direction or quality changes
-            LaunchedEffect(uiState.isFrontCamera, uiState.quality) {
+            // Bind camera only when camera direction, quality, service running state, or previewView changes
+            LaunchedEffect(uiState.isFrontCamera, uiState.quality, previewViewRef.value, serviceState.isServiceRunning) {
                 val pv = previewViewRef.value ?: return@LaunchedEffect
-                recordingManager.bindCamera(
-                    context = context,
-                    lifecycleOwner = lifecycleOwner,
-                    previewView = pv,
-                    isFrontCamera = uiState.isFrontCamera,
-                    qualityString = uiState.quality,
-                    flashMode = uiState.flashMode,
-                    zoomRatio = uiState.zoomRatio
-                )
+                if (serviceState.isServiceRunning) {
+                    com.twinpath.cambg_record.service.BackgroundRecordingService.setPreviewView(pv)
+                } else {
+                    recordingManager.bindCamera(
+                        context = context,
+                        lifecycleOwner = lifecycleOwner,
+                        previewView = pv,
+                        isFrontCamera = uiState.isFrontCamera,
+                        qualityString = uiState.quality,
+                        flashMode = uiState.flashMode,
+                        zoomRatio = uiState.zoomRatio
+                    )
+                }
             }
 
             // Update only zoom & flash controls without rebinding the camera
             LaunchedEffect(uiState.zoomRatio, uiState.flashMode) {
-                recordingManager.updateCameraControls(
-                    flashMode = uiState.flashMode,
-                    zoomRatio = uiState.zoomRatio,
-                    isFrontCamera = uiState.isFrontCamera
-                )
+                if (serviceState.isServiceRunning) {
+                    com.twinpath.cambg_record.service.BackgroundRecordingService.updateCameraControls(
+                        flashMode = uiState.flashMode,
+                        zoomRatio = uiState.zoomRatio,
+                        isFrontCamera = uiState.isFrontCamera
+                    )
+                } else {
+                    recordingManager.updateCameraControls(
+                        flashMode = uiState.flashMode,
+                        zoomRatio = uiState.zoomRatio,
+                        isFrontCamera = uiState.isFrontCamera
+                    )
+                }
             }
         } else {
             // Fallback Permission Request Card

@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.filled.Videocam
+import androidx.compose.material.icons.filled.VideoLibrary
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -41,7 +42,7 @@ fun CameraControls(
     uiState: CameraUiState,
     onSetZoomRatio: (Float) -> Unit,
     onToggleStealth: () -> Unit,
-    onToggleGrid: () -> Unit,
+    onClickGallery: () -> Unit,
     onStartRecord: () -> Unit,
     onPauseRecord: () -> Unit,
     onResumeRecord: () -> Unit,
@@ -85,55 +86,30 @@ fun CameraControls(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Recording Controls Row (Pause/Resume, Main Record FAB, Stealth Toggle)
+        // Recording Controls Row (Stealth, Start/Stop Record FAB, Gallery/Pause-Resume)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Left Action: Pause / Resume (Visible during recording/pause)
-            if (uiState.recordingState != RecordingState.IDLE) {
-                IconButton(
-                    onClick = {
-                        if (uiState.recordingState == RecordingState.RECORDING) {
-                            onPauseRecord()
-                        } else {
-                            onResumeRecord()
-                        }
-                    },
-                    modifier = Modifier
-                        .size(56.dp)
-                        .background(Color.White.copy(alpha = 0.2f), CircleShape)
-                        .testTag("pause_resume_button")
-                ) {
-                    Icon(
-                        imageVector = if (uiState.recordingState == RecordingState.RECORDING)
-                            Icons.Default.Pause else Icons.Default.PlayArrow,
-                        contentDescription = "Pause/Resume",
-                        tint = Color.White,
-                        modifier = Modifier.size(28.dp)
+            // Left Action: Quick Stealth Toggle button (Always visible)
+            IconButton(
+                onClick = onToggleStealth,
+                modifier = Modifier
+                    .size(56.dp)
+                    .background(
+                        if (uiState.isStealthMode) Color(0xFF1A73E8) else Color.White.copy(alpha = 0.2f),
+                        CircleShape
                     )
-                }
-            } else {
-                // Quick Stealth Toggle button
-                IconButton(
-                    onClick = onToggleStealth,
-                    modifier = Modifier
-                        .size(56.dp)
-                        .background(
-                            if (uiState.isStealthMode) Color(0xFF1A73E8) else Color.White.copy(alpha = 0.2f),
-                            CircleShape
-                        )
-                        .testTag("stealth_mode_button")
-                ) {
-                    Icon(
-                        imageVector = if (uiState.isStealthMode)
-                            Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                        contentDescription = "Stealth Mode",
-                        tint = Color.White,
-                        modifier = Modifier.size(24.dp)
-                    )
-                }
+                    .testTag("stealth_mode_button")
+            ) {
+                Icon(
+                    imageVector = if (uiState.isStealthMode)
+                        Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                    contentDescription = "Stealth Mode",
+                    tint = Color.White,
+                    modifier = Modifier.size(24.dp)
+                )
             }
 
             // Center Primary Action FAB
@@ -183,23 +159,47 @@ fun CameraControls(
                 }
             }
 
-            // Right Action: Grid lines toggle
-            IconButton(
-                onClick = onToggleGrid,
-                modifier = Modifier
-                    .size(56.dp)
-                    .background(
-                        if (uiState.showGridOverlay) Color(0xFF1A73E8) else Color.White.copy(alpha = 0.2f),
-                        CircleShape
+            // Right Action: Gallery or Pause/Resume
+            if (uiState.recordingState == RecordingState.IDLE) {
+                IconButton(
+                    onClick = onClickGallery,
+                    modifier = Modifier
+                        .size(56.dp)
+                        .background(Color.White.copy(alpha = 0.2f), CircleShape)
+                        .testTag("gallery_button")
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.VideoLibrary,
+                        contentDescription = "Open Gallery",
+                        tint = Color.White,
+                        modifier = Modifier.size(24.dp)
                     )
-                    .testTag("grid_toggle_button")
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Grid4x4,
-                    contentDescription = "Grid Overlay",
-                    tint = Color.White,
-                    modifier = Modifier.size(24.dp)
-                )
+                }
+            } else {
+                IconButton(
+                    onClick = {
+                        if (uiState.recordingState == RecordingState.RECORDING) {
+                            onPauseRecord()
+                        } else {
+                            onResumeRecord()
+                        }
+                    },
+                    modifier = Modifier
+                        .size(56.dp)
+                        .background(
+                            if (uiState.recordingState == RecordingState.PAUSED) Color(0xFFF9AB00) else Color.White.copy(alpha = 0.2f),
+                            CircleShape
+                        )
+                        .testTag("pause_resume_button")
+                ) {
+                    Icon(
+                        imageVector = if (uiState.recordingState == RecordingState.RECORDING)
+                            Icons.Default.Pause else Icons.Default.PlayArrow,
+                        contentDescription = "Pause/Resume",
+                        tint = if (uiState.recordingState == RecordingState.PAUSED) Color.Black else Color.White,
+                        modifier = Modifier.size(28.dp)
+                    )
+                }
             }
         }
     }

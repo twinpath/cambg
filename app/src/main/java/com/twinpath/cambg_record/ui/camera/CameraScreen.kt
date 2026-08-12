@@ -119,6 +119,7 @@ fun CameraScreen(
     onSetZoomRatio: (Float) -> Unit,
     onToggleGrid: () -> Unit,
     onToggleStealth: () -> Unit,
+    onClickGallery: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
@@ -240,6 +241,22 @@ fun CameraScreen(
             .testTag("camera_preview_screen")
     ) {
         // --- Viewfinder Area ---
+        CameraViewfinder(
+            uiState = uiState,
+            hasCameraPermission = hasCameraPermission,
+            recordingManager = recordingManager,
+            onRequestPermissions = {
+                val perms = mutableListOf(
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.RECORD_AUDIO
+                )
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    perms.add(Manifest.permission.POST_NOTIFICATIONS)
+                }
+                permissionLauncher.launch(perms.toTypedArray())
+            }
+        )
+
         if (uiState.isStealthMode) {
             // Stealth mode preview hidden overlay
             Box(
@@ -263,22 +280,6 @@ fun CameraScreen(
                     )
                 }
             }
-        } else {
-            CameraViewfinder(
-                uiState = uiState,
-                hasCameraPermission = hasCameraPermission,
-                recordingManager = recordingManager,
-                onRequestPermissions = {
-                    val perms = mutableListOf(
-                        Manifest.permission.CAMERA,
-                        Manifest.permission.RECORD_AUDIO
-                    )
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                        perms.add(Manifest.permission.POST_NOTIFICATIONS)
-                    }
-                    permissionLauncher.launch(perms.toTypedArray())
-                }
-            )
         }
 
         // Recording Pulse Red Border Animation
@@ -354,7 +355,7 @@ fun CameraScreen(
             uiState = uiState,
             onSetZoomRatio = onSetZoomRatio,
             onToggleStealth = onToggleStealth,
-            onToggleGrid = onToggleGrid,
+            onClickGallery = onClickGallery,
             onStartRecord = handleStartRecord,
             onPauseRecord = handlePauseRecord,
             onResumeRecord = handleResumeRecord,
@@ -369,6 +370,7 @@ fun CameraScreen(
                 onDismissRequest = { showSettingsSheet = false },
                 onSetQuality = onSetQuality,
                 onToggleAudio = onToggleAudio,
+                onToggleGrid = onToggleGrid,
                 onStartScreenCaptureRecord = handleStartScreenCaptureRecord
             )
         }

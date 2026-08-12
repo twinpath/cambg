@@ -58,6 +58,8 @@ class BackgroundRecordingService : LifecycleService() {
 
     private var activeRecording: Recording? = null
     private var videoCapture: VideoCapture<Recorder>? = null
+    private var camera: androidx.camera.core.Camera? = null
+    private var currentPreviewUseCase: androidx.camera.core.Preview? = null
 
     private var mediaProjection: MediaProjection? = null
     private var mediaRecorder: MediaRecorder? = null
@@ -69,6 +71,7 @@ class BackgroundRecordingService : LifecycleService() {
 
     override fun onCreate() {
         super.onCreate()
+        serviceInstance = this
         createNotificationChannel()
     }
 
@@ -157,10 +160,16 @@ class BackgroundRecordingService : LifecycleService() {
                     CameraSelector.DEFAULT_BACK_CAMERA
                 }
 
+                val preview = androidx.camera.core.Preview.Builder().build().also {
+                    it.setSurfaceProvider(activePreviewView?.surfaceProvider)
+                }
+                currentPreviewUseCase = preview
+
                 cameraProvider.unbindAll()
-                cameraProvider.bindToLifecycle(
+                camera = cameraProvider.bindToLifecycle(
                     this,
                     cameraSelector,
+                    preview,
                     videoCapture
                 )
 
@@ -355,6 +364,9 @@ class BackgroundRecordingService : LifecycleService() {
         mediaProjection?.stop()
         mediaProjection = null
 
+        camera = null
+        currentPreviewUseCase = null
+
         val savedFile = currentOutputFile
         val fileSize = savedFile?.length() ?: 0L
 
@@ -447,6 +459,9 @@ class BackgroundRecordingService : LifecycleService() {
 
     override fun onDestroy() {
         stopTimer()
+        camera = null
+        currentPreviewUseCase = null
+        serviceInstance = null
         super.onDestroy()
     }
 
@@ -470,6 +485,28 @@ class BackgroundRecordingService : LifecycleService() {
 
         private val _serviceState = MutableStateFlow(ServiceRecordingState())
         val serviceState: StateFlow<ServiceRecordingState> = _serviceState.asStateFlow()
+
+        private var serviceInstance: BackgroundRecordingService? = null
+        private var activePreviewView: PreviewView? = null
+
+        fun setPreviewView(previewView: PreviewView?) {
+            activePreviewView = previewView
+            serviceInstance?.let { svc ->
+                svc.currentPreviewUseCase?.setSurfaceProvider(previewView?.surfaceProvider)
+            }
+        }
+
+        fun updateCameraControls(flashMode: String, zoomRatio: Float, isFrontCamera: Boolean) {
+            val svc = serviceInstance ?: return
+            try {
+                svc.camera?.cameraControl?.setZoomRatio(zoomRatio.coerceIn(1.0f, 5.0f))
+                if (!isFrontCamera) {
+                    svc.camera?.cameraControl?.enableTorch(flashMode == "ON")
+                }
+            } catch (e: Exception) {
+                Log.e(TAG, "Error updating service camera controls", e)
+            }
+        }
 
         fun startCameraService(
             context: Context,

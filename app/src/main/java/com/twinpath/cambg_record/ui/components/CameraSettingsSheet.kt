@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Grid4x4
 import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.MicOff
 import androidx.compose.material.icons.filled.Videocam
@@ -39,6 +40,7 @@ fun CameraSettingsSheet(
     onDismissRequest: () -> Unit,
     onSetQuality: (String) -> Unit,
     onToggleAudio: () -> Unit,
+    onToggleGrid: () -> Unit,
     onStartScreenCaptureRecord: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -84,6 +86,39 @@ fun CameraSettingsSheet(
                             else MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Grid Toggle Row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(12.dp))
+                    .clickable { onToggleGrid() }
+                    .padding(vertical = 12.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Default.Grid4x4,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column {
+                        Text(
+                            text = "Grid Overlay",
+                            style = MaterialTheme.typography.titleMedium
+                        )
+                        Text(
+                            text = if (uiState.showGridOverlay) "Visible (3x3 grid)" else "Hidden",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
                 }
             }
 

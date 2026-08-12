@@ -170,7 +170,8 @@ fun MainAppNavigation(
                     onToggleAudio = { cameraViewModel.toggleAudio() },
                     onSetZoomRatio = { cameraViewModel.setZoomRatio(it) },
                     onToggleGrid = { cameraViewModel.toggleGridOverlay() },
-                    onToggleStealth = { cameraViewModel.toggleStealthMode() }
+                    onToggleStealth = { cameraViewModel.toggleStealthMode() },
+                    onClickGallery = { selectedTab = 1 }
                 )
 
                 1 -> GalleryScreen(
