@@ -1,44 +1,63 @@
 package com.example.model
 
-import androidx.lifecycle.ViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
+import com.example.data.SettingsRepository
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
-class SettingsViewModel : ViewModel() {
-    private val _settings = MutableStateFlow(AppSettings())
-    val settings: StateFlow<AppSettings> = _settings.asStateFlow()
+class SettingsViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val repository = SettingsRepository(application.applicationContext)
+
+    val settings: StateFlow<AppSettings> = repository.settingsFlow
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = AppSettings()
+        )
 
     fun updateResolution(newRes: String) {
-        _settings.update { it.copy(resolution = newRes) }
+        viewModelScope.launch { repository.updateResolution(newRes) }
     }
 
     fun updateFrameRate(newFps: String) {
-        _settings.update { it.copy(frameRate = newFps) }
+        viewModelScope.launch { repository.updateFrameRate(newFps) }
     }
 
     fun updateBitrate(newBitrate: String) {
-        _settings.update { it.copy(bitrate = newBitrate) }
+        viewModelScope.launch { repository.updateBitrate(newBitrate) }
     }
 
     fun toggleAudio() {
-        _settings.update { it.copy(audioEnabled = !it.audioEnabled) }
+        viewModelScope.launch {
+            repository.updateAudioEnabled(!settings.value.audioEnabled)
+        }
     }
 
     fun updateAudioSource(newSource: String) {
-        _settings.update { it.copy(audioSource = newSource) }
+        viewModelScope.launch { repository.updateAudioSource(newSource) }
     }
 
     fun updateAudioChannels(newChannels: String) {
-        _settings.update { it.copy(audioChannels = newChannels) }
+        viewModelScope.launch { repository.updateAudioChannels(newChannels) }
+    }
+
+    fun updateStorageLocation(newLocation: StorageLocation) {
+        viewModelScope.launch { repository.updateStorageLocation(newLocation) }
     }
 
     fun updateThemeMode(newMode: AppThemeMode) {
-        _settings.update { it.copy(themeMode = newMode) }
+        viewModelScope.launch { repository.updateThemeMode(newMode) }
     }
 
     fun toggleDynamicColor() {
-        _settings.update { it.copy(dynamicColor = !it.dynamicColor) }
+        viewModelScope.launch {
+            repository.updateDynamicColor(!settings.value.dynamicColor)
+        }
     }
 }
+

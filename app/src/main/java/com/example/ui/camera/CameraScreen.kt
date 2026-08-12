@@ -90,14 +90,17 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.camera.CameraXRecordingManager
+import com.example.model.AppSettings
 import com.example.model.CameraUiState
 import com.example.model.RecordingState
+import com.example.model.StorageLocation
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CameraScreen(
     uiState: CameraUiState,
+    appSettings: AppSettings = AppSettings(),
     onStartRecord: () -> Unit,
     onPauseRecord: () -> Unit,
     onResumeRecord: () -> Unit,
@@ -268,26 +271,42 @@ fun CameraScreen(
                 contentAlignment = Alignment.Center
             ) {
                 if (hasCameraPermission) {
+                    // Hold a stable reference to the PreviewView
+                    val previewViewRef = remember { mutableStateOf<PreviewView?>(null) }
+
                     AndroidView(
                         factory = { ctx ->
                             PreviewView(ctx).apply {
                                 scaleType = PreviewView.ScaleType.FILL_CENTER
                                 implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+                                previewViewRef.value = this
                             }
-                        },
-                        update = { previewView ->
-                            recordingManager.bindCamera(
-                                context = context,
-                                lifecycleOwner = lifecycleOwner,
-                                previewView = previewView,
-                                isFrontCamera = uiState.isFrontCamera,
-                                qualityString = uiState.quality,
-                                flashMode = uiState.flashMode,
-                                zoomRatio = uiState.zoomRatio
-                            )
                         },
                         modifier = Modifier.fillMaxSize()
                     )
+
+                    // Bind camera only when camera direction or quality changes (not on zoom/flash)
+                    LaunchedEffect(uiState.isFrontCamera, uiState.quality) {
+                        val pv = previewViewRef.value ?: return@LaunchedEffect
+                        recordingManager.bindCamera(
+                            context = context,
+                            lifecycleOwner = lifecycleOwner,
+                            previewView = pv,
+                            isFrontCamera = uiState.isFrontCamera,
+                            qualityString = uiState.quality,
+                            flashMode = uiState.flashMode,
+                            zoomRatio = uiState.zoomRatio
+                        )
+                    }
+
+                    // Update only zoom & flash controls without rebinding the camera
+                    LaunchedEffect(uiState.zoomRatio, uiState.flashMode) {
+                        recordingManager.updateCameraControls(
+                            flashMode = uiState.flashMode,
+                            zoomRatio = uiState.zoomRatio,
+                            isFrontCamera = uiState.isFrontCamera
+                        )
+                    }
                 } else {
                     // Fallback Permission Request Card
                     Column(

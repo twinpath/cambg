@@ -3,6 +3,8 @@ package com.example.camera
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.media.MediaScannerConnection
+import android.os.Environment
 import android.util.Log
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
@@ -30,6 +32,9 @@ class CameraXRecordingManager {
     private var activeRecording: Recording? = null
     private var camera: Camera? = null
 
+    // Track current binding state to avoid unnecessary rebinds
+    private var currentBindingKey: String? = null
+
     fun bindCamera(
         context: Context,
         lifecycleOwner: LifecycleOwner,
@@ -40,6 +45,13 @@ class CameraXRecordingManager {
         zoomRatio: Float,
         onError: (Throwable) -> Unit = {}
     ) {
+        val newBindingKey = "${isFrontCamera}_${qualityString}"
+        if (newBindingKey == currentBindingKey && camera != null) {
+            // Only update controls, don't rebind
+            updateCameraControls(flashMode, zoomRatio, isFrontCamera)
+            return
+        }
+
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
         cameraProviderFuture.addListener({
             try {
@@ -82,6 +94,8 @@ class CameraXRecordingManager {
                     videoCapture
                 )
 
+                currentBindingKey = newBindingKey
+
                 // Apply zoom and flash control
                 camera?.cameraControl?.setZoomRatio(zoomRatio.coerceIn(1.0f, 5.0f))
                 if (!isFrontCamera) {
@@ -109,6 +123,7 @@ class CameraXRecordingManager {
     fun startRecording(
         context: Context,
         isAudioEnabled: Boolean,
+        usePublicStorage: Boolean = true,
         onStarted: () -> Unit,
         onFinished: (File, Long) -> Unit,
         onError: (String) -> Unit
@@ -119,14 +134,7 @@ class CameraXRecordingManager {
             return
         }
 
-        // Prepare output file in app's internal storage directory (context.filesDir)
-        val recordingsDir = File(context.filesDir, "recordings")
-        if (!recordingsDir.exists()) {
-            recordingsDir.mkdirs()
-        }
-
-        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-        val outputFile = File(recordingsDir, "VID_$timeStamp.mp4")
+        val outputFile = createOutputFile(context, usePublicStorage, "BACK")
 
         val fileOutputOptions = FileOutputOptions.Builder(outputFile).build()
 
@@ -155,7 +163,11 @@ class CameraXRecordingManager {
                 is VideoRecordEvent.Finalize -> {
                     if (!event.hasError()) {
                         val fileSize = outputFile.length()
-                        Log.d("CameraXManager", "Video saved to internal storage: ${outputFile.absolutePath} ($fileSize bytes)")
+                        Log.d("CameraXManager", "Video saved: ${outputFile.absolutePath} ($fileSize bytes)")
+                        // Notify MediaStore so the video appears in Gallery/Photos
+                        if (usePublicStorage) {
+                            scanFileToMediaStore(context, outputFile)
+                        }
                         onFinished(outputFile, fileSize)
                     } else {
                         activeRecording?.close()
@@ -183,4 +195,49 @@ class CameraXRecordingManager {
     }
 
     fun isRecording(): Boolean = activeRecording != null
+
+    companion object {
+        /**
+         * Creates an output file in either the public DCIM/CamBGRecord directory
+         * or the internal app storage recordings directory.
+         */
+        fun createOutputFile(
+            context: Context,
+            usePublicStorage: Boolean,
+            cameraTag: String = ""
+        ): File {
+            val recordingsDir = if (usePublicStorage) {
+                val dcimDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)
+                File(dcimDir, "CamBGRecord")
+            } else {
+                File(context.filesDir, "recordings")
+            }
+            if (!recordingsDir.exists()) {
+                recordingsDir.mkdirs()
+            }
+
+            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+            val prefix = if (cameraTag.isNotEmpty()) "VID_${cameraTag}_" else "VID_"
+            return File(recordingsDir, "${prefix}$timeStamp.mp4")
+        }
+
+        /**
+         * Notifies the Android MediaStore about the new file so it appears
+         * in Gallery, Google Photos, and other media apps.
+         */
+        fun scanFileToMediaStore(context: Context, file: File) {
+            try {
+                MediaScannerConnection.scanFile(
+                    context,
+                    arrayOf(file.absolutePath),
+                    arrayOf("video/mp4")
+                ) { path, uri ->
+                    Log.d("CameraXManager", "MediaScanner indexed: $path -> $uri")
+                }
+            } catch (e: Exception) {
+                Log.e("CameraXManager", "MediaScanner failed for ${file.absolutePath}", e)
+            }
+        }
+    }
 }
+

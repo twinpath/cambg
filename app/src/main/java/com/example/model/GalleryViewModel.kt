@@ -25,12 +25,7 @@ class GalleryViewModel : ViewModel() {
     fun loadRecordedVideos(context: Context) {
         val recordedFiles = RecordedFilesHelper.getRecordedVideos(context)
         _uiState.update { currentState ->
-            val existingPaths = recordedFiles.mapNotNull { it.filePath }.toSet()
-            // Keep mock items that don't conflict with real files
-            val nonDuplicateMocks = currentState.videos.filter {
-                it.filePath == null || !existingPaths.contains(it.filePath)
-            }
-            currentState.copy(videos = recordedFiles + nonDuplicateMocks)
+            currentState.copy(videos = recordedFiles)
         }
     }
 

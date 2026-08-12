@@ -141,6 +141,7 @@ fun MainAppNavigation(
             when (selectedTab) {
                 0 -> CameraScreen(
                     uiState = cameraState,
+                    appSettings = settingsState,
                     onStartRecord = { cameraViewModel.startRecording() },
                     onPauseRecord = { cameraViewModel.pauseRecording() },
                     onResumeRecord = { cameraViewModel.resumeRecording() },
@@ -205,6 +206,7 @@ fun MainAppNavigation(
                     onToggleAudio = { settingsViewModel.toggleAudio() },
                     onUpdateAudioSource = { settingsViewModel.updateAudioSource(it) },
                     onUpdateAudioChannels = { settingsViewModel.updateAudioChannels(it) },
+                    onUpdateStorageLocation = { settingsViewModel.updateStorageLocation(it) },
                     onUpdateThemeMode = { settingsViewModel.updateThemeMode(it) },
                     onToggleDynamicColor = { settingsViewModel.toggleDynamicColor() }
                 )

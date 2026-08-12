@@ -164,13 +164,14 @@ class BackgroundRecordingService : LifecycleService() {
                     videoCapture
                 )
 
-                // Output File
-                val recordingsDir = File(filesDir, "recordings")
-                if (!recordingsDir.exists()) recordingsDir.mkdirs()
-
-                val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+                // Output File - save to public DCIM/CamBGRecord
+                val usePublicStorage = true
                 val camTypeStr = if (isFrontCamera) "FRONT" else "BACK"
-                val outputFile = File(recordingsDir, "VID_${camTypeStr}_$timeStamp.mp4")
+                val outputFile = com.example.camera.CameraXRecordingManager.createOutputFile(
+                    this@BackgroundRecordingService,
+                    usePublicStorage,
+                    camTypeStr
+                )
                 currentOutputFile = outputFile
 
                 val fileOutputOptions = FileOutputOptions.Builder(outputFile).build()
@@ -197,6 +198,10 @@ class BackgroundRecordingService : LifecycleService() {
                             val fileSize = outputFile.length()
                             if (!event.hasError() && fileSize > 0) {
                                 Log.d(TAG, "CameraX recording saved: ${outputFile.absolutePath} ($fileSize bytes)")
+                                // Scan to MediaStore so video appears in Gallery/Photos
+                                com.example.camera.CameraXRecordingManager.scanFileToMediaStore(
+                                    this@BackgroundRecordingService, outputFile
+                                )
                                 _serviceState.update {
                                     it.copy(
                                         recordingState = RecordingState.IDLE,
@@ -242,11 +247,11 @@ class BackgroundRecordingService : LifecycleService() {
             val mpManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
             mediaProjection = mpManager.getMediaProjection(resultCode, data)
 
-            val recordingsDir = File(filesDir, "recordings")
-            if (!recordingsDir.exists()) recordingsDir.mkdirs()
-
-            val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
-            val outputFile = File(recordingsDir, "VID_SCREEN_$timeStamp.mp4")
+            val outputFile = com.example.camera.CameraXRecordingManager.createOutputFile(
+                this@BackgroundRecordingService,
+                true, // usePublicStorage
+                "SCREEN"
+            )
             currentOutputFile = outputFile
 
             val metrics = resources.displayMetrics

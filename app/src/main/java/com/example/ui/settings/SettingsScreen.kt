@@ -77,6 +77,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.example.model.AppSettings
 import com.example.model.AppThemeMode
+import com.example.model.StorageLocation
 
 fun checkIsBatteryOptimizationIgnored(context: Context): Boolean {
     return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -118,6 +119,7 @@ fun SettingsScreen(
     onToggleAudio: () -> Unit,
     onUpdateAudioSource: (String) -> Unit,
     onUpdateAudioChannels: (String) -> Unit,
+    onUpdateStorageLocation: (StorageLocation) -> Unit,
     onUpdateThemeMode: (AppThemeMode) -> Unit,
     onToggleDynamicColor: () -> Unit,
     modifier: Modifier = Modifier
@@ -351,37 +353,62 @@ fun SettingsScreen(
                     elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                imageVector = Icons.Default.Folder,
-                                contentDescription = null,
-                                tint = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.width(12.dp))
-                            Column {
-                                Text(
-                                    text = "Save Location",
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.SemiBold
+                        Text(
+                            text = "Save Location",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        StorageLocation.entries.forEach { location ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { onUpdateStorageLocation(location) }
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = settings.storageLocation == location,
+                                    onClick = { onUpdateStorageLocation(location) }
                                 )
-                                Text(
-                                    text = settings.saveLocation,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                )
+                                Column(modifier = Modifier.padding(start = 8.dp)) {
+                                    Text(
+                                        text = location.displayName,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        fontWeight = if (settings.storageLocation == location) FontWeight.Bold else FontWeight.Normal
+                                    )
+                                    Text(
+                                        text = location.description,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
                             }
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
 
+                        // Dynamic storage usage
+                        val statFs = remember {
+                            try {
+                                android.os.StatFs(android.os.Environment.getExternalStorageDirectory().absolutePath)
+                            } catch (_: Exception) { null }
+                        }
+                        val totalGb = statFs?.let { it.totalBytes / (1024.0 * 1024.0 * 1024.0) } ?: 0.0
+                        val availGb = statFs?.let { it.availableBytes / (1024.0 * 1024.0 * 1024.0) } ?: 0.0
+                        val usedGb = totalGb - availGb
+                        val usedFraction = if (totalGb > 0) (usedGb / totalGb).toFloat().coerceIn(0f, 1f) else 0f
+
                         Text(
-                            text = "Storage Used: 34.2 GB / 128 GB",
+                            text = "Storage Used: ${String.format(java.util.Locale.US, "%.1f", usedGb)} GB / ${String.format(java.util.Locale.US, "%.0f", totalGb)} GB",
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                         Spacer(modifier = Modifier.height(6.dp))
                         LinearProgressIndicator(
-                            progress = { 0.27f },
+                            progress = { usedFraction },
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(8.dp)

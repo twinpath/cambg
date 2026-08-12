@@ -2,6 +2,7 @@ package com.example.util
 
 import android.content.Context
 import android.media.MediaMetadataRetriever
+import android.os.Environment
 import android.text.format.DateUtils
 import android.util.Log
 import com.example.model.VideoItem
@@ -15,14 +16,26 @@ object RecordedFilesHelper {
     private const val TAG = "RecordedFilesHelper"
 
     /**
-     * Lists all recorded video files (.mp4) from the internal app storage
-     * directory ("context.filesDir/recordings" and "context.filesDir") and
-     * extracts their duration, date, size, and resolution metadata.
+     * Lists all recorded video files (.mp4) from:
+     * 1. The public DCIM/CamBGRecord directory (default)
+     * 2. The internal app storage directory ("context.filesDir/recordings")
+     * and extracts their duration, date, size, and resolution metadata.
      */
     fun getRecordedVideos(context: Context): List<VideoItem> {
         val files = mutableListOf<File>()
 
-        // 1. Check primary recordings directory
+        // 1. Check public DCIM/CamBGRecord directory
+        val dcimDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)
+        val publicRecordingsDir = File(dcimDir, "CamBGRecord")
+        if (publicRecordingsDir.exists() && publicRecordingsDir.isDirectory) {
+            publicRecordingsDir.listFiles()?.filter {
+                it.isFile && it.extension.equals("mp4", ignoreCase = true)
+            }?.let {
+                files.addAll(it)
+            }
+        }
+
+        // 2. Check primary internal recordings directory
         val recordingsDir = File(context.filesDir, "recordings")
         if (recordingsDir.exists() && recordingsDir.isDirectory) {
             recordingsDir.listFiles()?.filter {
@@ -32,7 +45,7 @@ object RecordedFilesHelper {
             }
         }
 
-        // 2. Also check main internal files directory for any orphan mp4 files
+        // 3. Also check main internal files directory for any orphan mp4 files
         context.filesDir.listFiles()?.filter {
             it.isFile && it.extension.equals("mp4", ignoreCase = true)
         }?.let {
@@ -43,7 +56,7 @@ object RecordedFilesHelper {
         val uniqueSortedFiles = files.distinctBy { it.absolutePath }
             .sortedByDescending { it.lastModified() }
 
-        Log.d(TAG, "Found ${uniqueSortedFiles.size} video files in internal app directory")
+        Log.d(TAG, "Found ${uniqueSortedFiles.size} video files (public DCIM + internal)")
 
         return uniqueSortedFiles.map { file ->
             extractVideoItem(file)
