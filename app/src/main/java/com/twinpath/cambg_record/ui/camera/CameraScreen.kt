@@ -96,6 +96,10 @@ import com.twinpath.cambg_record.model.RecordingState
 import com.twinpath.cambg_record.model.StorageLocation
 import com.twinpath.cambg_record.ui.components.CameraControls
 import com.twinpath.cambg_record.ui.components.CameraSettingsSheet
+import com.twinpath.cambg_record.ui.components.CameraTopBar
+import com.twinpath.cambg_record.ui.components.CameraViewfinder
+import com.twinpath.cambg_record.util.hasPermission
+import com.twinpath.cambg_record.util.hasPermissions
 import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -124,12 +128,7 @@ fun CameraScreen(
     var showSettingsSheet by remember { mutableStateOf(false) }
 
     var hasCameraPermission by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED
-        )
+        mutableStateOf(context.hasPermission(Manifest.permission.CAMERA))
     }
 
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -265,162 +264,21 @@ fun CameraScreen(
                 }
             }
         } else {
-            // CameraX Live Viewfinder Preview
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(Color.Black),
-                contentAlignment = Alignment.Center
-            ) {
-                if (hasCameraPermission) {
-                    // Hold a stable reference to the PreviewView
-                    val previewViewRef = remember { mutableStateOf<PreviewView?>(null) }
-
-                    AndroidView(
-                        factory = { ctx ->
-                            PreviewView(ctx).apply {
-                                scaleType = PreviewView.ScaleType.FILL_CENTER
-                                implementationMode = PreviewView.ImplementationMode.COMPATIBLE
-                                previewViewRef.value = this
-                            }
-                        },
-                        modifier = Modifier.fillMaxSize()
+            CameraViewfinder(
+                uiState = uiState,
+                hasCameraPermission = hasCameraPermission,
+                recordingManager = recordingManager,
+                onRequestPermissions = {
+                    val perms = mutableListOf(
+                        Manifest.permission.CAMERA,
+                        Manifest.permission.RECORD_AUDIO
                     )
-
-                    // Bind camera only when camera direction or quality changes (not on zoom/flash)
-                    LaunchedEffect(uiState.isFrontCamera, uiState.quality) {
-                        val pv = previewViewRef.value ?: return@LaunchedEffect
-                        recordingManager.bindCamera(
-                            context = context,
-                            lifecycleOwner = lifecycleOwner,
-                            previewView = pv,
-                            isFrontCamera = uiState.isFrontCamera,
-                            qualityString = uiState.quality,
-                            flashMode = uiState.flashMode,
-                            zoomRatio = uiState.zoomRatio
-                        )
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                        perms.add(Manifest.permission.POST_NOTIFICATIONS)
                     }
-
-                    // Update only zoom & flash controls without rebinding the camera
-                    LaunchedEffect(uiState.zoomRatio, uiState.flashMode) {
-                        recordingManager.updateCameraControls(
-                            flashMode = uiState.flashMode,
-                            zoomRatio = uiState.zoomRatio,
-                            isFrontCamera = uiState.isFrontCamera
-                        )
-                    }
-                } else {
-                    // Fallback Permission Request Card
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier
-                            .padding(24.dp)
-                            .background(Color(0xFF1E1E1E), RoundedCornerShape(16.dp))
-                            .padding(24.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.VideocamOff,
-                            contentDescription = "Camera Permission Needed",
-                            tint = Color(0xFFEA4335),
-                            modifier = Modifier.size(48.dp)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = "Camera Permission Required",
-                            style = MaterialTheme.typography.titleMedium,
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = "CamBG Record needs camera and microphone permissions to capture video.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = Color.LightGray,
-                            textAlign = TextAlign.Center
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(
-                            onClick = {
-                                permissionLauncher.launch(
-                                    arrayOf(
-                                        Manifest.permission.CAMERA,
-                                        Manifest.permission.RECORD_AUDIO
-                                    )
-                                )
-                            },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1A73E8))
-                        ) {
-                            Text("Grant Permission", color = Color.White)
-                        }
-                    }
+                    permissionLauncher.launch(perms.toTypedArray())
                 }
-
-                // Grid Overlay
-                if (uiState.showGridOverlay && hasCameraPermission) {
-                    Canvas(modifier = Modifier.fillMaxSize()) {
-                        val strokeWidth = 2.dp.toPx()
-                        val dashPathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
-                        val width = size.width
-                        val height = size.height
-
-                        // Vertical grid lines
-                        drawLine(
-                            color = Color.White.copy(alpha = 0.25f),
-                            start = androidx.compose.ui.geometry.Offset(width / 3f, 0f),
-                            end = androidx.compose.ui.geometry.Offset(width / 3f, height),
-                            strokeWidth = strokeWidth,
-                            pathEffect = dashPathEffect
-                        )
-                        drawLine(
-                            color = Color.White.copy(alpha = 0.25f),
-                            start = androidx.compose.ui.geometry.Offset(2 * width / 3f, 0f),
-                            end = androidx.compose.ui.geometry.Offset(2 * width / 3f, height),
-                            strokeWidth = strokeWidth,
-                            pathEffect = dashPathEffect
-                        )
-
-                        // Horizontal grid lines
-                        drawLine(
-                            color = Color.White.copy(alpha = 0.25f),
-                            start = androidx.compose.ui.geometry.Offset(0f, height / 3f),
-                            end = androidx.compose.ui.geometry.Offset(width, height / 3f),
-                            strokeWidth = strokeWidth,
-                            pathEffect = dashPathEffect
-                        )
-                        drawLine(
-                            color = Color.White.copy(alpha = 0.25f),
-                            start = androidx.compose.ui.geometry.Offset(0f, 2 * height / 3f),
-                            end = androidx.compose.ui.geometry.Offset(width, 2 * height / 3f),
-                            strokeWidth = strokeWidth,
-                            pathEffect = dashPathEffect
-                        )
-                    }
-                }
-
-                // Camera Lens Info Overlay
-                if (hasCameraPermission) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        modifier = Modifier
-                            .align(Alignment.BottomCenter)
-                            .padding(bottom = 210.dp)
-                            .alpha(0.7f)
-                    ) {
-                        Text(
-                            text = if (uiState.isFrontCamera) "FRONT CAMERA" else "BACK CAMERA",
-                            color = Color.White,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Text(
-                            text = "${String.format("%.1f", uiState.zoomRatio)}x Zoom",
-                            color = Color.White.copy(alpha = 0.8f),
-                            style = MaterialTheme.typography.bodySmall
-                        )
-                    }
-                }
-            }
+            )
         }
 
         // Recording Pulse Red Border Animation
@@ -463,115 +321,14 @@ fun CameraScreen(
         }
 
         // --- Top Bar Overlay (Transparent) ---
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 40.dp, start = 16.dp, end = 16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            // Left: Timer & Quality Chip
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                // Timer badge
-                Surface(
-                    color = when (uiState.recordingState) {
-                        RecordingState.RECORDING -> Color(0xFFEA4335)
-                        RecordingState.PAUSED -> Color(0xFFF9AB00)
-                        else -> Color.Black.copy(alpha = 0.6f)
-                    },
-                    shape = RoundedCornerShape(16.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        if (uiState.recordingState == RecordingState.RECORDING) {
-                            Box(
-                                modifier = Modifier
-                                    .size(8.dp)
-                                    .background(Color.White, CircleShape)
-                                    .alpha(pulseAlpha)
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                        }
-                        Text(
-                            text = formatSeconds(uiState.elapsedTimeSeconds),
-                            color = Color.White,
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-
-                Spacer(modifier = Modifier.width(8.dp))
-
-                // Quality chip
-                AssistChip(
-                    onClick = { showSettingsSheet = true },
-                    label = {
-                        Text(
-                            text = uiState.quality,
-                            color = Color.White,
-                            fontWeight = FontWeight.Bold
-                        )
-                    },
-                    colors = AssistChipDefaults.assistChipColors(
-                        containerColor = Color.Black.copy(alpha = 0.5f)
-                    )
-                )
-            }
-
-            // Right: Controls (Switch Camera, Flash, Settings)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(
-                    onClick = onToggleCamera,
-                    modifier = Modifier
-                        .background(Color.Black.copy(alpha = 0.5f), CircleShape)
-                        .testTag("switch_camera_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Cameraswitch,
-                        contentDescription = "Switch Camera",
-                        tint = Color.White
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(6.dp))
-
-                IconButton(
-                    onClick = onCycleFlash,
-                    modifier = Modifier
-                        .background(Color.Black.copy(alpha = 0.5f), CircleShape)
-                        .testTag("flash_toggle_button")
-                ) {
-                    val flashIcon = when (uiState.flashMode) {
-                        "ON" -> Icons.Default.FlashOn
-                        "AUTO" -> Icons.Default.FlashAuto
-                        else -> Icons.Default.FlashOff
-                    }
-                    Icon(
-                        imageVector = flashIcon,
-                        contentDescription = "Toggle Flash",
-                        tint = if (uiState.flashMode != "OFF") Color(0xFFF9AB00) else Color.White
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(6.dp))
-
-                IconButton(
-                    onClick = { showSettingsSheet = true },
-                    modifier = Modifier
-                        .background(Color.Black.copy(alpha = 0.5f), CircleShape)
-                        .testTag("quick_settings_button")
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Settings,
-                        contentDescription = "Settings",
-                        tint = Color.White
-                    )
-                }
-            }
-        }
+        CameraTopBar(
+            uiState = uiState,
+            pulseAlpha = pulseAlpha,
+            onToggleCamera = onToggleCamera,
+            onCycleFlash = onCycleFlash,
+            onClickQuality = { showSettingsSheet = true },
+            onClickSettings = { showSettingsSheet = true }
+        )
 
         // --- Paused Blinking Badge ---
         if (uiState.recordingState == RecordingState.PAUSED) {
