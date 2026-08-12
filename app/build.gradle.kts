@@ -10,7 +10,7 @@ plugins {
 }
 
 android {
-  namespace = "com.example"
+  namespace = "com.twinpath.cambg_record"
   compileSdk = 36
 
   defaultConfig {
