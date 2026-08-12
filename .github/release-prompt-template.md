@@ -13,7 +13,8 @@ Instructions:
 3. Use bullet points for changes.
 4. Do not include commit hashes or author names.
 5. Output using clean Markdown syntax without markdown code block wrappers around the entire response.
-6. Always append the following section at the end of the changelog to provide build artifact details, preserving the exact placeholder `{{ARTIFACT_TABLE}}`:
+6. DO NOT use any emojis in the release notes. Keep the tone strictly formal, clean, and professional.
+7. Always append the following section at the end of the changelog to provide build artifact details, preserving the exact placeholder `{{ARTIFACT_TABLE}}`:
 
 ### Build Artifacts
 
