@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - 'v*'
+    branches:
+      - canary
   workflow_dispatch:
 
 permissions:
@@ -41,7 +43,7 @@ jobs:
           fi
 
       - name: Build Android Release Artifacts (APK & AAB)
-        run: ./gradlew assembleRelease bundleRelease
+        run: gradle assembleRelease bundleRelease
         env:
           KEYSTORE_PATH: ${{ steps.decode_keystore.outputs.keystore_decoded == 'true' && './my-upload-key.jks' || '' }}
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
