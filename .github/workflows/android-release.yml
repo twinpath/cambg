@@ -46,16 +46,40 @@ jobs:
         run: |
           gradle assembleRelease bundleRelease
           TAG_NAME="${{ github.ref_name }}"
+          APK_DIR="app/build/outputs/apk/release"
           AAB_DIR="app/build/outputs/bundle/release"
+
+          if [ -d "$APK_DIR" ]; then
+            for f in $APK_DIR/*.apk; do
+              if [ -f "$f" ]; then
+                base=$(basename "$f")
+                arch="universal"
+                if [[ "$base" == *"arm64-v8a"* ]]; then arch="arm64-v8a";
+                elif [[ "$base" == *"armeabi-v7a"* ]]; then arch="armeabi-v7a";
+                elif [[ "$base" == *"x86_64"* ]]; then arch="x86_64";
+                elif [[ "$base" == *"x86"* ]]; then arch="x86";
+                elif [[ "$base" == *"universal"* ]]; then arch="universal";
+                fi
+                target_name="camera-background-twinpath-labs-${TAG_NAME}-${arch}-nodpi.apk"
+                if [ "$base" != "$target_name" ]; then
+                  mv "$f" "$APK_DIR/$target_name"
+                fi
+              fi
+            done
+          fi
+
           if [ -d "$AAB_DIR" ]; then
             for f in $AAB_DIR/*.aab; do
               if [ -f "$f" ]; then
-                mv "$f" "$AAB_DIR/camera-background-twinpath-labs-${TAG_NAME}-universal-nodpi.aab"
+                base=$(basename "$f")
+                target_name="camera-background-twinpath-labs-${TAG_NAME}-universal-nodpi.aab"
+                if [ "$base" != "$target_name" ]; then
+                  mv "$f" "$AAB_DIR/$target_name"
+                fi
               fi
             done
           fi
         env:
-          RELEASE_TAG: ${{ github.ref_name }}
           KEYSTORE_PATH: ${{ steps.decode_keystore.outputs.keystore_decoded == 'true' && './my-upload-key.jks' || '' }}
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
