@@ -14,7 +14,7 @@ android {
   compileSdk = 36
 
   defaultConfig {
-    applicationId = "com.twinpath.camerabgrecord"
+    applicationId = "com.twinpath.cambg_record"
     minSdk = 24
     targetSdk = 35
     versionCode = 1
