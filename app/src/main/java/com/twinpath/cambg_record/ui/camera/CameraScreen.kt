@@ -282,19 +282,6 @@ fun CameraScreen(
             }
         }
 
-        // Recording Pulse Red Border Animation
-        if (uiState.recordingState == RecordingState.RECORDING) {
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .border(
-                        width = 4.dp,
-                        color = Color(0xFFEA4335).copy(alpha = pulseAlpha),
-                        shape = RoundedCornerShape(0.dp)
-                    )
-            )
-        }
-
         // --- Status Banner (e.g. Saved to internal storage) ---
         AnimatedVisibility(
             visible = uiState.statusMessage != null,
