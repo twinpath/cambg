@@ -82,36 +82,8 @@ import com.twinpath.cambg_record.model.StorageLocation
 import com.twinpath.cambg_record.ui.components.SettingsSectionHeader
 import com.twinpath.cambg_record.ui.components.SwitchSettingItem
 import com.twinpath.cambg_record.ui.components.DropdownSettingItem
-
-fun checkIsBatteryOptimizationIgnored(context: Context): Boolean {
-    return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        val pm = context.getSystemService(Context.POWER_SERVICE) as? PowerManager
-        pm?.isIgnoringBatteryOptimizations(context.packageName) ?: true
-    } else {
-        true
-    }
-}
-
-fun launchBatteryOptimizationSettings(context: Context) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        try {
-            val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
-                data = Uri.parse("package:${context.packageName}")
-            }
-            context.startActivity(intent)
-        } catch (e: Exception) {
-            try {
-                val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-                context.startActivity(intent)
-            } catch (e2: Exception) {
-                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                    data = Uri.parse("package:${context.packageName}")
-                }
-                context.startActivity(intent)
-            }
-        }
-    }
-}
+import com.twinpath.cambg_record.ui.components.SettingsBatteryCard
+import com.twinpath.cambg_record.ui.components.SettingsStorageCard
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -128,23 +100,6 @@ fun SettingsScreen(
     onToggleDynamicColor: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-    val lifecycleOwner = LocalLifecycleOwner.current
-
-    var isBatteryOptimized by remember { mutableStateOf(!checkIsBatteryOptimizationIgnored(context)) }
-    var showBatteryDialog by remember { mutableStateOf(false) }
-
-    DisposableEffect(lifecycleOwner) {
-        val observer = LifecycleEventObserver { _, event ->
-            if (event == Lifecycle.Event.ON_RESUME) {
-                isBatteryOptimized = !checkIsBatteryOptimizationIgnored(context)
-            }
-        }
-        lifecycleOwner.lifecycle.addObserver(observer)
-        onDispose {
-            lifecycleOwner.lifecycle.removeObserver(observer)
-        }
-    }
 
     Scaffold(
         topBar = {
@@ -172,94 +127,7 @@ fun SettingsScreen(
         ) {
             // --- BATTERY OPTIMIZATION SECTION ---
             item {
-                SettingsSectionHeader(title = "Battery & Background Performance", icon = Icons.Default.BatterySaver)
-                Card(
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-                ) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
-                    ) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.weight(1f)
-                            ) {
-                                Icon(
-                                    imageVector = if (!isBatteryOptimized) Icons.Default.CheckCircle else Icons.Default.Warning,
-                                    contentDescription = null,
-                                    tint = if (!isBatteryOptimized) Color(0xFF34A853) else Color(0xFFF9AB00),
-                                    modifier = Modifier.size(28.dp)
-                                )
-                                Spacer(modifier = Modifier.width(12.dp))
-                                Column {
-                                    Text(
-                                        text = "Background Battery Optimization",
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.SemiBold
-                                    )
-                                    Text(
-                                        text = if (!isBatteryOptimized) "Unrestricted (Recommended)" else "Optimization Enabled (Restricted)",
-                                        style = MaterialTheme.typography.bodySmall,
-                                        fontWeight = FontWeight.Bold,
-                                        color = if (!isBatteryOptimized) Color(0xFF34A853) else Color(0xFFEA4335)
-                                    )
-                                }
-                            }
-
-                            Surface(
-                                shape = RoundedCornerShape(20.dp),
-                                color = if (!isBatteryOptimized) Color(0xFFE6F4EA) else Color(0xFFFEF7E0),
-                                modifier = Modifier.clip(RoundedCornerShape(20.dp))
-                            ) {
-                                Text(
-                                    text = if (!isBatteryOptimized) "Active" else "Action Needed",
-                                    color = if (!isBatteryOptimized) Color(0xFF137333) else Color(0xFFB06000),
-                                    style = MaterialTheme.typography.labelSmall,
-                                    fontWeight = FontWeight.Bold,
-                                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp)
-                                )
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Text(
-                            text = if (!isBatteryOptimized)
-                                "CamBG Record is exempt from battery saver constraints. Background video recordings will run without interruption when screen is locked."
-                            else
-                                "Battery optimizations are active for CamBG Record. Android OS may terminate or pause background video recordings when the screen is turned off.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        OutlinedButton(
-                            onClick = { showBatteryDialog = true },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .testTag("battery_optimization_button")
-                        ) {
-                            Icon(
-                                imageVector = if (!isBatteryOptimized) Icons.Default.Shield else Icons.Default.BatteryAlert,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text(
-                                text = if (!isBatteryOptimized) "View Optimization Details" else "Disable Battery Optimization"
-                            )
-                        }
-                    }
-                }
+                SettingsBatteryCard()
             }
 
             // --- VIDEO SECTION ---
@@ -350,76 +218,10 @@ fun SettingsScreen(
 
             // --- STORAGE SECTION ---
             item {
-                SettingsSectionHeader(title = "Storage", icon = Icons.Default.SdCard)
-                Card(
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(
-                            text = "Save Location",
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        StorageLocation.entries.forEach { location ->
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .clickable { onUpdateStorageLocation(location) }
-                                    .padding(vertical = 4.dp),
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                RadioButton(
-                                    selected = settings.storageLocation == location,
-                                    onClick = { onUpdateStorageLocation(location) }
-                                )
-                                Column(modifier = Modifier.padding(start = 8.dp)) {
-                                    Text(
-                                        text = location.displayName,
-                                        style = MaterialTheme.typography.bodyMedium,
-                                        fontWeight = if (settings.storageLocation == location) FontWeight.Bold else FontWeight.Normal
-                                    )
-                                    Text(
-                                        text = location.description,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
-
-                        Spacer(modifier = Modifier.height(16.dp))
-
-                        // Dynamic storage usage
-                        val statFs = remember {
-                            try {
-                                android.os.StatFs(android.os.Environment.getExternalStorageDirectory().absolutePath)
-                            } catch (_: Exception) { null }
-                        }
-                        val totalGb = statFs?.let { it.totalBytes / (1024.0 * 1024.0 * 1024.0) } ?: 0.0
-                        val availGb = statFs?.let { it.availableBytes / (1024.0 * 1024.0 * 1024.0) } ?: 0.0
-                        val usedGb = totalGb - availGb
-                        val usedFraction = if (totalGb > 0) (usedGb / totalGb).toFloat().coerceIn(0f, 1f) else 0f
-
-                        Text(
-                            text = "Storage Used: ${String.format(java.util.Locale.US, "%.1f", usedGb)} GB / ${String.format(java.util.Locale.US, "%.0f", totalGb)} GB",
-                            style = MaterialTheme.typography.labelMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant
-                        )
-                        Spacer(modifier = Modifier.height(6.dp))
-                        LinearProgressIndicator(
-                            progress = { usedFraction },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(8.dp)
-                                .clip(RoundedCornerShape(4.dp))
-                        )
-                    }
-                }
+                SettingsStorageCard(
+                    settings = settings,
+                    onUpdateStorageLocation = onUpdateStorageLocation
+                )
             }
 
             // --- APPEARANCE SECTION ---
@@ -523,100 +325,6 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(96.dp))
             }
         }
-    }
-
-    if (showBatteryDialog) {
-        AlertDialog(
-            onDismissRequest = { showBatteryDialog = false },
-            icon = {
-                Icon(
-                    imageVector = Icons.Default.BatterySaver,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.size(32.dp)
-                )
-            },
-            title = {
-                Text(
-                    text = "Uninterrupted Background Recording",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
-                )
-            },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Text(
-                        text = "Android automatically throttles or stops background apps when battery optimization is enabled, which can stop video recordings mid-capture when your screen is locked.",
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-
-                    Surface(
-                        color = MaterialTheme.colorScheme.surfaceVariant,
-                        shape = RoundedCornerShape(8.dp)
-                    ) {
-                        Column(modifier = Modifier.padding(12.dp)) {
-                            Text(
-                                text = "How to disable optimization:",
-                                style = MaterialTheme.typography.labelLarge,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.primary
-                            )
-                            Spacer(modifier = Modifier.height(6.dp))
-                            Text(
-                                text = "1. Tap 'Open System Settings' below.\n" +
-                                       "2. Select 'Allow' or choose 'Unrestricted' battery usage.\n" +
-                                       "3. Return to CamBG Record.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                    }
-
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(top = 4.dp)
-                    ) {
-                        Icon(
-                            imageVector = if (!isBatteryOptimized) Icons.Default.CheckCircle else Icons.Default.Warning,
-                            contentDescription = null,
-                            tint = if (!isBatteryOptimized) Color(0xFF34A853) else Color(0xFFF9AB00),
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = if (!isBatteryOptimized)
-                                "Current Status: Unrestricted (Good to go!)"
-                            else
-                                "Current Status: Optimization Enabled (Action Needed)",
-                            style = MaterialTheme.typography.labelMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-                    }
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        launchBatteryOptimizationSettings(context)
-                        showBatteryDialog = false
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Launch,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Open System Settings")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showBatteryDialog = false }) {
-                    Text("Close")
-                }
-            }
-        )
     }
 }
 
