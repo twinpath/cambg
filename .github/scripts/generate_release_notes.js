@@ -44,44 +44,55 @@ async function run() {
   console.log(prompt);
   console.log('------------------------------------');
 
-  // 3. Request Gemini API
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
-  const requestBody = {
-    contents: [
-      {
-        parts: [
-          {
-            text: prompt
-          }
-        ]
-      }
-    ]
-  };
+  // 3. Request Gemini API with fallback models and retry mechanism
+  const candidateModels = ['gemini-flash-latest', 'gemini-3.5-flash', 'gemini-3.6-flash'];
+  let generatedText = null;
 
   const githubRepository = process.env.GITHUB_REPOSITORY || 'owner/repo';
   const releaseVersion = process.env.GITHUB_REF_NAME || 'v1.0.0';
   const artifactTable = generateArtifactTable(githubRepository, releaseVersion);
 
-  try {
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(requestBody)
-    });
+  for (const modelName of candidateModels) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`;
+    for (let attempt = 1; attempt <= 3; attempt++) {
+      try {
+        console.log(`Requesting Gemini API (model: ${modelName}, attempt: ${attempt})...`);
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(requestBody)
+        });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(`Gemini API returned status ${response.status}: ${errorText}`);
+        if (response.ok) {
+          const data = await response.json();
+          generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
+          if (generatedText) {
+            console.log(`Successfully generated release notes using model ${modelName}.`);
+            break;
+          }
+        } else {
+          const errorText = await response.text();
+          console.warn(`Gemini API returned status ${response.status} for model ${modelName}: ${errorText}`);
+          if (response.status === 503) {
+            console.log('503 Service Unavailable detected. Retrying in 2 seconds...');
+            await new Promise(res => setTimeout(res, 2000));
+          } else {
+            break;
+          }
+        }
+      } catch (err) {
+        console.warn(`Attempt ${attempt} for model ${modelName} failed: ${err.message}`);
+        await new Promise(res => setTimeout(res, 2000));
+      }
     }
+    if (generatedText) break;
+  }
 
-    const data = await response.json();
-    const generatedText = data.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!generatedText) {
-      throw new Error('Invalid response structure or empty content from Gemini API');
-    }
+  if (!generatedText) {
+    throw new Error('All Gemini API models failed or returned empty content.');
+  }
 
     let finalNotes = generatedText;
 
