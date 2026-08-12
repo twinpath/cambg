@@ -1,7 +1,11 @@
 package com.example.ui.camera
 
 import android.Manifest
+import android.app.Activity
+import android.content.Context
 import android.content.pm.PackageManager
+import android.media.projection.MediaProjectionManager
+import android.os.Build
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -129,14 +133,35 @@ fun CameraScreen(
         hasCameraPermission = permissions[Manifest.permission.CAMERA] == true
     }
 
+    val mediaProjectionManager = remember {
+        context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
+    }
+
+    val mediaProjectionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK && result.data != null) {
+            com.example.service.BackgroundRecordingService.startMediaProjectionService(
+                context = context,
+                resultCode = result.resultCode,
+                data = result.data!!
+            )
+            onStartRecord()
+        } else {
+            Log.e("CameraScreen", "MediaProjection authorization denied")
+        }
+    }
+
     LaunchedEffect(Unit) {
         if (!hasCameraPermission) {
-            permissionLauncher.launch(
-                arrayOf(
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.RECORD_AUDIO
-                )
+            val perms = mutableListOf(
+                Manifest.permission.CAMERA,
+                Manifest.permission.RECORD_AUDIO
             )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                perms.add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+            permissionLauncher.launch(perms.toTypedArray())
         }
     }
 
@@ -154,41 +179,53 @@ fun CameraScreen(
 
     val handleStartRecord = {
         if (!hasCameraPermission) {
-            permissionLauncher.launch(
-                arrayOf(
-                    Manifest.permission.CAMERA,
-                    Manifest.permission.RECORD_AUDIO
-                )
+            val perms = mutableListOf(
+                Manifest.permission.CAMERA,
+                Manifest.permission.RECORD_AUDIO
             )
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                perms.add(Manifest.permission.POST_NOTIFICATIONS)
+            }
+            permissionLauncher.launch(perms.toTypedArray())
         } else {
-            recordingManager.startRecording(
+            com.example.service.BackgroundRecordingService.startCameraService(
                 context = context,
-                isAudioEnabled = uiState.isAudioEnabled,
-                onStarted = {
-                    onStartRecord()
-                },
-                onFinished = { file, fileSize ->
-                    onVideoSaved(file, fileSize)
-                },
-                onError = { err ->
-                    Log.e("CameraScreen", "Video recording failed: $err")
-                }
+                isFrontCamera = uiState.isFrontCamera,
+                quality = uiState.quality,
+                isAudioEnabled = uiState.isAudioEnabled
             )
+            onStartRecord()
         }
     }
 
+    val handleStartScreenCaptureRecord = {
+        mediaProjectionLauncher.launch(mediaProjectionManager.createScreenCaptureIntent())
+    }
+
     val handlePauseRecord = {
-        recordingManager.pauseRecording()
+        if (com.example.service.BackgroundRecordingService.serviceState.value.isServiceRunning) {
+            com.example.service.BackgroundRecordingService.pauseService(context)
+        } else {
+            recordingManager.pauseRecording()
+        }
         onPauseRecord()
     }
 
     val handleResumeRecord = {
-        recordingManager.resumeRecording()
+        if (com.example.service.BackgroundRecordingService.serviceState.value.isServiceRunning) {
+            com.example.service.BackgroundRecordingService.resumeService(context)
+        } else {
+            recordingManager.resumeRecording()
+        }
         onResumeRecord()
     }
 
     val handleStopRecord = {
-        recordingManager.stopRecording()
+        if (com.example.service.BackgroundRecordingService.serviceState.value.isServiceRunning) {
+            com.example.service.BackgroundRecordingService.stopService(context)
+        } else {
+            recordingManager.stopRecording()
+        }
         onStopRecord()
     }
 
@@ -766,6 +803,44 @@ fun CameraScreen(
                                     text = if (uiState.isAudioEnabled) "Enabled (Camcorder mic)" else "Muted (Video only)",
                                     style = MaterialTheme.typography.bodyMedium,
                                     color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // MediaProjection Screen Capture Option
+                    Surface(
+                        onClick = {
+                            showSettingsSheet = false
+                            handleStartScreenCaptureRecord()
+                        },
+                        shape = RoundedCornerShape(12.dp),
+                        color = MaterialTheme.colorScheme.primaryContainer,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            modifier = Modifier.padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Videocam,
+                                contentDescription = "MediaProjection Screen Record",
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                            Spacer(modifier = Modifier.width(12.dp))
+                            Column {
+                                Text(
+                                    text = "Start Screen Capture (MediaProjection)",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer
+                                )
+                                Text(
+                                    text = "Record screen and audio via foreground service",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f)
                                 )
                             }
                         }

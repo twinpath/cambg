@@ -36,6 +36,25 @@ class CameraViewModel : ViewModel() {
 
     private var timerJob: Job? = null
 
+    init {
+        viewModelScope.launch {
+            com.example.service.BackgroundRecordingService.serviceState.collect { svcState ->
+                if (svcState.isServiceRunning) {
+                    _uiState.update { current ->
+                        current.copy(
+                            recordingState = svcState.recordingState,
+                            elapsedTimeSeconds = svcState.elapsedTimeSeconds,
+                            lastSavedFilePath = svcState.lastSavedFilePath ?: current.lastSavedFilePath,
+                            statusMessage = svcState.statusMessage ?: current.statusMessage
+                        )
+                    }
+                } else if (svcState.lastSavedFilePath != null && svcState.lastSavedFilePath != _uiState.value.lastSavedFilePath) {
+                    onVideoSaved(svcState.lastSavedFilePath, svcState.lastSavedFileSize)
+                }
+            }
+        }
+    }
+
     fun onVideoSaved(filePath: String, fileSize: Long) {
         val fileName = java.io.File(filePath).name
         val sizeMb = fileSize / (1024.0 * 1024.0)
