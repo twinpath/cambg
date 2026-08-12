@@ -1,0 +1,6 @@
+{
+  "name": "CamBG Record",
+  "description": "Native Android background video recorder with Material Design 3 and smart detection",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

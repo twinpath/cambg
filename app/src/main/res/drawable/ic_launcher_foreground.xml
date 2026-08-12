@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Camera Body -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M30,38 h36 c3.3,0 6,2.7 6,6 v20 c0,3.3 -2.7,6 -6,6 h-36 c-3.3,0 -6,-2.7 -6,-6 v-20 c0,-3.3 2.7,-6 6,-6 z" />
+    <!-- Camera Lens / Side Cone -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M72,46 l14,-8 v32 l-14,-8 z" />
+    <!-- Recording Red Badge -->
+    <path
+        android:fillColor="#EA4335"
+        android:pathData="M54,54 m-7,0 a7,7 0 1,0 14,0 a7,7 0 1,0 -14,0" />
+</vector>
