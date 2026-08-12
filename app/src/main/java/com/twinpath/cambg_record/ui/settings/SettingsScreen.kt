@@ -75,6 +75,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import com.twinpath.cambg_record.BuildConfig
 import com.twinpath.cambg_record.model.AppSettings
 import com.twinpath.cambg_record.model.AppThemeMode
 import com.twinpath.cambg_record.model.StorageLocation
@@ -506,7 +507,7 @@ fun SettingsScreen(
                                 color = MaterialTheme.colorScheme.primaryContainer
                             ) {
                                 Text(
-                                    text = "v1.0.0",
+                                    text = "v${BuildConfig.VERSION_NAME}",
                                     style = MaterialTheme.typography.labelMedium,
                                     fontWeight = FontWeight.Bold,
                                     color = MaterialTheme.colorScheme.onPrimaryContainer,
