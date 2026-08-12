@@ -4,7 +4,13 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <group android:translateX="4" android:translateY="4">
+    <group
+        android:pivotX="50"
+        android:pivotY="50"
+        android:scaleX="0.65"
+        android:scaleY="0.65"
+        android:translateX="4"
+        android:translateY="4">
         <!-- Shield (Green) -->
         <path
             android:pathData="M 50 10 L 82 23 L 82 50 C 82 70 68 85 50 92 C 32 85 18 70 18 50 L 18 23 Z"
