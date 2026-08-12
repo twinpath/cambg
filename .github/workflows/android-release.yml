@@ -44,13 +44,11 @@ jobs:
             echo "keystore_decoded=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Build Android Release Artifacts (APK & AAB)
+      - name: Build Android Release APKs
         run: |
           gradle assembleRelease
-          gradle clean bundleRelease
           TAG_NAME="${{ github.ref_name }}"
           APK_DIR="app/build/outputs/apk/release"
-          AAB_DIR="app/build/outputs/bundle/release"
 
           if [ -d "$APK_DIR" ]; then
             for f in $APK_DIR/*.apk; do
@@ -70,6 +68,23 @@ jobs:
               fi
             done
           fi
+        env:
+          KEYSTORE_PATH: ${{ steps.decode_keystore.outputs.keystore_decoded == 'true' && './my-upload-key.jks' || '' }}
+          STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Upload Temporary APK Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-apks
+          path: app/build/outputs/apk/release/*.apk
+          retention-days: 1
+
+      - name: Build Android Release AAB
+        run: |
+          gradle clean bundleRelease
+          TAG_NAME="${{ github.ref_name }}"
+          AAB_DIR="app/build/outputs/bundle/release"
 
           if [ -d "$AAB_DIR" ]; then
             for f in $AAB_DIR/*.aab; do
@@ -86,6 +101,12 @@ jobs:
           KEYSTORE_PATH: ${{ steps.decode_keystore.outputs.keystore_decoded == 'true' && './my-upload-key.jks' || '' }}
           STORE_PASSWORD: ${{ secrets.STORE_PASSWORD }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+
+      - name: Download Temporary APK Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: release-apks
+          path: app/build/outputs/apk/release
 
       - name: Generate Release Notes via Gemini API
         if: startsWith(github.ref, 'refs/tags/')
