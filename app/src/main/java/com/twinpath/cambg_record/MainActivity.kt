@@ -25,6 +25,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        window.decorView.isSoundEffectsEnabled = false
         setContent {
             val settings by settingsViewModel.settings.collectAsState()
 

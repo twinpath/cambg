@@ -2,6 +2,7 @@ package com.twinpath.cambg_record.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -88,117 +89,113 @@ fun CameraControls(
 
         // Recording Controls Row (Stealth, Start/Stop Record FAB, Gallery/Pause-Resume)
         Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(72.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Left Action: Quick Stealth Toggle button (Always visible)
-            IconButton(
-                onClick = onToggleStealth,
-                modifier = Modifier
-                    .size(56.dp)
-                    .background(
-                        if (uiState.isStealthMode) Color(0xFF1A73E8) else Color.White.copy(alpha = 0.2f),
-                        CircleShape
-                    )
-                    .testTag("stealth_mode_button")
+            Box(
+                modifier = Modifier.weight(1f),
+                contentAlignment = Alignment.Center
             ) {
-                Icon(
-                    imageVector = if (uiState.isStealthMode)
-                        Icons.Default.VisibilityOff else Icons.Default.Visibility,
-                    contentDescription = "Stealth Mode",
-                    tint = Color.White,
-                    modifier = Modifier.size(24.dp)
-                )
-            }
-
-            // Center Primary Action FAB
-            when (uiState.recordingState) {
-                RecordingState.IDLE -> {
-                    ExtendedFloatingActionButton(
-                        onClick = onStartRecord,
-                        icon = {
-                            Icon(
-                                imageVector = Icons.Default.Videocam,
-                                contentDescription = "Record",
-                                tint = Color.White
-                            )
-                        },
-                        text = {
-                            Text(
-                                text = "Record",
-                                color = Color.White,
-                                fontWeight = FontWeight.Bold,
-                                fontSize = 16.sp
-                            )
-                        },
-                        containerColor = Color(0xFFEA4335), // Google Red
-                        modifier = Modifier
-                            .height(64.dp)
-                            .testTag("start_record_fab")
-                    )
-                }
-
-                RecordingState.RECORDING, RecordingState.PAUSED -> {
-                    // Morph into Stop Button
-                    FloatingActionButton(
-                        onClick = onStopRecord,
-                        containerColor = Color(0xFFEA4335),
-                        shape = CircleShape,
-                        modifier = Modifier
-                            .size(72.dp)
-                            .testTag("stop_record_fab")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Stop,
-                            contentDescription = "Stop Recording",
-                            tint = Color.White,
-                            modifier = Modifier.size(36.dp)
-                        )
-                    }
-                }
-            }
-
-            // Right Action: Gallery or Pause/Resume
-            if (uiState.recordingState == RecordingState.IDLE) {
                 IconButton(
-                    onClick = onClickGallery,
+                    onClick = onToggleStealth,
                     modifier = Modifier
                         .size(56.dp)
-                        .background(Color.White.copy(alpha = 0.2f), CircleShape)
-                        .testTag("gallery_button")
+                        .background(
+                            if (uiState.isStealthMode) Color(0xFF1A73E8) else Color.White.copy(alpha = 0.2f),
+                            CircleShape
+                        )
+                        .testTag("stealth_mode_button")
                 ) {
                     Icon(
-                        imageVector = Icons.Default.VideoLibrary,
-                        contentDescription = "Open Gallery",
+                        imageVector = if (uiState.isStealthMode)
+                            Icons.Default.VisibilityOff else Icons.Default.Visibility,
+                        contentDescription = "Stealth Mode",
                         tint = Color.White,
                         modifier = Modifier.size(24.dp)
                     )
                 }
-            } else {
-                IconButton(
+            }
+
+            // Center Primary Action FAB (Circular Shutter Button of size 72.dp)
+            Box(
+                modifier = Modifier.weight(1.2f),
+                contentAlignment = Alignment.Center
+            ) {
+                FloatingActionButton(
                     onClick = {
-                        if (uiState.recordingState == RecordingState.RECORDING) {
-                            onPauseRecord()
+                        if (uiState.recordingState == RecordingState.IDLE) {
+                            onStartRecord()
                         } else {
-                            onResumeRecord()
+                            onStopRecord()
                         }
                     },
+                    containerColor = Color(0xFFEA4335), // Google Red
+                    shape = CircleShape,
                     modifier = Modifier
-                        .size(56.dp)
-                        .background(
-                            if (uiState.recordingState == RecordingState.PAUSED) Color(0xFFF9AB00) else Color.White.copy(alpha = 0.2f),
-                            CircleShape
-                        )
-                        .testTag("pause_resume_button")
+                        .size(72.dp)
+                        .testTag(if (uiState.recordingState == RecordingState.IDLE) "start_record_fab" else "stop_record_fab")
                 ) {
                     Icon(
-                        imageVector = if (uiState.recordingState == RecordingState.RECORDING)
-                            Icons.Default.Pause else Icons.Default.PlayArrow,
-                        contentDescription = "Pause/Resume",
-                        tint = if (uiState.recordingState == RecordingState.PAUSED) Color.Black else Color.White,
-                        modifier = Modifier.size(28.dp)
+                        imageVector = if (uiState.recordingState == RecordingState.IDLE) {
+                            Icons.Default.Videocam
+                        } else {
+                            Icons.Default.Stop
+                        },
+                        contentDescription = if (uiState.recordingState == RecordingState.IDLE) "Record" else "Stop Recording",
+                        tint = Color.White,
+                        modifier = Modifier.size(36.dp)
                     )
+                }
+            }
+
+            // Right Action: Gallery or Pause/Resume
+            Box(
+                modifier = Modifier.weight(1f),
+                contentAlignment = Alignment.Center
+            ) {
+                if (uiState.recordingState == RecordingState.IDLE) {
+                    IconButton(
+                        onClick = onClickGallery,
+                        modifier = Modifier
+                            .size(56.dp)
+                            .background(Color.White.copy(alpha = 0.2f), CircleShape)
+                            .testTag("gallery_button")
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.VideoLibrary,
+                            contentDescription = "Open Gallery",
+                            tint = Color.White,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+                } else {
+                    IconButton(
+                        onClick = {
+                            if (uiState.recordingState == RecordingState.RECORDING) {
+                                onPauseRecord()
+                            } else {
+                                onResumeRecord()
+                            }
+                        },
+                        modifier = Modifier
+                            .size(56.dp)
+                            .background(
+                                if (uiState.recordingState == RecordingState.PAUSED) Color(0xFFF9AB00) else Color.White.copy(alpha = 0.2f),
+                                CircleShape
+                            )
+                            .testTag("pause_resume_button")
+                    ) {
+                        Icon(
+                            imageVector = if (uiState.recordingState == RecordingState.RECORDING)
+                                Icons.Default.Pause else Icons.Default.PlayArrow,
+                            contentDescription = "Pause/Resume",
+                            tint = if (uiState.recordingState == RecordingState.PAUSED) Color.Black else Color.White,
+                            modifier = Modifier.size(28.dp)
+                        )
+                    }
                 }
             }
         }

@@ -19,6 +19,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -26,6 +28,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -66,17 +69,39 @@ fun CameraViewfinder(
     ) {
         if (hasCameraPermission) {
             val previewViewRef = remember { mutableStateOf<PreviewView?>(null) }
+            val overlayAlpha = remember { Animatable(0f) }
 
-            AndroidView(
-                factory = { ctx ->
-                    PreviewView(ctx).apply {
-                        scaleType = PreviewView.ScaleType.FILL_CENTER
-                        implementationMode = PreviewView.ImplementationMode.COMPATIBLE
-                        previewViewRef.value = this
-                    }
-                },
-                modifier = Modifier.fillMaxSize()
-            )
+            LaunchedEffect(serviceState.isServiceRunning) {
+                // Quick transition fade out and fade in to hide unbind/rebind glitch
+                overlayAlpha.animateTo(
+                    targetValue = 1f,
+                    animationSpec = tween(durationMillis = 150)
+                )
+                overlayAlpha.animateTo(
+                    targetValue = 0f,
+                    animationSpec = tween(durationMillis = 250)
+                )
+            }
+
+            Box(modifier = Modifier.fillMaxSize()) {
+                AndroidView(
+                    factory = { ctx ->
+                        PreviewView(ctx).apply {
+                            scaleType = PreviewView.ScaleType.FILL_CENTER
+                            implementationMode = PreviewView.ImplementationMode.COMPATIBLE
+                            previewViewRef.value = this
+                        }
+                    },
+                    modifier = Modifier.fillMaxSize()
+                )
+
+                // Black transition overlay
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(Color.Black.copy(alpha = overlayAlpha.value))
+                )
+            }
 
             // Bind camera only when camera direction, quality, service running state, or previewView changes
             LaunchedEffect(uiState.isFrontCamera, uiState.quality, previewViewRef.value, serviceState.isServiceRunning) {
