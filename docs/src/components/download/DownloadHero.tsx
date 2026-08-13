@@ -1,11 +1,10 @@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { LATEST_RELEASE } from "@/data/releases"
 import { SYSTEM_REQUIREMENTS } from "@/data/site"
 import { Download, Smartphone } from "lucide-react"
+import type { Release } from "@/data/releases"
 
-export function DownloadHero() {
-  const latest = LATEST_RELEASE
+export function DownloadHero({ latest }: { latest: Release }) {
 
   return (
     <section className="flex flex-col items-center gap-6 px-4 py-20 text-center">

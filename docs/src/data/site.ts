@@ -10,6 +10,7 @@ export const GITHUB_RELEASES_URL = `${GITHUB_URL}/releases`
 export const NAV_LINKS = [
   { label: "Home", href: `${BASE_URL}` },
   { label: "Download", href: `${BASE_URL}download` },
+  { label: "Changelog", href: `${BASE_URL}changelog` },
   { label: "About", href: `${BASE_URL}about` },
 ] as const
 

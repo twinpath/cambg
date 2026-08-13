@@ -3,13 +3,17 @@ import Layout from "@/layouts/main.astro"
 import { DownloadHero } from "@/components/download/DownloadHero"
 import { ReleaseArchive } from "@/components/download/ReleaseArchive"
 import { InstallGuide } from "@/components/download/InstallGuide"
+import { fetchGitHubReleases } from "@/lib/github"
+
+const releases = await fetchGitHubReleases()
+const latest = releases[0]
 ---
 
 <Layout
   title="Download"
   description="Download CamBG Record APK for Android. Browse the release archive for all available versions including stable, beta, and alpha builds."
 >
-  <DownloadHero client:load />
-  <ReleaseArchive client:load />
+  <DownloadHero latest={latest} client:load />
+  <ReleaseArchive releases={releases} client:load />
   <InstallGuide client:load />
 </Layout>

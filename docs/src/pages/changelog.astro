@@ -1,0 +1,96 @@
+---
+import Layout from "@/layouts/main.astro"
+import { fetchGitHubReleases } from "@/lib/github"
+import { marked } from "marked"
+import { Badge } from "@/components/ui/badge"
+import { Calendar, GitCommit } from "lucide-react"
+
+const releases = await fetchGitHubReleases()
+
+function formatDate(dateStr: string) {
+  if (!dateStr) return "Unknown date"
+  return new Date(dateStr).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  })
+}
+
+const RELEASE_TYPE_VARIANT = {
+  stable: "default",
+  beta: "secondary",
+  alpha: "outline",
+  test: "destructive",
+} as const
+---
+
+<Layout
+  title="Changelog"
+  description="See what's new in CamBG Record. Browse version release notes, enhancements, bug fixes, and download history directly from GitHub releases."
+>
+  <div class="mx-auto max-w-3xl px-4 py-20">
+    <div class="mb-14 text-center">
+      <Badge variant="secondary" className="mb-3">Updates</Badge>
+      <h1 class="font-heading text-3xl font-bold tracking-tight md:text-5xl mb-4">
+        Changelog
+      </h1>
+      <p class="text-sm text-muted-foreground max-w-md mx-auto">
+        Keep track of all the changes, improvements, and fixes made to CamBG Record.
+      </p>
+    </div>
+
+    <div class="relative border-l border-muted pl-6 ml-4 space-y-12">
+      {
+        releases.map(async (release) => {
+          const htmlContent = await marked.parse(release.notes || "No details provided for this release.")
+          return (
+            <div class="relative">
+              {/* Dot indicator */}
+              <div class="absolute -left-[31px] top-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-background border-2 border-primary">
+                <div class="h-1.5 w-1.5 rounded-full bg-primary" />
+              </div>
+
+              <div class="flex flex-col gap-3">
+                <div class="flex flex-wrap items-center gap-2">
+                  <h2 class="font-heading text-xl font-bold tracking-tight">
+                    {release.version}
+                  </h2>
+                  <Badge variant={RELEASE_TYPE_VARIANT[release.releaseType]}>
+                    {release.releaseType}
+                  </Badge>
+                  <div class="flex items-center gap-1 text-xs text-muted-foreground ml-auto">
+                    <Calendar className="size-3" />
+                    <span>{formatDate(release.date)}</span>
+                  </div>
+                </div>
+
+                {/* Release details / body parsed markdown */}
+                <div 
+                  class="prose prose-sm dark:prose-invert max-w-none text-muted-foreground prose-headings:font-semibold prose-headings:text-foreground prose-a:text-primary hover:prose-a:underline prose-strong:text-foreground prose-code:text-foreground prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-ul:list-disc prose-ol:list-decimal"
+                  set:html={htmlContent}
+                />
+
+                {release.assets && release.assets.length > 0 && (
+                  <div class="mt-2 flex flex-wrap gap-2">
+                    {release.assets.map((asset) => (
+                      <a
+                        href={asset.downloadUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        class="inline-flex items-center gap-1.5 rounded-md border bg-muted/40 px-2.5 py-1 text-xs font-mono text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+                      >
+                        <GitCommit class="size-3" />
+                        <span>{asset.name}</span>
+                        <span class="text-[10px] text-muted-foreground/60">({asset.sizeLabel})</span>
+                      </a>
+                    ))}
+                  </div>
+                )}
+              </div>
+            </div>
+          )
+        })
+      }
+    </div>
+  </div>
+</Layout>

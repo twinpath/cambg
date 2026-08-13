@@ -1,0 +1,61 @@
+import { RELEASE_ARCHIVE, type Release } from "@/data/releases"
+
+function formatBytes(bytes: number, decimals = 1) {
+  if (bytes === 0) return "0 Bytes"
+  const k = 1024
+  const dm = decimals < 0 ? 0 : decimals
+  const sizes = ["Bytes", "KB", "MB", "GB"]
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i]
+}
+
+export async function fetchGitHubReleases(): Promise<Release[]> {
+  try {
+    const res = await fetch("https://api.github.com/repos/twinpath/cambg/releases", {
+      headers: {
+        "User-Agent": "Astro-Site-Build",
+      },
+    })
+
+    if (!res.ok) {
+      console.warn("Failed to fetch releases from GitHub API, using fallback data:", res.statusText)
+      return RELEASE_ARCHIVE
+    }
+
+    const data = await res.json()
+    if (!Array.isArray(data)) {
+      return RELEASE_ARCHIVE
+    }
+
+    return data.map((item: any) => {
+      const tag = item.tag_name || ""
+      let releaseType: Release["releaseType"] = "stable"
+      if (item.prerelease) {
+        if (tag.toLowerCase().includes("alpha")) {
+          releaseType = "alpha"
+        } else if (tag.toLowerCase().includes("beta")) {
+          releaseType = "beta"
+        } else {
+          releaseType = "test"
+        }
+      }
+
+      const assets = (item.assets || []).map((asset: any) => ({
+        name: asset.name,
+        downloadUrl: asset.browser_download_url,
+        sizeLabel: formatBytes(asset.size),
+      }))
+
+      return {
+        version: tag,
+        releaseType,
+        date: item.published_at ? item.published_at.split("T")[0] : "",
+        notes: item.body || "",
+        assets,
+      }
+    })
+  } catch (error) {
+    console.error("Error fetching GitHub releases, falling back to static data:", error)
+    return RELEASE_ARCHIVE
+  }
+}

@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { RELEASE_ARCHIVE, type Release } from "@/data/releases"
+import type { Release } from "@/data/releases"
 import { Download, FileText } from "lucide-react"
 
 const RELEASE_TYPE_VARIANT: Record<
@@ -35,7 +35,7 @@ function formatDate(dateStr: string) {
   })
 }
 
-export function ReleaseArchive() {
+export function ReleaseArchive({ releases }: { releases: Release[] }) {
   return (
     <section id="archive" className="px-4 py-16">
       <div className="mx-auto max-w-5xl">
@@ -50,7 +50,7 @@ export function ReleaseArchive() {
         </div>
 
         <Accordion type="single" collapsible>
-          {RELEASE_ARCHIVE.map((release) => (
+          {releases.map((release) => (
             <AccordionItem key={release.version} value={release.version}>
               <AccordionTrigger>
                 <div className="flex items-center gap-3">
