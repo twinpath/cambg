@@ -60,7 +60,7 @@ async function run() {
   const candidateModels = ['gemini-flash-latest', 'gemini-3.5-flash', 'gemini-3.6-flash', 'gemini-2.5-flash'];
   let generatedText = null;
 
-  const githubRepository = process.env.GITHUB_REPOSITORY || 'twinpath/cambg-record';
+  const githubRepository = process.env.GITHUB_REPOSITORY || 'twinpath/cambg';
   const releaseVersion = process.env.GITHUB_REF_NAME || 'v1.0.0';
   const artifactTable = generateArtifactTable(githubRepository, releaseVersion);
 

@@ -2,7 +2,7 @@ export const SITE_NAME = "CamBG Record"
 export const SITE_DESCRIPTION =
   "A native Android application for persistent background video recording with intelligent detection capabilities and Material Design 3 aesthetics."
 export const SITE_TAGLINE = "Background Video Recording, Perfected."
-export const GITHUB_URL = "https://github.com/twinpath/cambg-record"
+export const GITHUB_URL = "https://github.com/twinpath/cambg"
 export const GITHUB_RELEASES_URL = `${GITHUB_URL}/releases`
 
 export const NAV_LINKS = [

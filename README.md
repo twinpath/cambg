@@ -192,7 +192,7 @@ The application follows the **MVVM (Model-View-ViewModel)** architectural patter
 ## V. Project Structure
 
 ```
-cambg-record/
+cambg/
 |
 +-- .github/
 |   +-- scripts/
@@ -279,8 +279,8 @@ Before building the project locally, ensure the following tools are installed an
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/twinpath/cambg-record.git
-cd cambg-record
+git clone https://github.com/twinpath/cambg.git
+cd cambg
 ```
 
 ### 2. Configure Environment Variables

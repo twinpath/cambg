@@ -22,13 +22,13 @@ export const LATEST_RELEASE: Release = {
     {
       name: "cambg-record-v1.0.0-beta.2-arm64-v8a-release.apk",
       downloadUrl:
-        "https://github.com/twinpath/cambg-record/releases/download/v1.0.0-beta.2/cambg-record-v1.0.0-beta.2-arm64-v8a-release.apk",
+        "https://github.com/twinpath/cambg/releases/download/v1.0.0-beta.2/cambg-record-v1.0.0-beta.2-arm64-v8a-release.apk",
       sizeLabel: "42.3 MB",
     },
     {
       name: "cambg-record-v1.0.0-beta.2-armeabi-v7a-release.apk",
       downloadUrl:
-        "https://github.com/twinpath/cambg-record/releases/download/v1.0.0-beta.2/cambg-record-v1.0.0-beta.2-armeabi-v7a-release.apk",
+        "https://github.com/twinpath/cambg/releases/download/v1.0.0-beta.2/cambg-record-v1.0.0-beta.2-armeabi-v7a-release.apk",
       sizeLabel: "38.1 MB",
     },
   ],
@@ -46,13 +46,13 @@ export const RELEASE_ARCHIVE: Release[] = [
       {
         name: "cambg-record-v1.0.0-beta.1-arm64-v8a-release.apk",
         downloadUrl:
-          "https://github.com/twinpath/cambg-record/releases/download/v1.0.0-beta.1/cambg-record-v1.0.0-beta.1-arm64-v8a-release.apk",
+          "https://github.com/twinpath/cambg/releases/download/v1.0.0-beta.1/cambg-record-v1.0.0-beta.1-arm64-v8a-release.apk",
         sizeLabel: "41.8 MB",
       },
       {
         name: "cambg-record-v1.0.0-beta.1-armeabi-v7a-release.apk",
         downloadUrl:
-          "https://github.com/twinpath/cambg-record/releases/download/v1.0.0-beta.1/cambg-record-v1.0.0-beta.1-armeabi-v7a-release.apk",
+          "https://github.com/twinpath/cambg/releases/download/v1.0.0-beta.1/cambg-record-v1.0.0-beta.1-armeabi-v7a-release.apk",
         sizeLabel: "37.5 MB",
       },
     ],
@@ -67,7 +67,7 @@ export const RELEASE_ARCHIVE: Release[] = [
       {
         name: "cambg-record-v1.0.0-alpha.3-arm64-v8a-release.apk",
         downloadUrl:
-          "https://github.com/twinpath/cambg-record/releases/download/v1.0.0-alpha.3/cambg-record-v1.0.0-alpha.3-arm64-v8a-release.apk",
+          "https://github.com/twinpath/cambg/releases/download/v1.0.0-alpha.3/cambg-record-v1.0.0-alpha.3-arm64-v8a-release.apk",
         sizeLabel: "40.2 MB",
       },
     ],
@@ -82,7 +82,7 @@ export const RELEASE_ARCHIVE: Release[] = [
       {
         name: "cambg-record-v1.0.0-alpha.2-arm64-v8a-release.apk",
         downloadUrl:
-          "https://github.com/twinpath/cambg-record/releases/download/v1.0.0-alpha.2/cambg-record-v1.0.0-alpha.2-arm64-v8a-release.apk",
+          "https://github.com/twinpath/cambg/releases/download/v1.0.0-alpha.2/cambg-record-v1.0.0-alpha.2-arm64-v8a-release.apk",
         sizeLabel: "39.0 MB",
       },
     ],
@@ -97,7 +97,7 @@ export const RELEASE_ARCHIVE: Release[] = [
       {
         name: "cambg-record-v1.0.0-alpha.1-arm64-v8a-release.apk",
         downloadUrl:
-          "https://github.com/twinpath/cambg-record/releases/download/v1.0.0-alpha.1/cambg-record-v1.0.0-alpha.1-arm64-v8a-release.apk",
+          "https://github.com/twinpath/cambg/releases/download/v1.0.0-alpha.1/cambg-record-v1.0.0-alpha.1-arm64-v8a-release.apk",
         sizeLabel: "36.4 MB",
       },
     ],

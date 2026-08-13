@@ -44,7 +44,7 @@ const FAQ_ITEMS = [
   {
     question: "Is the source code available?",
     answer:
-      "Yes. CamBG Record is hosted on GitHub at github.com/twinpath/cambg-record. The project uses a proprietary license -- all rights are reserved by the project owner.",
+      "Yes. CamBG Record is hosted on GitHub at github.com/twinpath/cambg. The project uses a proprietary license -- all rights are reserved by the project owner.",
   },
 ] as const
 
