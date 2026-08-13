@@ -7,6 +7,10 @@
     "node": ">=24.14.0 <=25",
     "pnpm": ">=11.21.0 <=12"
   },
+  "devEngines": {
+    "node": ">=24.14.0 <=25",
+    "pnpm": ">=11.21.0 <=12"
+  },
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
