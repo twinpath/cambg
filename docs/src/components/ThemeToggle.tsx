@@ -7,16 +7,21 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 
-type Theme = "system" | "dark" | "light"
+type Theme = "dark" | "light"
 
 const THEME_KEY = "cambg-theme"
 
-function getStoredTheme(): Theme {
-  if (typeof window === "undefined") return "system"
-  return (localStorage.getItem(THEME_KEY) as Theme) ?? "system"
+function getResolvedTheme(): Theme {
+  if (typeof window === "undefined") return "light"
+  const stored = localStorage.getItem(THEME_KEY)
+  if (stored === "dark" || stored === "light") {
+    return stored
+  }
+  const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+  return prefersDark ? "dark" : "light"
 }
 
-function applyTheme(theme: Theme) {
+function applyTheme(theme: "system" | Theme) {
   const root = document.documentElement
   if (theme === "system") {
     const prefersDark = window.matchMedia(
@@ -28,24 +33,31 @@ function applyTheme(theme: Theme) {
   }
 }
 
-const THEME_CYCLE: Theme[] = ["system", "dark", "light"]
 const THEME_LABELS: Record<Theme, string> = {
-  system: "System",
   dark: "Dark",
   light: "Light",
 }
 
 export function ThemeToggle() {
-  const [theme, setTheme] = useState<Theme>("system")
+  const [theme, setTheme] = useState<Theme>("light")
 
   useEffect(() => {
-    const stored = getStoredTheme()
-    setTheme(stored)
-    applyTheme(stored)
+    const resolved = getResolvedTheme()
+    setTheme(resolved)
+
+    const stored = localStorage.getItem(THEME_KEY)
+    if (stored === "dark" || stored === "light") {
+      applyTheme(stored)
+    } else {
+      applyTheme("system")
+    }
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)")
     const handler = () => {
-      if (getStoredTheme() === "system") {
+      const storedTheme = localStorage.getItem(THEME_KEY)
+      if (!storedTheme || storedTheme === "system") {
+        const active = mediaQuery.matches ? "dark" : "light"
+        setTheme(active)
         applyTheme("system")
       }
     }
@@ -54,21 +66,13 @@ export function ThemeToggle() {
   }, [])
 
   const cycleTheme = () => {
-    const currentIndex = THEME_CYCLE.indexOf(theme)
-    const next = THEME_CYCLE[(currentIndex + 1) % THEME_CYCLE.length]
+    const next = theme === "dark" ? "light" : "dark"
     setTheme(next)
     localStorage.setItem(THEME_KEY, next)
     applyTheme(next)
   }
 
-  const icon =
-    theme === "dark" ? (
-      <Moon />
-    ) : theme === "light" ? (
-      <Sun />
-    ) : (
-      <Monitor />
-    )
+  const icon = theme === "dark" ? <Moon /> : <Sun />
 
   return (
     <Tooltip>
