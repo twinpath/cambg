@@ -98,19 +98,20 @@ fun getOEMBatteryIntents(context: Context): List<Intent> {
     return intents
 }
 
-fun launchBatteryOptimizationSettings(context: Context) {
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        val oemIntents = getOEMBatteryIntents(context)
-        for (intent in oemIntents) {
-            try {
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                context.startActivity(intent)
-                return
-            } catch (e: Exception) {
-                // Ignore and try next OEM intent
-            }
-        }
+fun hasOEMBatterySettings(context: Context): Boolean {
+    val manufacturer = Build.MANUFACTURER.lowercase()
+    return manufacturer.contains("xiaomi") ||
+           manufacturer.contains("oppo") ||
+           manufacturer.contains("realme") ||
+           manufacturer.contains("oneplus") ||
+           manufacturer.contains("vivo") ||
+           manufacturer.contains("huawei") ||
+           manufacturer.contains("honor") ||
+           manufacturer.contains("samsung")
+}
 
+fun launchStandardBatteryOptimizationSettings(context: Context) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
         // Fallback 1: Action Request Ignore Battery Optimizations
         try {
             val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
@@ -158,30 +159,55 @@ fun launchBatteryOptimizationSettings(context: Context) {
     }
 }
 
+fun launchOEMBatterySettings(context: Context) {
+    val oemIntents = getOEMBatteryIntents(context)
+    for (intent in oemIntents) {
+        try {
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            context.startActivity(intent)
+            return
+        } catch (e: Exception) {
+            // Ignore and try next OEM intent
+        }
+    }
+
+    // Fallback: App Details Settings
+    try {
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+            data = Uri.parse("package:${context.packageName}")
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        try {
+            val intent = Intent(Settings.ACTION_SETTINGS).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+        } catch (ex: Exception) {
+            // Ignore
+        }
+    }
+}
+
 fun getBatteryInstructionSteps(): String {
     val manufacturer = Build.MANUFACTURER.lowercase()
     return when {
         manufacturer.contains("xiaomi") -> {
-            "1. Tap 'Open System Settings' below.\n" +
-            "2. Under Battery Saver, select 'No restrictions'.\n" +
-            "3. Enable 'Autostart' in permissions if available.\n" +
-            "4. Return to CamBG Record."
+            "1. Tap 'Disable Optimization (Standard)' -> Select 'Allow' to bypass Doze (turns status to Active).\n" +
+            "2. Tap 'Open Custom OEM Settings' -> Under Battery Saver, select 'No restrictions'. Enable 'Autostart' if available."
         }
         manufacturer.contains("oppo") || manufacturer.contains("realme") || manufacturer.contains("oneplus") -> {
-            "1. Tap 'Open System Settings' below.\n" +
-            "2. Select 'Don't optimize' (or choose 'Unrestricted').\n" +
-            "3. Ensure 'Allow background activity' & 'Allow auto-launch' are enabled.\n" +
-            "4. Return to CamBG Record."
+            "1. Tap 'Disable Optimization (Standard)' -> Select 'Allow' or set to 'Unrestricted' (turns status to Active).\n" +
+            "2. Tap 'Open Custom OEM Settings' -> Ensure 'Allow background activity' & 'Allow auto-launch' are enabled."
         }
         manufacturer.contains("samsung") -> {
-            "1. Tap 'Open System Settings' below.\n" +
-            "2. Go to Battery and choose 'Unrestricted'.\n" +
-            "3. Return to CamBG Record."
+            "1. Tap 'Disable Optimization (Standard)' -> Select 'Allow' or set to 'Unrestricted' (turns status to Active).\n" +
+            "2. Tap 'Open Custom OEM Settings' -> Go to Battery and choose 'Unrestricted'."
         }
         manufacturer.contains("vivo") -> {
-            "1. Tap 'Open System Settings' below.\n" +
-            "2. Set background power consumption to 'Don't restrict background power consumption' or enable 'High background power consumption'.\n" +
-            "3. Return to CamBG Record."
+            "1. Tap 'Disable Optimization (Standard)' -> Select 'Allow' (turns status to Active).\n" +
+            "2. Tap 'Open Custom OEM Settings' -> Set background power consumption to 'Don't restrict background power consumption' or enable 'High background power consumption'."
         }
         else -> {
             "1. Tap 'Open System Settings' below.\n" +
@@ -190,6 +216,7 @@ fun getBatteryInstructionSteps(): String {
         }
     }
 }
+
 
 @Composable
 fun SettingsBatteryCard(
@@ -372,25 +399,51 @@ fun SettingsBatteryCard(
                 }
             },
             confirmButton = {
-                Button(
-                    onClick = {
-                        launchBatteryOptimizationSettings(context)
-                        showBatteryDialog = false
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                val hasOEM = remember { hasOEMBatterySettings(context) }
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    horizontalAlignment = Alignment.End,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Launch,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp)
-                    )
-                    Spacer(modifier = Modifier.width(6.dp))
-                    Text("Open System Settings")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showBatteryDialog = false }) {
-                    Text("Close")
+                    Button(
+                        onClick = {
+                            launchStandardBatteryOptimizationSettings(context)
+                            showBatteryDialog = false
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Launch,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text(if (hasOEM) "Disable Optimization (Standard)" else "Open System Settings")
+                    }
+                    if (hasOEM) {
+                        OutlinedButton(
+                            onClick = {
+                                launchOEMBatterySettings(context)
+                                showBatteryDialog = false
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Launch,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Open Custom OEM Settings")
+                        }
+                    }
+                    TextButton(
+                        onClick = { showBatteryDialog = false },
+                        modifier = Modifier.align(Alignment.End)
+                    ) {
+                        Text("Close")
+                    }
                 }
             }
         )
