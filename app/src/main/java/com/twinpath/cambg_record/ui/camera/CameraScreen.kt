@@ -159,18 +159,6 @@ fun CameraScreen(
         }
     }
 
-    LaunchedEffect(Unit) {
-        if (!hasCameraPermission) {
-            val perms = mutableListOf(
-                Manifest.permission.CAMERA,
-                Manifest.permission.RECORD_AUDIO
-            )
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                perms.add(Manifest.permission.POST_NOTIFICATIONS)
-            }
-            permissionLauncher.launch(perms.toTypedArray())
-        }
-    }
 
     // Pulsing animation for recording state
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
