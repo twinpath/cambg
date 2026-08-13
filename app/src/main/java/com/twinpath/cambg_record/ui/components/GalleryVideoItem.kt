@@ -37,14 +37,14 @@ fun VideoGridItem(
             modifier = Modifier
                 .fillMaxWidth()
                 .aspectRatio(0.85f)
-                .clip(RoundedCornerShape(12.dp))
-                .background(
-                    Brush.linearGradient(
-                        colors = video.gradientColors.map { Color(it) }
-                    )
-                ),
+                .clip(RoundedCornerShape(12.dp)),
             contentAlignment = Alignment.Center
         ) {
+            VideoThumbnail(
+                filePath = video.filePath,
+                fallbackColors = video.gradientColors,
+                modifier = Modifier.fillMaxSize()
+            )
             // Play Icon overlay
             Icon(
                 imageVector = Icons.Default.PlayArrow,
@@ -121,18 +121,18 @@ fun VideoListItem(
                 .padding(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Gradient Thumbnail
+            // Video Thumbnail
             Box(
                 modifier = Modifier
                     .size(80.dp, 60.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .background(
-                        Brush.linearGradient(
-                            colors = video.gradientColors.map { Color(it) }
-                        )
-                    ),
+                    .clip(RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center
             ) {
+                VideoThumbnail(
+                    filePath = video.filePath,
+                    fallbackColors = video.gradientColors,
+                    modifier = Modifier.fillMaxSize()
+                )
                 Icon(
                     imageVector = Icons.Default.PlayArrow,
                     contentDescription = null,

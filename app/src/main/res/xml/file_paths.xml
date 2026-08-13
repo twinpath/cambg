@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Paths for sharing internal storage files -->
+    <files-path name="internal_recordings" path="." />
+    
+    <!-- Paths for sharing external files (app-specific) -->
+    <external-files-path name="external_app_recordings" path="." />
+    
+    <!-- Paths for sharing public external storage directories (like DCIM/CamBGRecord) -->
+    <external-path name="public_recordings" path="." />
+</paths>

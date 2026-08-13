@@ -1,6 +1,7 @@
 package com.twinpath.cambg_record.ui.components
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,6 +11,8 @@ import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.VideoLibrary
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.platform.LocalContext
+import com.twinpath.cambg_record.util.VideoPlaybackHelper
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -46,20 +49,25 @@ fun VideoPreviewDialog(
             )
         },
         text = {
+            val context = LocalContext.current
             Column(modifier = Modifier.fillMaxWidth()) {
-                // Simulated Thumbnail / Player Canvas
+                // Video Thumbnail with Play Button Clickable overlay
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(160.dp)
                         .clip(RoundedCornerShape(12.dp))
-                        .background(
-                            Brush.linearGradient(
-                                colors = video.gradientColors.map { Color(it) }
-                            )
-                        ),
+                        .clickable {
+                            VideoPlaybackHelper.playVideo(context, video.filePath)
+                        },
                     contentAlignment = Alignment.Center
                 ) {
+                    VideoThumbnail(
+                        filePath = video.filePath,
+                        fallbackColors = video.gradientColors,
+                        modifier = Modifier.fillMaxSize()
+                    )
+
                     Surface(
                         shape = CircleShape,
                         color = Color.Black.copy(alpha = 0.5f),
@@ -67,7 +75,7 @@ fun VideoPreviewDialog(
                     ) {
                         Icon(
                             imageVector = Icons.Default.PlayArrow,
-                            contentDescription = "Play Preview",
+                            contentDescription = "Play Video",
                             tint = Color.White,
                             modifier = Modifier
                                 .padding(12.dp)
