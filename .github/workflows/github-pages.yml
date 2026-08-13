@@ -4,6 +4,9 @@ on:
   # Runs on pushes targeting the default branch
   push:
     branches: ["canary"]
+    paths:
+      - 'docs/**'
+      - '.github/workflows/github-pages.yml'
   release:
     types: [published, edited]
 

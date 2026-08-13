@@ -6,6 +6,15 @@ on:
       - 'v*'
     branches:
       - canary
+    paths:
+      - 'app/**'
+      - 'gradle/**'
+      - '*.gradle.kts'
+      - 'gradle.properties'
+      - 'gradlew'
+      - 'gradlew.bat'
+      - '.github/workflows/android-release.yml'
+      - '.github/scripts/**'
   workflow_dispatch:
 
 permissions:
