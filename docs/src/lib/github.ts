@@ -30,14 +30,16 @@ export async function fetchGitHubReleases(): Promise<Release[]> {
     return data.map((item: any) => {
       const tag = item.tag_name || ""
       let releaseType: Release["releaseType"] = "stable"
-      if (item.prerelease) {
-        if (tag.toLowerCase().includes("alpha")) {
-          releaseType = "alpha"
-        } else if (tag.toLowerCase().includes("beta")) {
-          releaseType = "beta"
-        } else {
-          releaseType = "test"
-        }
+      const tagLower = tag.toLowerCase()
+
+      if (tagLower.includes("alpha")) {
+        releaseType = "alpha"
+      } else if (tagLower.includes("beta")) {
+        releaseType = "beta"
+      } else if (tagLower.includes("test")) {
+        releaseType = "test"
+      } else if (item.prerelease) {
+        releaseType = "beta" // Fallback prerelease type if no keyword is present
       }
 
       const assets = (item.assets || []).map((asset: any) => ({
