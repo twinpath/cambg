@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { SYSTEM_REQUIREMENTS } from "@/data/site"
+import { DOWNLOAD_HERO_CONTENT } from "@/data/download"
 import { Download, Smartphone } from "lucide-react"
 import type { Release } from "@/data/releases"
 
@@ -14,12 +15,11 @@ export function DownloadHero({ latest }: { latest: Release }) {
       </div>
 
       <h1 className="font-heading max-w-2xl text-3xl font-bold tracking-tight md:text-5xl">
-        Download CamBG Record
+        {DOWNLOAD_HERO_CONTENT.heading}
       </h1>
 
       <p className="max-w-xl text-sm text-muted-foreground">
-        Get the latest release of CamBG Record for your Android device.
-        Available as a direct APK download from GitHub Releases.
+        {DOWNLOAD_HERO_CONTENT.description}
       </p>
 
       {/* Primary download */}
@@ -31,10 +31,11 @@ export function DownloadHero({ latest }: { latest: Release }) {
         >
           <Button size="lg">
             <Download data-icon="inline-start" />
-            Download APK ({latest.assets[0].sizeLabel})
+            {DOWNLOAD_HERO_CONTENT.buttonLabel} ({latest.assets[0].sizeLabel})
           </Button>
         </a>
       )}
+
 
       {/* System requirements */}
       <div className="flex flex-wrap items-center justify-center gap-2">

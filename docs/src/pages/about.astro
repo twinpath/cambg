@@ -4,14 +4,16 @@ import { AboutHero } from "@/components/about/AboutHero"
 import { ArchitectureSection } from "@/components/about/ArchitectureSection"
 import { FaqSection } from "@/components/about/FaqSection"
 import { ProjectInfoSection } from "@/components/about/ProjectInfoSection"
+import { ABOUT_PAGE_METADATA } from "@/data/about"
 ---
 
 <Layout
-  title="About"
-  description="Learn about CamBG Record, its MVVM architecture, technology stack, and project information. Find answers to frequently asked questions."
+  title={ABOUT_PAGE_METADATA.title}
+  description={ABOUT_PAGE_METADATA.description}
 >
   <AboutHero client:load />
   <ArchitectureSection client:load />
   <FaqSection client:load />
   <ProjectInfoSection client:load />
 </Layout>
+

@@ -52,3 +52,10 @@ export const SYSTEM_REQUIREMENTS = [
   { label: "Camera Required", detail: "Hardware camera access" },
   { label: "50 MB", detail: "Approximate install size" },
 ] as const
+
+export const FOOTER_CONTENT = {
+  githubLink: "View on GitHub",
+  copyright: "All rights reserved.",
+  brandingNote: "Built with precision. Designed for reliability.",
+} as const
+

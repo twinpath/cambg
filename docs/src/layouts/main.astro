@@ -2,6 +2,7 @@
 import "@/styles/global.css"
 import { Navbar } from "@/components/Navbar"
 import { Footer } from "@/components/Footer"
+import { SITE_NAME, SITE_DESCRIPTION } from "@/data/site"
 
 interface Props {
   title?: string
@@ -9,13 +10,14 @@ interface Props {
 }
 
 const {
-  title = "CamBG Record",
-  description = "A native Android application for persistent background video recording with intelligent detection capabilities and Material Design 3 aesthetics.",
+  title = SITE_NAME,
+  description = SITE_DESCRIPTION,
 } = Astro.props
 
 const currentPath = new URL(Astro.request.url).pathname
 const fullTitle =
-  title === "CamBG Record" ? title : `${title} - CamBG Record`
+  title === SITE_NAME ? title : `${title} - ${SITE_NAME}`
+
 ---
 
 <html lang="en">

@@ -6,6 +6,7 @@ import { Calendar } from "lucide-react"
 import { marked } from "marked"
 import type { Release } from "@/data/releases"
 import { getArchitecture } from "@/lib/architecture"
+import { CHANGELOG_LIST_CONTENT } from "@/data/changelog"
 
 interface ChangelogListProps {
   fallbackReleases: Release[]
@@ -19,7 +20,7 @@ const RELEASE_TYPE_VARIANT = {
 } as const
 
 function formatDate(dateStr: string) {
-  if (!dateStr) return "Unknown date"
+  if (!dateStr) return CHANGELOG_LIST_CONTENT.labels.unknownDate
   return new Date(dateStr).toLocaleDateString("en-US", {
     year: "numeric",
     month: "long",
@@ -28,7 +29,7 @@ function formatDate(dateStr: string) {
 }
 
 function cleanReleaseNotes(notes: string): string {
-  if (!notes) return "No details provided for this release."
+  if (!notes) return CHANGELOG_LIST_CONTENT.labels.noDetails
   let cleaned = notes
   cleaned = cleaned.replace(/### Build Artifacts[\s\S]*$/, "")
   cleaned = cleaned.replace(/### Artifacts[\s\S]*$/, "")
@@ -137,7 +138,7 @@ export function ChangelogList({ fallbackReleases }: ChangelogListProps) {
     <div className="space-y-12">
       <div className="relative border-l border-muted pl-6 ml-4 space-y-12">
         {visibleReleases.map((release) => {
-          const htmlContent = parsedNotes[release.version] || "<p>Loading release details...</p>"
+          const htmlContent = parsedNotes[release.version] || `<p>${CHANGELOG_LIST_CONTENT.labels.loadingDetails}</p>`
           return (
             <div 
               key={release.version} 
@@ -180,7 +181,7 @@ export function ChangelogList({ fallbackReleases }: ChangelogListProps) {
             onClick={() => setVisibleCount((prev) => prev + 5)}
             className="min-w-32"
           >
-            Load More
+            {CHANGELOG_LIST_CONTENT.labels.loadMore}
           </Button>
         </div>
       )}

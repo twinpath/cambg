@@ -8,33 +8,10 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { GITHUB_URL, GITHUB_RELEASES_URL } from "@/data/site"
+import { PROJECT_INFO_CONTENT } from "@/data/about"
 import {
-  Scale,
-  GitBranch,
-  Wrench,
   ExternalLink,
 } from "lucide-react"
-
-const PROJECT_INFO = [
-  {
-    icon: Scale,
-    title: "License",
-    description:
-      "This project is proprietary software. All rights reserved. Unauthorized copying, modification, distribution, or use is strictly prohibited without prior written consent.",
-  },
-  {
-    icon: GitBranch,
-    title: "Versioning",
-    description:
-      "Follows Semantic Versioning 2.0.0. Releases include Stable (vX.Y.Z), Beta (vX.Y.Z-beta.N), Alpha (vX.Y.Z-alpha.N), and Test (vX.Y.Z-test.N) variants.",
-  },
-  {
-    icon: Wrench,
-    title: "Build System",
-    description:
-      "Built with Gradle (Kotlin DSL) and Android Gradle Plugin. Releases are automated via GitHub Actions with Gemini API-powered changelog generation.",
-  },
-] as const
 
 export function ProjectInfoSection() {
   return (
@@ -43,16 +20,15 @@ export function ProjectInfoSection() {
         <Separator className="mb-16" />
         <div className="mb-10 flex flex-col items-center gap-2 text-center">
           <h2 className="font-heading text-2xl font-bold tracking-tight">
-            Project Information
+            {PROJECT_INFO_CONTENT.heading}
           </h2>
           <p className="max-w-lg text-sm text-muted-foreground">
-            Technical details about the CamBG Record project, its licensing, and
-            development infrastructure.
+            {PROJECT_INFO_CONTENT.description}
           </p>
         </div>
 
         <div className="grid gap-4 sm:grid-cols-3">
-          {PROJECT_INFO.map((info) => (
+          {PROJECT_INFO_CONTENT.items.map((info) => (
             <Card key={info.title}>
               <CardHeader>
                 <info.icon className="mb-1 size-5 text-primary" />
@@ -87,7 +63,7 @@ export function ProjectInfoSection() {
             GitHub Releases
           </a>
           <span className="text-muted-foreground">|</span>
-          <Badge variant="outline">Proprietary License</Badge>
+          <Badge variant="outline">{PROJECT_INFO_CONTENT.badge}</Badge>
         </div>
       </div>
     </section>

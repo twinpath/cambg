@@ -16,6 +16,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import type { Release } from "@/data/releases"
+import { RELEASE_ARCHIVE_CONTENT } from "@/data/download"
 import { Download } from "lucide-react"
 import { getArchitecture } from "@/lib/architecture"
 
@@ -46,11 +47,10 @@ export function ReleaseArchive({ releases }: { releases: Release[] }) {
       <div className="mx-auto max-w-5xl">
         <div className="mb-10 flex flex-col items-center gap-2 text-center">
           <h2 className="font-heading text-2xl font-bold tracking-tight">
-            Release Archive
+            {RELEASE_ARCHIVE_CONTENT.heading}
           </h2>
           <p className="max-w-lg text-sm text-muted-foreground">
-            Browse all previous releases. Expand any version to view release
-            notes and download specific build artifacts.
+            {RELEASE_ARCHIVE_CONTENT.description}
           </p>
         </div>
 
@@ -63,7 +63,7 @@ export function ReleaseArchive({ releases }: { releases: Release[] }) {
             >
               <AccordionTrigger>
                 <div className="flex items-center gap-3">
-                  <span className="font-mono text-xs font-medium">
+                   <span className="font-mono text-xs font-medium">
                     {release.version}
                   </span>
                   <Badge variant={RELEASE_TYPE_VARIANT[release.releaseType]}>
@@ -80,9 +80,9 @@ export function ReleaseArchive({ releases }: { releases: Release[] }) {
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>File</TableHead>
-                        <TableHead>Architecture</TableHead>
-                        <TableHead>Size</TableHead>
+                        <TableHead>{RELEASE_ARCHIVE_CONTENT.tableHeaders.file}</TableHead>
+                        <TableHead>{RELEASE_ARCHIVE_CONTENT.tableHeaders.architecture}</TableHead>
+                        <TableHead>{RELEASE_ARCHIVE_CONTENT.tableHeaders.size}</TableHead>
                         <TableHead className="w-24" />
                       </TableRow>
                     </TableHeader>
@@ -104,7 +104,7 @@ export function ReleaseArchive({ releases }: { releases: Release[] }) {
                             >
                               <Button variant="ghost" size="xs">
                                 <Download className="size-3" />
-                                Download
+                                {RELEASE_ARCHIVE_CONTENT.buttons.download}
                               </Button>
                             </a>
                           </TableCell>
@@ -125,7 +125,7 @@ export function ReleaseArchive({ releases }: { releases: Release[] }) {
               onClick={() => setVisibleCount((prev) => prev + 5)}
               className="min-w-32"
             >
-              Load More
+              {RELEASE_ARCHIVE_CONTENT.buttons.loadMore}
             </Button>
           </div>
         )}
@@ -133,3 +133,4 @@ export function ReleaseArchive({ releases }: { releases: Release[] }) {
     </section>
   )
 }
+

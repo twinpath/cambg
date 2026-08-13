@@ -3,25 +3,27 @@ import Layout from "@/layouts/main.astro"
 import { fetchGitHubReleases } from "@/lib/github"
 import { Badge } from "@/components/ui/badge"
 import { ChangelogList } from "@/components/changelog/ChangelogList"
+import { CHANGELOG_PAGE_METADATA } from "@/data/changelog"
 
 const releases = await fetchGitHubReleases()
 ---
 
 <Layout
-  title="Changelog"
-  description="See what's new in CamBG Record. Browse version release notes, enhancements, bug fixes, and download history directly from GitHub releases."
+  title={CHANGELOG_PAGE_METADATA.title}
+  description={CHANGELOG_PAGE_METADATA.description}
 >
   <div class="mx-auto max-w-3xl px-4 py-20">
     <div class="mb-14 text-center">
-      <Badge variant="secondary" className="mb-3">Updates</Badge>
+      <Badge variant="secondary" className="mb-3">{CHANGELOG_PAGE_METADATA.badge}</Badge>
       <h1 class="font-heading text-3xl font-bold tracking-tight md:text-5xl mb-4">
-        Changelog
+        {CHANGELOG_PAGE_METADATA.heading}
       </h1>
       <p class="text-sm text-muted-foreground max-w-md mx-auto">
-        Keep track of all the changes, improvements, and fixes made to CamBG Record.
+        {CHANGELOG_PAGE_METADATA.subheading}
       </p>
     </div>
 
     <ChangelogList client:load fallbackReleases={releases} />
   </div>
 </Layout>
+

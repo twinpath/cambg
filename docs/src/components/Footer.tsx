@@ -4,6 +4,7 @@ import {
   SITE_TAGLINE,
   GITHUB_URL,
   FOOTER_SECTIONS,
+  FOOTER_CONTENT,
 } from "@/data/site"
 import { GitFork, ExternalLink } from "lucide-react"
 
@@ -35,7 +36,7 @@ export function Footer() {
               className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
             >
               <GitFork className="size-3.5" />
-              View on GitHub
+              {FOOTER_CONTENT.githubLink}
             </a>
           </div>
 
@@ -72,11 +73,12 @@ export function Footer() {
         {/* Bottom section */}
         <div className="flex flex-col items-center justify-between gap-2 text-xs text-muted-foreground sm:flex-row">
           <span>
-            &copy; {currentYear} {SITE_NAME}. All rights reserved.
+            &copy; {currentYear} {SITE_NAME}. {FOOTER_CONTENT.copyright}
           </span>
-          <span>Built with precision. Designed for reliability.</span>
+          <span>{FOOTER_CONTENT.brandingNote}</span>
         </div>
       </div>
     </footer>
   )
 }
+
