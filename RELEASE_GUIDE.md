@@ -41,7 +41,7 @@ Ensure that the `main` branch is up to date and contains all the changes you wis
 ### 2. Update Version in `build.gradle.kts`
 Before creating a release tag, you must update the version details inside the application so that the correct version is shown in the app settings (compiled via `BuildConfig.VERSION_NAME`).
 
-Open [app/build.gradle.kts](file:///c:/Users/dyzulk/Documents/twinpath/cambg-record/app/build.gradle.kts) and update the `defaultConfig` block:
+Open [app/build.gradle.kts](app/build.gradle.kts) and update the `defaultConfig` block:
 - Increment `versionCode` (integer, e.g., `3` to `4`).
 - Update `versionName` (string, matching your release target, e.g., `"0.1.3-alpha.1"`).
 
