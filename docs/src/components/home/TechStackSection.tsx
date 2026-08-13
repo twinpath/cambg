@@ -8,18 +8,31 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { TECH_STACK_CONTENT } from "@/data/home"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useLoading } from "@/hooks/use-loading"
 
 export function TechStackSection() {
+  const loading = useLoading()
+
   return (
     <section className="px-4 py-16">
       <div className="mx-auto max-w-5xl">
         <div className="mb-10 flex flex-col items-center gap-2 text-center">
-          <h2 className="font-heading text-2xl font-bold tracking-tight">
-            {TECH_STACK_CONTENT.heading}
-          </h2>
-          <p className="max-w-lg text-sm text-muted-foreground">
-            {TECH_STACK_CONTENT.description}
-          </p>
+          {loading ? (
+            <>
+              <Skeleton className="h-8 w-48 rounded" />
+              <Skeleton className="h-4 w-64 rounded mt-1" />
+            </>
+          ) : (
+            <>
+              <h2 className="font-heading text-2xl font-bold tracking-tight">
+                {TECH_STACK_CONTENT.heading}
+              </h2>
+              <p className="max-w-lg text-sm text-muted-foreground">
+                {TECH_STACK_CONTENT.description}
+              </p>
+            </>
+          )}
         </div>
 
         <Table>
@@ -31,20 +44,35 @@ export function TechStackSection() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {TECH_STACK_CONTENT.items.map((row) => (
-              <TableRow key={row.layer}>
-                <TableCell>
-                  <Badge variant="outline">{row.layer}</Badge>
-                </TableCell>
-                <TableCell>{row.technology}</TableCell>
-                <TableCell className="font-mono">
-                  {row.version}
-                </TableCell>
-              </TableRow>
-            ))}
+            {loading
+              ? Array.from({ length: 4 }).map((_, idx) => (
+                  <TableRow key={idx}>
+                    <TableCell>
+                      <Skeleton className="h-5 w-16 rounded" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-28 rounded" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-12 rounded" />
+                    </TableCell>
+                  </TableRow>
+                ))
+              : TECH_STACK_CONTENT.items.map((row) => (
+                  <TableRow key={row.layer}>
+                    <TableCell>
+                      <Badge variant="outline">{row.layer}</Badge>
+                    </TableCell>
+                    <TableCell>{row.technology}</TableCell>
+                    <TableCell className="font-mono">
+                      {row.version}
+                    </TableCell>
+                  </TableRow>
+                ))}
           </TableBody>
         </Table>
       </div>
     </section>
   )
 }
+

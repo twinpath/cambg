@@ -45,6 +45,7 @@ export function ChangelogList({ fallbackReleases }: ChangelogListProps) {
 
   useEffect(() => {
     async function loadReleases() {
+      const startTime = Date.now()
       try {
         const res = await fetch("https://api.github.com/repos/twinpath/cambg/releases")
         if (!res.ok) throw new Error("API Limit or Network error")
@@ -88,7 +89,13 @@ export function ChangelogList({ fallbackReleases }: ChangelogListProps) {
         console.warn("Client-side releases fetch failed, falling back to static build data", err)
         // Keep static fallbackReleases
       } finally {
-        setLoading(false)
+        const elapsed = Date.now() - startTime
+        const remaining = 600 - elapsed
+        if (remaining > 0) {
+          setTimeout(() => setLoading(false), remaining)
+        } else {
+          setLoading(false)
+        }
       }
     }
     loadReleases()

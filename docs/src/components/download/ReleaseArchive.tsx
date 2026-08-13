@@ -19,6 +19,8 @@ import type { Release } from "@/data/releases"
 import { RELEASE_ARCHIVE_CONTENT } from "@/data/download"
 import { Download } from "lucide-react"
 import { getArchitecture } from "@/lib/architecture"
+import { Skeleton } from "@/components/ui/skeleton"
+import { useLoading } from "@/hooks/use-loading"
 
 const RELEASE_TYPE_VARIANT: Record<
   Release["releaseType"],
@@ -41,84 +43,109 @@ function formatDate(dateStr: string) {
 export function ReleaseArchive({ releases }: { releases: Release[] }) {
   const [visibleCount, setVisibleCount] = useState(5)
   const visibleReleases = releases.slice(0, visibleCount)
+  const loading = useLoading()
 
   return (
     <section id="archive" className="px-4 py-16">
       <div className="mx-auto max-w-5xl">
         <div className="mb-10 flex flex-col items-center gap-2 text-center">
-          <h2 className="font-heading text-2xl font-bold tracking-tight">
-            {RELEASE_ARCHIVE_CONTENT.heading}
-          </h2>
-          <p className="max-w-lg text-sm text-muted-foreground">
-            {RELEASE_ARCHIVE_CONTENT.description}
-          </p>
+          {loading ? (
+            <>
+              <Skeleton className="h-8 w-48 rounded" />
+              <Skeleton className="h-4 w-64 rounded mt-1" />
+            </>
+          ) : (
+            <>
+              <h2 className="font-heading text-2xl font-bold tracking-tight">
+                {RELEASE_ARCHIVE_CONTENT.heading}
+              </h2>
+              <p className="max-w-lg text-sm text-muted-foreground">
+                {RELEASE_ARCHIVE_CONTENT.description}
+              </p>
+            </>
+          )}
         </div>
 
-        <Accordion type="single" collapsible className="space-y-2">
-          {visibleReleases.map((release) => (
-            <AccordionItem 
-              key={release.version} 
-              value={release.version}
-              className="transition-all duration-300 animate-in fade-in slide-in-from-bottom-2"
-            >
-              <AccordionTrigger>
+        {loading ? (
+          <div className="space-y-2">
+            {Array.from({ length: 3 }).map((_, idx) => (
+              <div key={idx} className="border rounded-lg p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                   <span className="font-mono text-xs font-medium">
-                    {release.version}
-                  </span>
-                  <Badge variant={RELEASE_TYPE_VARIANT[release.releaseType]}>
-                    {release.releaseType}
-                  </Badge>
-                  <span className="text-xs text-muted-foreground">
-                    {formatDate(release.date)}
-                  </span>
+                  <Skeleton className="h-4 w-12 rounded" />
+                  <Skeleton className="h-5 w-16 rounded" />
+                  <Skeleton className="h-4 w-24 rounded" />
                 </div>
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="flex flex-col gap-4">
-                  {/* Assets table */}
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead>{RELEASE_ARCHIVE_CONTENT.tableHeaders.file}</TableHead>
-                        <TableHead>{RELEASE_ARCHIVE_CONTENT.tableHeaders.architecture}</TableHead>
-                        <TableHead>{RELEASE_ARCHIVE_CONTENT.tableHeaders.size}</TableHead>
-                        <TableHead className="w-24" />
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {release.assets.map((asset) => (
-                        <TableRow key={asset.name}>
-                          <TableCell className="font-mono">
-                            {asset.name}
-                          </TableCell>
-                          <TableCell className="text-xs text-muted-foreground">
-                            {asset.architecture || getArchitecture(asset.name)}
-                          </TableCell>
-                          <TableCell>{asset.sizeLabel}</TableCell>
-                          <TableCell>
-                            <a
-                              href={asset.downloadUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            >
-                              <Button variant="ghost" size="xs">
-                                <Download className="size-3" />
-                                {RELEASE_ARCHIVE_CONTENT.buttons.download}
-                              </Button>
-                            </a>
-                          </TableCell>
+                <Skeleton className="h-4 w-4 rounded" />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <Accordion type="single" collapsible className="space-y-2">
+            {visibleReleases.map((release) => (
+              <AccordionItem 
+                key={release.version} 
+                value={release.version}
+                className="transition-all duration-300 animate-in fade-in slide-in-from-bottom-2"
+              >
+                <AccordionTrigger>
+                  <div className="flex items-center gap-3">
+                     <span className="font-mono text-xs font-medium">
+                      {release.version}
+                    </span>
+                    <Badge variant={RELEASE_TYPE_VARIANT[release.releaseType]}>
+                      {release.releaseType}
+                    </Badge>
+                    <span className="text-xs text-muted-foreground">
+                      {formatDate(release.date)}
+                    </span>
+                  </div>
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex flex-col gap-4">
+                    {/* Assets table */}
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead>{RELEASE_ARCHIVE_CONTENT.tableHeaders.file}</TableHead>
+                          <TableHead>{RELEASE_ARCHIVE_CONTENT.tableHeaders.architecture}</TableHead>
+                          <TableHead>{RELEASE_ARCHIVE_CONTENT.tableHeaders.size}</TableHead>
+                          <TableHead className="w-24" />
                         </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          ))}
-        </Accordion>
+                      </TableHeader>
+                      <TableBody>
+                        {release.assets.map((asset) => (
+                          <TableRow key={asset.name}>
+                            <TableCell className="font-mono">
+                              {asset.name}
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground">
+                              {asset.architecture || getArchitecture(asset.name)}
+                            </TableCell>
+                            <TableCell>{asset.sizeLabel}</TableCell>
+                            <TableCell>
+                              <a
+                                href={asset.downloadUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              >
+                                <Button variant="ghost" size="xs">
+                                  <Download className="size-3" />
+                                  {RELEASE_ARCHIVE_CONTENT.buttons.download}
+                                </Button>
+                              </a>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        )}
 
-        {releases.length > visibleCount && (
+        {!loading && releases.length > visibleCount && (
           <div className="mt-8 flex justify-center">
             <Button 
               variant="outline"
@@ -133,4 +160,5 @@ export function ReleaseArchive({ releases }: { releases: Release[] }) {
     </section>
   )
 }
+
 
