@@ -191,3 +191,9 @@ jobs:
             app/build/outputs/bundle/release/*.aab
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Trigger GitHub Pages Build (Rebuild API Proxy)
+        if: startsWith(github.ref, 'refs/tags/')
+        run: gh workflow run github-pages.yml --ref canary
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
