@@ -11,6 +11,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: android-build-serialization
+  cancel-in-progress: false
+
 jobs:
   build-and-release:
     name: Build & Publish Release
