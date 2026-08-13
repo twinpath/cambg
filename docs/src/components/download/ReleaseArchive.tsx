@@ -15,7 +15,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import type { Release } from "@/data/releases"
-import { Download, FileText } from "lucide-react"
+import { Download } from "lucide-react"
 
 const RELEASE_TYPE_VARIANT: Record<
   Release["releaseType"],
@@ -67,19 +67,12 @@ export function ReleaseArchive({ releases }: { releases: Release[] }) {
               </AccordionTrigger>
               <AccordionContent>
                 <div className="flex flex-col gap-4">
-                  {/* Release notes */}
-                  <div className="flex items-start gap-2">
-                    <FileText className="mt-0.5 size-3.5 shrink-0 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground">
-                      {release.notes}
-                    </p>
-                  </div>
-
                   {/* Assets table */}
                   <Table>
                     <TableHeader>
                       <TableRow>
                         <TableHead>File</TableHead>
+                        <TableHead>Architecture</TableHead>
                         <TableHead>Size</TableHead>
                         <TableHead className="w-24" />
                       </TableRow>
@@ -90,6 +83,9 @@ export function ReleaseArchive({ releases }: { releases: Release[] }) {
                           <TableCell className="font-mono">
                             {asset.name}
                           </TableCell>
+                          <TableCell className="text-xs text-muted-foreground">
+                            {asset.architecture || "Universal"}
+                          </TableCell>
                           <TableCell>{asset.sizeLabel}</TableCell>
                           <TableCell>
                             <a
@@ -99,7 +95,7 @@ export function ReleaseArchive({ releases }: { releases: Release[] }) {
                             >
                               <Button variant="ghost" size="xs">
                                 <Download className="size-3" />
-                                APK
+                                Download
                               </Button>
                             </a>
                           </TableCell>

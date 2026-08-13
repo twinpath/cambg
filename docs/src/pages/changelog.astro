@@ -3,7 +3,7 @@ import Layout from "@/layouts/main.astro"
 import { fetchGitHubReleases } from "@/lib/github"
 import { marked } from "marked"
 import { Badge } from "@/components/ui/badge"
-import { Calendar, GitCommit } from "lucide-react"
+import { Calendar } from "lucide-react"
 
 const releases = await fetchGitHubReleases()
 
@@ -14,6 +14,18 @@ function formatDate(dateStr: string) {
     month: "long",
     day: "numeric",
   })
+}
+
+function cleanReleaseNotes(notes: string): string {
+  if (!notes) return "No details provided for this release."
+  
+  // Remove build artifacts headers and tables
+  let cleaned = notes
+  cleaned = cleaned.replace(/### Build Artifacts[\s\S]*$/, "")
+  cleaned = cleaned.replace(/### Artifacts[\s\S]*$/, "")
+  cleaned = cleaned.replace(/\| File Name \|[\s\S]*$/, "")
+  
+  return cleaned.trim()
 }
 
 const RELEASE_TYPE_VARIANT = {
@@ -42,7 +54,8 @@ const RELEASE_TYPE_VARIANT = {
     <div class="relative border-l border-muted pl-6 ml-4 space-y-12">
       {
         releases.map(async (release) => {
-          const htmlContent = await marked.parse(release.notes || "No details provided for this release.")
+          const cleanedNotes = cleanReleaseNotes(release.notes)
+          const htmlContent = await marked.parse(cleanedNotes)
           return (
             <div class="relative">
               {/* Dot indicator */}
@@ -69,23 +82,6 @@ const RELEASE_TYPE_VARIANT = {
                   class="prose prose-sm dark:prose-invert max-w-none text-muted-foreground prose-headings:font-semibold prose-headings:text-foreground prose-a:text-primary hover:prose-a:underline prose-strong:text-foreground prose-code:text-foreground prose-code:bg-muted prose-code:px-1 prose-code:py-0.5 prose-code:rounded prose-ul:list-disc prose-ol:list-decimal"
                   set:html={htmlContent}
                 />
-
-                {release.assets && release.assets.length > 0 && (
-                  <div class="mt-2 flex flex-wrap gap-2">
-                    {release.assets.map((asset) => (
-                      <a
-                        href={asset.downloadUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        class="inline-flex items-center gap-1.5 rounded-md border bg-muted/40 px-2.5 py-1 text-xs font-mono text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
-                      >
-                        <GitCommit class="size-3" />
-                        <span>{asset.name}</span>
-                        <span class="text-[10px] text-muted-foreground/60">({asset.sizeLabel})</span>
-                      </a>
-                    ))}
-                  </div>
-                )}
               </div>
             </div>
           )

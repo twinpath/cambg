@@ -2,6 +2,7 @@ export interface ReleaseAsset {
   name: string
   downloadUrl: string
   sizeLabel: string
+  architecture?: string
 }
 
 export interface Release {

@@ -9,6 +9,17 @@ function formatBytes(bytes: number, decimals = 1) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i]
 }
 
+function getArchitecture(fileName: string): string {
+  const lower = fileName.toLowerCase()
+  if (lower.includes("arm64-v8a") || lower.includes("arm64")) return "ARM64 (v8a)"
+  if (lower.includes("armeabi-v7a") || lower.includes("armeabi")) return "ARMv7 (32-bit)"
+  if (lower.includes("x86_64")) return "x86_64"
+  if (lower.includes("x86")) return "x86"
+  if (lower.includes("universal")) return "Universal"
+  if (lower.includes(".aab")) return "App Bundle (Universal)"
+  return "Universal"
+}
+
 export async function fetchGitHubReleases(): Promise<Release[]> {
   try {
     const res = await fetch("https://api.github.com/repos/twinpath/cambg/releases", {
@@ -42,11 +53,14 @@ export async function fetchGitHubReleases(): Promise<Release[]> {
         releaseType = "beta" // Fallback prerelease type if no keyword is present
       }
 
-      const assets = (item.assets || []).map((asset: any) => ({
-        name: asset.name,
-        downloadUrl: asset.browser_download_url,
-        sizeLabel: formatBytes(asset.size),
-      }))
+      const assets = (item.assets || [])
+        .filter((asset: any) => !asset.name.endsWith(".zip") && !asset.name.endsWith(".tar.gz"))
+        .map((asset: any) => ({
+          name: asset.name,
+          downloadUrl: asset.browser_download_url,
+          sizeLabel: formatBytes(asset.size),
+          architecture: getArchitecture(asset.name),
+        }))
 
       return {
         version: tag,
