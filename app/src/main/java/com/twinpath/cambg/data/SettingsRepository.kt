@@ -14,27 +14,29 @@ import com.twinpath.cambg.model.StorageLocation
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
+import com.twinpath.cambg.constant.PreferenceKeys
+
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "cambg_settings")
 
 class SettingsRepository(private val context: Context) {
 
     private object Keys {
-        val RESOLUTION = stringPreferencesKey("resolution")
-        val FRAME_RATE = stringPreferencesKey("frame_rate")
-        val BITRATE = stringPreferencesKey("bitrate")
-        val ASPECT_RATIO = stringPreferencesKey("aspect_ratio")
-        val AUDIO_ENABLED = booleanPreferencesKey("audio_enabled")
-        val AUDIO_SOURCE = stringPreferencesKey("audio_source")
-        val AUDIO_CHANNELS = stringPreferencesKey("audio_channels")
-        val STORAGE_LOCATION = stringPreferencesKey("storage_location")
-        val CUSTOM_STORAGE_PATH = stringPreferencesKey("custom_storage_path")
-        val THEME_MODE = stringPreferencesKey("theme_mode")
-        val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
-        val MOTION_DETECTION_ENABLED = booleanPreferencesKey("motion_detection_enabled")
-        val MOTION_SENSITIVITY = floatPreferencesKey("motion_sensitivity")
-        val PERSON_DETECTION_ENABLED = booleanPreferencesKey("person_detection_enabled")
-        val PERSON_CONFIDENCE_THRESHOLD = floatPreferencesKey("person_confidence_threshold")
-     }
+        val RESOLUTION = stringPreferencesKey(PreferenceKeys.KEY_RESOLUTION)
+        val FRAME_RATE = stringPreferencesKey(PreferenceKeys.KEY_FRAME_RATE)
+        val BITRATE = stringPreferencesKey(PreferenceKeys.KEY_BITRATE)
+        val ASPECT_RATIO = stringPreferencesKey(PreferenceKeys.KEY_ASPECT_RATIO)
+        val AUDIO_ENABLED = booleanPreferencesKey(PreferenceKeys.KEY_AUDIO_ENABLED)
+        val AUDIO_SOURCE = stringPreferencesKey(PreferenceKeys.KEY_AUDIO_SOURCE)
+        val AUDIO_CHANNELS = stringPreferencesKey(PreferenceKeys.KEY_AUDIO_CHANNELS)
+        val STORAGE_LOCATION = stringPreferencesKey(PreferenceKeys.KEY_STORAGE_LOCATION)
+        val CUSTOM_STORAGE_PATH = stringPreferencesKey(PreferenceKeys.KEY_CUSTOM_STORAGE_PATH)
+        val THEME_MODE = stringPreferencesKey(PreferenceKeys.KEY_THEME_MODE)
+        val DYNAMIC_COLOR = booleanPreferencesKey(PreferenceKeys.KEY_DYNAMIC_COLOR)
+        val MOTION_DETECTION_ENABLED = booleanPreferencesKey(PreferenceKeys.KEY_MOTION_DETECTION_ENABLED)
+        val MOTION_SENSITIVITY = floatPreferencesKey(PreferenceKeys.KEY_MOTION_SENSITIVITY)
+        val PERSON_DETECTION_ENABLED = booleanPreferencesKey(PreferenceKeys.KEY_PERSON_DETECTION_ENABLED)
+        val PERSON_CONFIDENCE_THRESHOLD = floatPreferencesKey(PreferenceKeys.KEY_PERSON_CONFIDENCE_THRESHOLD)
+    }
  
      val settingsFlow: Flow<AppSettings> = context.dataStore.data.map { prefs ->
          val defaults = AppSettings()

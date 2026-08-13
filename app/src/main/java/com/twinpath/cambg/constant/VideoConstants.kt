@@ -1,50 +1,31 @@
-package com.twinpath.cambg.util
+package com.twinpath.cambg.constant
 
-object AppConstants {
-    // Resolution constants
+object VideoConstants {
     const val RESOLUTION_480P = "480p"
     const val RESOLUTION_720P = "720p"
     const val RESOLUTION_1080P = "1080p"
     const val RESOLUTION_4K = "4K"
-    
     val RESOLUTION_OPTIONS = listOf(RESOLUTION_480P, RESOLUTION_720P, RESOLUTION_1080P, RESOLUTION_4K)
     const val DEFAULT_RESOLUTION = RESOLUTION_720P
 
-    // Frame rate constants
     const val FPS_24 = "24 fps"
     const val FPS_30 = "30 fps"
     const val FPS_60 = "60 fps"
-    
     val FPS_OPTIONS = listOf(FPS_24, FPS_30, FPS_60)
     const val DEFAULT_FPS = FPS_30
 
-    // Bitrate constants
     const val BITRATE_AUTO = "Auto"
     const val BITRATE_MEDIUM = "Medium"
     const val BITRATE_HIGH = "High"
-    
     val BITRATE_OPTIONS = listOf(BITRATE_AUTO, BITRATE_MEDIUM, BITRATE_HIGH)
     const val DEFAULT_BITRATE = BITRATE_MEDIUM
 
-    // Aspect Ratio constants
     const val ASPECT_RATIO_9_16 = "9:16"
     const val ASPECT_RATIO_3_4 = "3:4"
     const val ASPECT_RATIO_FULL = "Full Screen"
-
     val ASPECT_RATIO_OPTIONS = listOf(ASPECT_RATIO_9_16, ASPECT_RATIO_3_4, ASPECT_RATIO_FULL)
     const val DEFAULT_ASPECT_RATIO = ASPECT_RATIO_9_16
 
-    // Storage defaults
-    const val DEFAULT_CUSTOM_STORAGE_PATH = "CamBGRecord"
-    
-    // Audio defaults
-    const val DEFAULT_AUDIO_SOURCE = "Camcorder"
-    const val DEFAULT_AUDIO_CHANNELS = "Stereo"
-    const val DEFAULT_AUDIO_ENABLED = true
-
-    /**
-     * Maps user frame rate selection to an integer value.
-     */
     fun mapFpsStringToVal(fpsStr: String): Int {
         return when (fpsStr) {
             FPS_24 -> 24
@@ -53,9 +34,6 @@ object AppConstants {
         }
     }
 
-    /**
-     * Maps user bitrate selection and resolution to an integer bit rate (bps).
-     */
     fun mapBitrateStringToVal(bitrateStr: String, resolution: String): Int {
         val isHigh = bitrateStr == BITRATE_HIGH
         return when (resolution) {

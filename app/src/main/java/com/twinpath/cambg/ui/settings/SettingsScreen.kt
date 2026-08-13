@@ -85,7 +85,8 @@ import com.twinpath.cambg.ui.components.DropdownSettingItem
 import com.twinpath.cambg.ui.components.SettingsBatteryCard
 import com.twinpath.cambg.ui.components.SettingsStorageCard
 
-import com.twinpath.cambg.util.AppConstants
+import com.twinpath.cambg.constant.VideoConstants
+import com.twinpath.cambg.constant.AudioConstants
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -147,7 +148,7 @@ fun SettingsScreen(
                         DropdownSettingItem(
                             title = "Video Resolution",
                             subtitle = settings.resolution,
-                            options = AppConstants.RESOLUTION_OPTIONS,
+                            options = VideoConstants.RESOLUTION_OPTIONS,
                             selected = settings.resolution,
                             onSelect = onUpdateResolution,
                             testTagPrefix = "res"
@@ -158,7 +159,7 @@ fun SettingsScreen(
                         DropdownSettingItem(
                             title = "Frame Rate",
                             subtitle = settings.frameRate,
-                            options = AppConstants.FPS_OPTIONS,
+                            options = VideoConstants.FPS_OPTIONS,
                             selected = settings.frameRate,
                             onSelect = onUpdateFrameRate,
                             testTagPrefix = "fps"
@@ -169,7 +170,7 @@ fun SettingsScreen(
                         DropdownSettingItem(
                             title = "Bitrate Quality",
                             subtitle = settings.bitrate,
-                            options = AppConstants.BITRATE_OPTIONS,
+                            options = VideoConstants.BITRATE_OPTIONS,
                             selected = settings.bitrate,
                             onSelect = onUpdateBitrate,
                             testTagPrefix = "bitrate"
@@ -180,7 +181,7 @@ fun SettingsScreen(
                         DropdownSettingItem(
                             title = "Aspect Ratio",
                             subtitle = settings.aspectRatio,
-                            options = AppConstants.ASPECT_RATIO_OPTIONS,
+                            options = VideoConstants.ASPECT_RATIO_OPTIONS,
                             selected = settings.aspectRatio,
                             onSelect = onUpdateAspectRatio,
                             testTagPrefix = "ratio"
@@ -214,7 +215,7 @@ fun SettingsScreen(
                             DropdownSettingItem(
                                 title = "Audio Source",
                                 subtitle = settings.audioSource,
-                                options = listOf("Camcorder", "Microphone"),
+                                options = AudioConstants.AUDIO_SOURCE_OPTIONS,
                                 selected = settings.audioSource,
                                 onSelect = onUpdateAudioSource,
                                 testTagPrefix = "audio_source"
@@ -223,7 +224,7 @@ fun SettingsScreen(
                             DropdownSettingItem(
                                 title = "Channels",
                                 subtitle = settings.audioChannels,
-                                options = listOf("Stereo", "Mono"),
+                                options = AudioConstants.AUDIO_CHANNEL_OPTIONS,
                                 selected = settings.audioChannels,
                                 onSelect = onUpdateAudioChannels,
                                 testTagPrefix = "audio_channels"

@@ -28,7 +28,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
-import com.twinpath.cambg.util.AppConstants
+import com.twinpath.cambg.constant.VideoConstants
 
 
 data class ServiceRecordingState(
@@ -64,12 +64,12 @@ class BackgroundRecordingService : LifecycleService() {
         when (intent?.action) {
             ACTION_START_CAMERA_RECORDING -> {
                 val isFrontCamera = intent.getBooleanExtra(EXTRA_IS_FRONT_CAMERA, false)
-                val quality = intent.getStringExtra(EXTRA_QUALITY) ?: AppConstants.DEFAULT_RESOLUTION
+                val quality = intent.getStringExtra(EXTRA_QUALITY) ?: VideoConstants.DEFAULT_RESOLUTION
                 val isAudioEnabled = intent.getBooleanExtra(EXTRA_AUDIO_ENABLED, true)
                 val storageLocation = intent.getStringExtra(EXTRA_STORAGE_LOCATION) ?: "PUBLIC_DCIM"
                 val customStoragePath = intent.getStringExtra(EXTRA_CUSTOM_STORAGE_PATH) ?: "CamBGRecord"
-                val frameRate = intent.getStringExtra(EXTRA_FRAME_RATE) ?: AppConstants.DEFAULT_FPS
-                val bitrate = intent.getStringExtra(EXTRA_BITRATE) ?: AppConstants.DEFAULT_BITRATE
+                val frameRate = intent.getStringExtra(EXTRA_FRAME_RATE) ?: VideoConstants.DEFAULT_FPS
+                val bitrate = intent.getStringExtra(EXTRA_BITRATE) ?: VideoConstants.DEFAULT_BITRATE
                 startCameraRecording(isFrontCamera, quality, isAudioEnabled, storageLocation, customStoragePath, frameRate, bitrate)
             }
 
@@ -83,8 +83,8 @@ class BackgroundRecordingService : LifecycleService() {
                 }
                 val storageLocation = intent.getStringExtra(EXTRA_STORAGE_LOCATION) ?: "PUBLIC_DCIM"
                 val customStoragePath = intent.getStringExtra(EXTRA_CUSTOM_STORAGE_PATH) ?: "CamBGRecord"
-                val frameRate = intent.getStringExtra(EXTRA_FRAME_RATE) ?: AppConstants.DEFAULT_FPS
-                val bitrate = intent.getStringExtra(EXTRA_BITRATE) ?: AppConstants.DEFAULT_BITRATE
+                val frameRate = intent.getStringExtra(EXTRA_FRAME_RATE) ?: VideoConstants.DEFAULT_FPS
+                val bitrate = intent.getStringExtra(EXTRA_BITRATE) ?: VideoConstants.DEFAULT_BITRATE
                 if (data != null && resultCode != -1) {
                     startMediaProjectionRecording(resultCode, data, storageLocation, customStoragePath, frameRate, bitrate)
                 } else {

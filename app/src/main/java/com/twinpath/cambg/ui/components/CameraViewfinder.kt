@@ -44,7 +44,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.twinpath.cambg.camera.CameraXRecordingManager
 import com.twinpath.cambg.model.CameraUiState
-import com.twinpath.cambg.util.AppConstants
+import com.twinpath.cambg.constant.VideoConstants
 
 @Composable
 fun CameraViewfinder(
@@ -87,8 +87,8 @@ fun CameraViewfinder(
             }
 
             val aspectModifier = when (uiState.aspectRatio) {
-                AppConstants.ASPECT_RATIO_9_16 -> Modifier.aspectRatio(9f / 16f)
-                AppConstants.ASPECT_RATIO_3_4 -> Modifier.aspectRatio(3f / 4f)
+                VideoConstants.ASPECT_RATIO_9_16 -> Modifier.aspectRatio(9f / 16f)
+                VideoConstants.ASPECT_RATIO_3_4 -> Modifier.aspectRatio(3f / 4f)
                 else -> Modifier.fillMaxSize()
             }
 

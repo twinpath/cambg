@@ -10,7 +10,7 @@ import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.util.Log
 import java.io.File
-import com.twinpath.cambg.util.AppConstants
+import com.twinpath.cambg.constant.VideoConstants
 
 class ScreenRecordingHelper(private val context: Context) {
 
@@ -62,14 +62,14 @@ class ScreenRecordingHelper(private val context: Context) {
             recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
 
             // Map and apply frame rate and bitrate from constants settings
-            val mappedFps = AppConstants.mapFpsStringToVal(frameRate)
+            val mappedFps = VideoConstants.mapFpsStringToVal(frameRate)
             val resolutionTag = when {
-                width >= 2160 || height >= 2160 -> AppConstants.RESOLUTION_4K
-                width >= 1080 || height >= 1080 -> AppConstants.RESOLUTION_1080P
-                width >= 720 || height >= 720 -> AppConstants.RESOLUTION_720P
-                else -> AppConstants.RESOLUTION_480P
+                width >= 2160 || height >= 2160 -> VideoConstants.RESOLUTION_4K
+                width >= 1080 || height >= 1080 -> VideoConstants.RESOLUTION_1080P
+                width >= 720 || height >= 720 -> VideoConstants.RESOLUTION_720P
+                else -> VideoConstants.RESOLUTION_480P
             }
-            val mappedBitrate = AppConstants.mapBitrateStringToVal(bitrate, resolutionTag)
+            val mappedBitrate = VideoConstants.mapBitrateStringToVal(bitrate, resolutionTag)
 
             recorder.setVideoEncodingBitRate(mappedBitrate)
             recorder.setVideoFrameRate(mappedFps)
