@@ -21,7 +21,7 @@ export function Navbar({ currentPath }: NavbarProps) {
             </div>
 
             {/* Logo + wordmark */}
-            <a href="/" className="flex items-center gap-2">
+            <a href={import.meta.env.BASE_URL} className="flex items-center gap-2">
               <Video className="size-5 text-primary" />
               <span className="font-heading text-sm font-medium">
                 {SITE_NAME}

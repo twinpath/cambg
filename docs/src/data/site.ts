@@ -1,3 +1,5 @@
+const BASE_URL = import.meta.env.BASE_URL
+
 export const SITE_NAME = "CamBG Record"
 export const SITE_DESCRIPTION =
   "A native Android application for persistent background video recording with intelligent detection capabilities and Material Design 3 aesthetics."
@@ -6,34 +8,34 @@ export const GITHUB_URL = "https://github.com/twinpath/cambg"
 export const GITHUB_RELEASES_URL = `${GITHUB_URL}/releases`
 
 export const NAV_LINKS = [
-  { label: "Home", href: "/" },
-  { label: "Download", href: "/download" },
-  { label: "About", href: "/about" },
+  { label: "Home", href: `${BASE_URL}` },
+  { label: "Download", href: `${BASE_URL}download` },
+  { label: "About", href: `${BASE_URL}about` },
 ] as const
 
 export const FOOTER_SECTIONS = [
   {
     title: "Product",
     links: [
-      { label: "Features", href: "/#features" },
-      { label: "Download", href: "/download" },
-      { label: "Release Archive", href: "/download#archive" },
+      { label: "Features", href: `${BASE_URL}#features` },
+      { label: "Download", href: `${BASE_URL}download` },
+      { label: "Release Archive", href: `${BASE_URL}download#archive` },
     ],
   },
   {
     title: "Resources",
     links: [
-      { label: "Documentation", href: "/about#architecture" },
-      { label: "FAQ", href: "/about#faq" },
+      { label: "Documentation", href: `${BASE_URL}about#architecture` },
+      { label: "FAQ", href: `${BASE_URL}about#faq` },
       { label: "Source Code", href: GITHUB_URL, external: true },
     ],
   },
   {
     title: "Project",
     links: [
-      { label: "About", href: "/about" },
+      { label: "About", href: `${BASE_URL}about` },
       { label: "Releases", href: GITHUB_RELEASES_URL, external: true },
-      { label: "License", href: "/about#license" },
+      { label: "License", href: `${BASE_URL}about#license` },
     ],
   },
 ] as const
