@@ -10,6 +10,14 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.stringPreferencesKey
+import androidx.datastore.preferences.preferencesDataStore
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.runBlocking
+
+private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "cambg_settings")
 
 object RecordedFilesHelper {
 
@@ -35,6 +43,27 @@ object RecordedFilesHelper {
             }
         }
 
+        // 1b. Check custom public directory name if configured
+        var customPath = "CamBGRecord"
+        try {
+            val CUSTOM_STORAGE_PATH = stringPreferencesKey("custom_storage_path")
+            val prefs = runBlocking { context.dataStore.data.first() }
+            customPath = prefs[CUSTOM_STORAGE_PATH] ?: "CamBGRecord"
+        } catch (e: Exception) {
+            Log.e(TAG, "Error reading custom storage path from DataStore", e)
+        }
+
+        if (customPath.isNotBlank() && customPath != "CamBGRecord") {
+            val customPublicDir = File(dcimDir, customPath)
+            if (customPublicDir.exists() && customPublicDir.isDirectory) {
+                customPublicDir.listFiles()?.filter {
+                    it.isFile && it.extension.equals("mp4", ignoreCase = true)
+                }?.let {
+                    files.addAll(it)
+                }
+            }
+        }
+
         // 2. Check primary internal recordings directory
         val recordingsDir = File(context.filesDir, "recordings")
         if (recordingsDir.exists() && recordingsDir.isDirectory) {
@@ -50,6 +79,19 @@ object RecordedFilesHelper {
             it.isFile && it.extension.equals("mp4", ignoreCase = true)
         }?.let {
             files.addAll(it)
+        }
+
+        // 4. Check external SD Card app recordings directory if available
+        val dirs = androidx.core.content.ContextCompat.getExternalFilesDirs(context, null)
+        if (dirs.size > 1 && dirs[1] != null) {
+            val sdRecordingsDir = File(dirs[1], "recordings")
+            if (sdRecordingsDir.exists() && sdRecordingsDir.isDirectory) {
+                sdRecordingsDir.listFiles()?.filter {
+                    it.isFile && it.extension.equals("mp4", ignoreCase = true)
+                }?.let {
+                    files.addAll(it)
+                }
+            }
         }
 
         // Deduplicate by absolute path and sort descending by last modified date

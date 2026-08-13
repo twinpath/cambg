@@ -1,5 +1,6 @@
 package com.twinpath.cambg_record.ui.components
 
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -38,23 +39,154 @@ fun checkIsBatteryOptimizationIgnored(context: Context): Boolean {
     }
 }
 
+fun getOEMBatteryIntents(context: Context): List<Intent> {
+    val intents = mutableListOf<Intent>()
+    val packageName = context.packageName
+    val manufacturer = Build.MANUFACTURER.lowercase()
+
+    when {
+        manufacturer.contains("xiaomi") -> {
+            intents.add(Intent().apply {
+                component = ComponentName("com.miui.securitycenter", "com.miui.permcenter.autostart.AutoStartManagementActivity")
+            })
+            intents.add(Intent().apply {
+                component = ComponentName("com.miui.securitycenter", "com.miui.powerkeeper.ui.HiddenAppsConfigActivity")
+                putExtra("package_name", packageName)
+                putExtra("package_label", context.applicationInfo.loadLabel(context.packageManager).toString())
+            })
+        }
+        manufacturer.contains("oppo") || manufacturer.contains("realme") || manufacturer.contains("oneplus") -> {
+            intents.add(Intent().apply {
+                component = ComponentName("com.coloros.safecenter", "com.coloros.safecenter.permission.startup.StartupAppListActivity")
+            })
+            intents.add(Intent().apply {
+                component = ComponentName("com.coloros.safecenter", "com.coloros.safecenter.startupapp.StartupAppListActivity")
+            })
+            intents.add(Intent().apply {
+                component = ComponentName("com.oppo.safe", "com.oppo.safe.permission.startup.StartupAppListActivity")
+            })
+            intents.add(Intent().apply {
+                action = "com.coloros.oppoguardelf.intent.action.APP_STATUS"
+                putExtra("package_name", packageName)
+            })
+        }
+        manufacturer.contains("vivo") -> {
+            intents.add(Intent().apply {
+                component = ComponentName("com.vivo.permissionmanager", "com.vivo.permissionmanager.activity.BgStartUpManagerActivity")
+            })
+            intents.add(Intent().apply {
+                component = ComponentName("com.iqoo.secure", "com.iqoo.secure.ui.phoneoptimize.BgStartUpManager")
+            })
+        }
+        manufacturer.contains("huawei") || manufacturer.contains("honor") -> {
+            intents.add(Intent().apply {
+                component = ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.optimize.process.ProtectActivity")
+            })
+            intents.add(Intent().apply {
+                component = ComponentName("com.huawei.systemmanager", "com.huawei.systemmanager.startupmgr.ui.StartupNormalAppListActivity")
+            })
+        }
+        manufacturer.contains("samsung") -> {
+            intents.add(Intent().apply {
+                component = ComponentName("com.samsung.android.lool", "com.samsung.android.sm.ui.battery.BatteryActivity")
+            })
+            intents.add(Intent().apply {
+                component = ComponentName("com.samsung.android.sm", "com.samsung.android.sm.ui.battery.BatteryActivity")
+            })
+        }
+    }
+    return intents
+}
+
 fun launchBatteryOptimizationSettings(context: Context) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+        val oemIntents = getOEMBatteryIntents(context)
+        for (intent in oemIntents) {
+            try {
+                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                context.startActivity(intent)
+                return
+            } catch (e: Exception) {
+                // Ignore and try next OEM intent
+            }
+        }
+
+        // Fallback 1: Action Request Ignore Battery Optimizations
         try {
             val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS).apply {
                 data = Uri.parse("package:${context.packageName}")
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             context.startActivity(intent)
+            return
         } catch (e: Exception) {
-            try {
-                val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
-                context.startActivity(intent)
-            } catch (e2: Exception) {
-                val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
-                    data = Uri.parse("package:${context.packageName}")
-                }
-                context.startActivity(intent)
+            // Ignore and try next
+        }
+
+        // Fallback 2: General Ignore Battery Optimization Settings list
+        try {
+            val intent = Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
+            context.startActivity(intent)
+            return
+        } catch (e: Exception) {
+            // Ignore and try next
+        }
+
+        // Fallback 3: App Details Info
+        try {
+            val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
+                data = Uri.parse("package:${context.packageName}")
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            context.startActivity(intent)
+            return
+        } catch (e: Exception) {
+            // Ignore and try next
+        }
+    }
+
+    // Ultimate Fallback: System Settings
+    try {
+        val intent = Intent(Settings.ACTION_SETTINGS).apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        context.startActivity(intent)
+    } catch (e: Exception) {
+        // Last resort
+    }
+}
+
+fun getBatteryInstructionSteps(): String {
+    val manufacturer = Build.MANUFACTURER.lowercase()
+    return when {
+        manufacturer.contains("xiaomi") -> {
+            "1. Tap 'Open System Settings' below.\n" +
+            "2. Under Battery Saver, select 'No restrictions'.\n" +
+            "3. Enable 'Autostart' in permissions if available.\n" +
+            "4. Return to CamBG Record."
+        }
+        manufacturer.contains("oppo") || manufacturer.contains("realme") || manufacturer.contains("oneplus") -> {
+            "1. Tap 'Open System Settings' below.\n" +
+            "2. Select 'Don't optimize' (or choose 'Unrestricted').\n" +
+            "3. Ensure 'Allow background activity' & 'Allow auto-launch' are enabled.\n" +
+            "4. Return to CamBG Record."
+        }
+        manufacturer.contains("samsung") -> {
+            "1. Tap 'Open System Settings' below.\n" +
+            "2. Go to Battery and choose 'Unrestricted'.\n" +
+            "3. Return to CamBG Record."
+        }
+        manufacturer.contains("vivo") -> {
+            "1. Tap 'Open System Settings' below.\n" +
+            "2. Set background power consumption to 'Don't restrict background power consumption' or enable 'High background power consumption'.\n" +
+            "3. Return to CamBG Record."
+        }
+        else -> {
+            "1. Tap 'Open System Settings' below.\n" +
+            "2. Select 'Unrestricted', 'Allow', or 'Don't optimize'.\n" +
+            "3. Return to CamBG Record."
         }
     }
 }
@@ -210,9 +342,7 @@ fun SettingsBatteryCard(
                             )
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
-                                text = "1. Tap 'Open System Settings' below.\n" +
-                                       "2. Select 'Allow' or choose 'Unrestricted' battery usage.\n" +
-                                       "3. Return to CamBG Record.",
+                                text = getBatteryInstructionSteps(),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )

@@ -11,8 +11,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.core.content.ContextCompat
 import com.twinpath.cambg_record.model.AppSettings
 import com.twinpath.cambg_record.model.StorageLocation
 
@@ -20,8 +22,24 @@ import com.twinpath.cambg_record.model.StorageLocation
 fun SettingsStorageCard(
     settings: AppSettings,
     onUpdateStorageLocation: (StorageLocation) -> Unit,
+    onUpdateCustomStoragePath: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val context = LocalContext.current
+
+    val hasSdCard = remember {
+        val dirs = ContextCompat.getExternalFilesDirs(context, null)
+        dirs.size > 1 && dirs[1] != null
+    }
+
+    val availableLocations = remember(hasSdCard) {
+        StorageLocation.entries.filter {
+            it != StorageLocation.SD_CARD || hasSdCard
+        }
+    }
+
+    var dropdownExpanded by remember { mutableStateOf(false) }
+
     Column(modifier = modifier) {
         SettingsSectionHeader(title = "Storage", icon = Icons.Default.SdCard)
         Card(
@@ -35,33 +53,102 @@ fun SettingsStorageCard(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(12.dp))
 
-                StorageLocation.entries.forEach { location ->
+                // Dropdown Selector Trigger
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(RoundedCornerShape(12.dp))
+                        .clickable { dropdownExpanded = true }
+                        .padding(vertical = 12.dp, horizontal = 16.dp)
+                ) {
                     Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .clip(RoundedCornerShape(8.dp))
-                            .clickable { onUpdateStorageLocation(location) }
-                            .padding(vertical = 4.dp),
-                        verticalAlignment = Alignment.CenterVertically
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        RadioButton(
-                            selected = settings.storageLocation == location,
-                            onClick = { onUpdateStorageLocation(location) }
-                        )
-                        Column(modifier = Modifier.padding(start = 8.dp)) {
+                        Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = location.displayName,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = if (settings.storageLocation == location) FontWeight.Bold else FontWeight.Normal
+                                text = settings.storageLocation.displayName,
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                             Text(
-                                text = location.description,
+                                text = settings.storageLocation.description,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
+                        Icon(
+                            imageVector = Icons.Default.ArrowDropDown,
+                            contentDescription = "Select storage location",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = dropdownExpanded,
+                        onDismissRequest = { dropdownExpanded = false },
+                        modifier = Modifier.fillMaxWidth(0.9f)
+                    ) {
+                        availableLocations.forEach { location ->
+                            DropdownMenuItem(
+                                text = {
+                                    Column(modifier = Modifier.padding(vertical = 4.dp)) {
+                                        Text(
+                                            text = location.displayName,
+                                            fontWeight = if (settings.storageLocation == location) FontWeight.Bold else FontWeight.Normal,
+                                            style = MaterialTheme.typography.bodyLarge
+                                        )
+                                        Text(
+                                            text = location.description,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant
+                                        )
+                                    }
+                                },
+                                onClick = {
+                                    onUpdateStorageLocation(location)
+                                    dropdownExpanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+
+                // Custom Storage Path Text Field (only visible when Custom Location is selected)
+                AnimatedVisibility(
+                    visible = settings.storageLocation == StorageLocation.CUSTOM,
+                    enter = fadeIn() + expandVertically(),
+                    exit = fadeOut() + shrinkVertically()
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 16.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = settings.customStoragePath,
+                            onValueChange = onUpdateCustomStoragePath,
+                            label = { Text("Custom Folder Name") },
+                            placeholder = { Text("e.g. MySecretRecordings") },
+                            singleLine = true,
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                                unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                            )
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Save files under DCIM/[Custom Folder Name]",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(start = 8.dp)
+                        )
                     }
                 }
 

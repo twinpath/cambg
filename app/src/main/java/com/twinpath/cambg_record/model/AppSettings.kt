@@ -11,9 +11,17 @@ enum class StorageLocation(val displayName: String, val description: String) {
         displayName = "DCIM/CamBGRecord (Public)",
         description = "Visible in Gallery, Photos, and File Manager"
     ),
+    SD_CARD(
+        displayName = "SD Card (External)",
+        description = "Save recordings to the external SD card"
+    ),
     INTERNAL_PRIVATE(
         displayName = "Internal App Storage (Private)",
         description = "Only visible inside this app"
+    ),
+    CUSTOM(
+        displayName = "Custom Location (Public)",
+        description = "Save recordings to a custom folder path"
     )
 }
 
@@ -25,6 +33,7 @@ data class AppSettings(
     val audioSource: String = "Camcorder",
     val audioChannels: String = "Stereo",
     val storageLocation: StorageLocation = StorageLocation.PUBLIC_DCIM,
+    val customStoragePath: String = "CamBGRecord",
     val themeMode: AppThemeMode = AppThemeMode.SYSTEM,
     val dynamicColor: Boolean = true,
     val motionDetectionEnabled: Boolean = false,

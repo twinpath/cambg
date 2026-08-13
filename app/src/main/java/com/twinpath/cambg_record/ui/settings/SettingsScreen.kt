@@ -96,6 +96,7 @@ fun SettingsScreen(
     onUpdateAudioSource: (String) -> Unit,
     onUpdateAudioChannels: (String) -> Unit,
     onUpdateStorageLocation: (StorageLocation) -> Unit,
+    onUpdateCustomStoragePath: (String) -> Unit,
     onUpdateThemeMode: (AppThemeMode) -> Unit,
     onToggleDynamicColor: () -> Unit,
     modifier: Modifier = Modifier
@@ -216,11 +217,11 @@ fun SettingsScreen(
                 }
             }
 
-            // --- STORAGE SECTION ---
             item {
                 SettingsStorageCard(
                     settings = settings,
-                    onUpdateStorageLocation = onUpdateStorageLocation
+                    onUpdateStorageLocation = onUpdateStorageLocation,
+                    onUpdateCustomStoragePath = onUpdateCustomStoragePath
                 )
             }
 

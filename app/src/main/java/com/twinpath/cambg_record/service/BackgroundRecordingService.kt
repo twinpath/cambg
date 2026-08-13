@@ -84,7 +84,9 @@ class BackgroundRecordingService : LifecycleService() {
                 val isFrontCamera = intent.getBooleanExtra(EXTRA_IS_FRONT_CAMERA, false)
                 val quality = intent.getStringExtra(EXTRA_QUALITY) ?: "1080p"
                 val isAudioEnabled = intent.getBooleanExtra(EXTRA_AUDIO_ENABLED, true)
-                startCameraRecording(isFrontCamera, quality, isAudioEnabled)
+                val storageLocation = intent.getStringExtra(EXTRA_STORAGE_LOCATION) ?: "PUBLIC_DCIM"
+                val customStoragePath = intent.getStringExtra(EXTRA_CUSTOM_STORAGE_PATH) ?: "CamBGRecord"
+                startCameraRecording(isFrontCamera, quality, isAudioEnabled, storageLocation, customStoragePath)
             }
 
             ACTION_START_MEDIA_PROJECTION -> {
@@ -95,8 +97,10 @@ class BackgroundRecordingService : LifecycleService() {
                     @Suppress("DEPRECATION")
                     intent.getParcelableExtra(EXTRA_PROJECTION_DATA)
                 }
+                val storageLocation = intent.getStringExtra(EXTRA_STORAGE_LOCATION) ?: "PUBLIC_DCIM"
+                val customStoragePath = intent.getStringExtra(EXTRA_CUSTOM_STORAGE_PATH) ?: "CamBGRecord"
                 if (data != null && resultCode != -1) {
-                    startMediaProjectionRecording(resultCode, data)
+                    startMediaProjectionRecording(resultCode, data, storageLocation, customStoragePath)
                 } else {
                     Log.e(TAG, "Invalid MediaProjection intent data")
                     stopSelf()
@@ -111,7 +115,13 @@ class BackgroundRecordingService : LifecycleService() {
         return START_STICKY
     }
 
-    private fun startCameraRecording(isFrontCamera: Boolean, qualityStr: String, isAudioEnabled: Boolean) {
+    private fun startCameraRecording(
+        isFrontCamera: Boolean,
+        qualityStr: String,
+        isAudioEnabled: Boolean,
+        storageLocation: String,
+        customStoragePath: String
+    ) {
         val notification = createNotification("CamBG Recording Active (Camera)", "Capturing background camera video...")
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -174,12 +184,12 @@ class BackgroundRecordingService : LifecycleService() {
                     videoCapture
                 )
 
-                // Output File - save to public DCIM/CamBGRecord
-                val usePublicStorage = true
+                // Output File
                 val camTypeStr = if (isFrontCamera) "FRONT" else "BACK"
                 val outputFile = com.twinpath.cambg_record.camera.CameraXRecordingManager.createOutputFile(
                     this@BackgroundRecordingService,
-                    usePublicStorage,
+                    storageLocation,
+                    customStoragePath,
                     camTypeStr
                 )
                 currentOutputFile = outputFile
@@ -209,9 +219,13 @@ class BackgroundRecordingService : LifecycleService() {
                             if (!event.hasError() && fileSize > 0) {
                                 Log.d(TAG, "CameraX recording saved: ${outputFile.absolutePath} ($fileSize bytes)")
                                 // Scan to MediaStore so video appears in Gallery/Photos
-                                com.twinpath.cambg_record.camera.CameraXRecordingManager.scanFileToMediaStore(
-                                    this@BackgroundRecordingService, outputFile
-                                )
+                                // Scan to MediaStore if saved publicly
+                                val isPublic = storageLocation == "PUBLIC_DCIM" || storageLocation == "CUSTOM"
+                                if (isPublic) {
+                                    com.twinpath.cambg_record.camera.CameraXRecordingManager.scanFileToMediaStore(
+                                        this@BackgroundRecordingService, outputFile
+                                    )
+                                }
                                 _serviceState.update {
                                     it.copy(
                                         recordingState = RecordingState.IDLE,
@@ -233,7 +247,12 @@ class BackgroundRecordingService : LifecycleService() {
         }, ContextCompat.getMainExecutor(this))
     }
 
-    private fun startMediaProjectionRecording(resultCode: Int, data: Intent) {
+    private fun startMediaProjectionRecording(
+        resultCode: Int,
+        data: Intent,
+        storageLocation: String,
+        customStoragePath: String
+    ) {
         val notification = createNotification("CamBG MediaProjection Active", "Recording screen & background media...")
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
@@ -259,7 +278,8 @@ class BackgroundRecordingService : LifecycleService() {
 
             val outputFile = com.twinpath.cambg_record.camera.CameraXRecordingManager.createOutputFile(
                 this@BackgroundRecordingService,
-                true, // usePublicStorage
+                storageLocation,
+                customStoragePath,
                 "SCREEN"
             )
             currentOutputFile = outputFile
@@ -480,6 +500,8 @@ class BackgroundRecordingService : LifecycleService() {
         const val EXTRA_IS_FRONT_CAMERA = "extra_is_front_camera"
         const val EXTRA_QUALITY = "extra_quality"
         const val EXTRA_AUDIO_ENABLED = "extra_audio_enabled"
+        const val EXTRA_STORAGE_LOCATION = "extra_storage_location"
+        const val EXTRA_CUSTOM_STORAGE_PATH = "extra_custom_storage_path"
 
         const val EXTRA_RESULT_CODE = "extra_result_code"
         const val EXTRA_PROJECTION_DATA = "extra_projection_data"
@@ -513,13 +535,17 @@ class BackgroundRecordingService : LifecycleService() {
             context: Context,
             isFrontCamera: Boolean,
             quality: String,
-            isAudioEnabled: Boolean
+            isAudioEnabled: Boolean,
+            storageLocation: String,
+            customStoragePath: String
         ) {
             val intent = Intent(context, BackgroundRecordingService::class.java).apply {
                 action = ACTION_START_CAMERA_RECORDING
                 putExtra(EXTRA_IS_FRONT_CAMERA, isFrontCamera)
                 putExtra(EXTRA_QUALITY, quality)
                 putExtra(EXTRA_AUDIO_ENABLED, isAudioEnabled)
+                putExtra(EXTRA_STORAGE_LOCATION, storageLocation)
+                putExtra(EXTRA_CUSTOM_STORAGE_PATH, customStoragePath)
             }
             ContextCompat.startForegroundService(context, intent)
         }
@@ -527,12 +553,16 @@ class BackgroundRecordingService : LifecycleService() {
         fun startMediaProjectionService(
             context: Context,
             resultCode: Int,
-            data: Intent
+            data: Intent,
+            storageLocation: String,
+            customStoragePath: String
         ) {
             val intent = Intent(context, BackgroundRecordingService::class.java).apply {
                 action = ACTION_START_MEDIA_PROJECTION
                 putExtra(EXTRA_RESULT_CODE, resultCode)
                 putExtra(EXTRA_PROJECTION_DATA, data)
+                putExtra(EXTRA_STORAGE_LOCATION, storageLocation)
+                putExtra(EXTRA_CUSTOM_STORAGE_PATH, customStoragePath)
             }
             ContextCompat.startForegroundService(context, intent)
         }

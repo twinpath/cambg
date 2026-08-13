@@ -123,7 +123,8 @@ class CameraXRecordingManager {
     fun startRecording(
         context: Context,
         isAudioEnabled: Boolean,
-        usePublicStorage: Boolean = true,
+        storageLocationName: String = "PUBLIC_DCIM",
+        customStoragePath: String = "CamBGRecord",
         onStarted: () -> Unit,
         onFinished: (File, Long) -> Unit,
         onError: (String) -> Unit
@@ -134,7 +135,7 @@ class CameraXRecordingManager {
             return
         }
 
-        val outputFile = createOutputFile(context, usePublicStorage, "BACK")
+        val outputFile = createOutputFile(context, storageLocationName, customStoragePath, "BACK")
 
         val fileOutputOptions = FileOutputOptions.Builder(outputFile).build()
 
@@ -164,8 +165,9 @@ class CameraXRecordingManager {
                     if (!event.hasError()) {
                         val fileSize = outputFile.length()
                         Log.d("CameraXManager", "Video saved: ${outputFile.absolutePath} ($fileSize bytes)")
-                        // Notify MediaStore so the video appears in Gallery/Photos
-                        if (usePublicStorage) {
+                        // Notify MediaStore so the video appears in Gallery/Photos if saved publicly
+                        val isPublic = storageLocationName == "PUBLIC_DCIM" || storageLocationName == "CUSTOM"
+                        if (isPublic) {
                             scanFileToMediaStore(context, outputFile)
                         }
                         onFinished(outputFile, fileSize)
@@ -198,19 +200,32 @@ class CameraXRecordingManager {
 
     companion object {
         /**
-         * Creates an output file in either the public DCIM/CamBGRecord directory
-         * or the internal app storage recordings directory.
+         * Creates an output file in the resolved storage directory.
          */
         fun createOutputFile(
             context: Context,
-            usePublicStorage: Boolean,
+            storageLocationName: String,
+            customStoragePath: String,
             cameraTag: String = ""
         ): File {
-            val recordingsDir = if (usePublicStorage) {
-                val dcimDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)
-                File(dcimDir, "CamBGRecord")
-            } else {
-                File(context.filesDir, "recordings")
+            val recordingsDir = when (storageLocationName) {
+                "INTERNAL_PRIVATE" -> {
+                    File(context.filesDir, "recordings")
+                }
+                "SD_CARD" -> {
+                    val dirs = ContextCompat.getExternalFilesDirs(context, null)
+                    val sdCardDir = if (dirs.size > 1 && dirs[1] != null) dirs[1] else context.filesDir
+                    File(sdCardDir, "recordings")
+                }
+                "CUSTOM" -> {
+                    val folderName = if (customStoragePath.isNotBlank()) customStoragePath else "CamBGRecord"
+                    val dcimDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)
+                    File(dcimDir, folderName)
+                }
+                else -> {
+                    val dcimDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DCIM)
+                    File(dcimDir, "CamBGRecord")
+                }
             }
             if (!recordingsDir.exists()) {
                 recordingsDir.mkdirs()

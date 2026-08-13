@@ -208,6 +208,7 @@ fun MainAppNavigation(
                     onUpdateAudioSource = { settingsViewModel.updateAudioSource(it) },
                     onUpdateAudioChannels = { settingsViewModel.updateAudioChannels(it) },
                     onUpdateStorageLocation = { settingsViewModel.updateStorageLocation(it) },
+                    onUpdateCustomStoragePath = { settingsViewModel.updateCustomStoragePath(it) },
                     onUpdateThemeMode = { settingsViewModel.updateThemeMode(it) },
                     onToggleDynamicColor = { settingsViewModel.toggleDynamicColor() }
                 )

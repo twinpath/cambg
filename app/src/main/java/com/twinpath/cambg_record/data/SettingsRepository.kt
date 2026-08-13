@@ -26,27 +26,29 @@ class SettingsRepository(private val context: Context) {
         val AUDIO_SOURCE = stringPreferencesKey("audio_source")
         val AUDIO_CHANNELS = stringPreferencesKey("audio_channels")
         val STORAGE_LOCATION = stringPreferencesKey("storage_location")
+        val CUSTOM_STORAGE_PATH = stringPreferencesKey("custom_storage_path")
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
         val MOTION_DETECTION_ENABLED = booleanPreferencesKey("motion_detection_enabled")
         val MOTION_SENSITIVITY = floatPreferencesKey("motion_sensitivity")
         val PERSON_DETECTION_ENABLED = booleanPreferencesKey("person_detection_enabled")
         val PERSON_CONFIDENCE_THRESHOLD = floatPreferencesKey("person_confidence_threshold")
-    }
-
-    val settingsFlow: Flow<AppSettings> = context.dataStore.data.map { prefs ->
-        val defaults = AppSettings()
-        AppSettings(
-            resolution = prefs[Keys.RESOLUTION] ?: defaults.resolution,
-            frameRate = prefs[Keys.FRAME_RATE] ?: defaults.frameRate,
-            bitrate = prefs[Keys.BITRATE] ?: defaults.bitrate,
-            audioEnabled = prefs[Keys.AUDIO_ENABLED] ?: defaults.audioEnabled,
-            audioSource = prefs[Keys.AUDIO_SOURCE] ?: defaults.audioSource,
-            audioChannels = prefs[Keys.AUDIO_CHANNELS] ?: defaults.audioChannels,
-            storageLocation = prefs[Keys.STORAGE_LOCATION]?.let {
-                try { StorageLocation.valueOf(it) } catch (_: Exception) { defaults.storageLocation }
-            } ?: defaults.storageLocation,
-            themeMode = prefs[Keys.THEME_MODE]?.let {
+     }
+ 
+     val settingsFlow: Flow<AppSettings> = context.dataStore.data.map { prefs ->
+         val defaults = AppSettings()
+         AppSettings(
+             resolution = prefs[Keys.RESOLUTION] ?: defaults.resolution,
+             frameRate = prefs[Keys.FRAME_RATE] ?: defaults.frameRate,
+             bitrate = prefs[Keys.BITRATE] ?: defaults.bitrate,
+             audioEnabled = prefs[Keys.AUDIO_ENABLED] ?: defaults.audioEnabled,
+             audioSource = prefs[Keys.AUDIO_SOURCE] ?: defaults.audioSource,
+             audioChannels = prefs[Keys.AUDIO_CHANNELS] ?: defaults.audioChannels,
+             storageLocation = prefs[Keys.STORAGE_LOCATION]?.let {
+                 try { StorageLocation.valueOf(it) } catch (_: Exception) { defaults.storageLocation }
+             } ?: defaults.storageLocation,
+             customStoragePath = prefs[Keys.CUSTOM_STORAGE_PATH] ?: defaults.customStoragePath,
+             themeMode = prefs[Keys.THEME_MODE]?.let {
                 try { AppThemeMode.valueOf(it) } catch (_: Exception) { defaults.themeMode }
             } ?: defaults.themeMode,
             dynamicColor = prefs[Keys.DYNAMIC_COLOR] ?: defaults.dynamicColor,
@@ -83,6 +85,10 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun updateStorageLocation(value: StorageLocation) {
         context.dataStore.edit { it[Keys.STORAGE_LOCATION] = value.name }
+    }
+
+    suspend fun updateCustomStoragePath(value: String) {
+        context.dataStore.edit { it[Keys.CUSTOM_STORAGE_PATH] = value }
     }
 
     suspend fun updateThemeMode(value: AppThemeMode) {

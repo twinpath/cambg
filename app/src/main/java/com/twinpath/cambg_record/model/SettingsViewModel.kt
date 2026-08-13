@@ -50,6 +50,10 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch { repository.updateStorageLocation(newLocation) }
     }
 
+    fun updateCustomStoragePath(newPath: String) {
+        viewModelScope.launch { repository.updateCustomStoragePath(newPath) }
+    }
+
     fun updateThemeMode(newMode: AppThemeMode) {
         viewModelScope.launch { repository.updateThemeMode(newMode) }
     }

@@ -149,7 +149,9 @@ fun CameraScreen(
             com.twinpath.cambg_record.service.BackgroundRecordingService.startMediaProjectionService(
                 context = context,
                 resultCode = result.resultCode,
-                data = result.data!!
+                data = result.data!!,
+                storageLocation = appSettings.storageLocation.name,
+                customStoragePath = appSettings.customStoragePath
             )
             onStartRecord()
         } else {
@@ -197,7 +199,9 @@ fun CameraScreen(
                 context = context,
                 isFrontCamera = uiState.isFrontCamera,
                 quality = uiState.quality,
-                isAudioEnabled = uiState.isAudioEnabled
+                isAudioEnabled = uiState.isAudioEnabled,
+                storageLocation = appSettings.storageLocation.name,
+                customStoragePath = appSettings.customStoragePath
             )
             onStartRecord()
         }
