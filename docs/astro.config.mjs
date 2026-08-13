@@ -6,6 +6,8 @@ import react from "@astrojs/react"
 
 // https://astro.build/config
 export default defineConfig({
+  site: "https://twinpath.github.io",
+  base: "/cambg/",
   vite: {
     plugins: [tailwindcss()],
   },
