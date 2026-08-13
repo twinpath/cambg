@@ -10,19 +10,17 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.platform.LocalContext
-import com.twinpath.cambg.model.AppThemeMode
-import com.twinpath.cambg.model.CameraViewModel
-import com.twinpath.cambg.model.DetectionViewModel
-import com.twinpath.cambg.model.GalleryViewModel
-import com.twinpath.cambg.model.SettingsViewModel
-import com.twinpath.cambg.ui.navigation.MainAppNavigation
-import com.twinpath.cambg.ui.theme.CamBGRecordTheme
-import com.twinpath.cambg.util.LocaleHelper
+import com.twinpath.cambg.feature.settings.model.AppThemeMode
+import com.twinpath.cambg.feature.camera.model.CameraViewModel
+import com.twinpath.cambg.feature.gallery.model.GalleryViewModel
+import com.twinpath.cambg.feature.settings.model.SettingsViewModel
+import com.twinpath.cambg.navigation.MainAppNavigation
+import com.twinpath.cambg.core.theme.CamBGRecordTheme
+import com.twinpath.cambg.core.util.LocaleHelper
 
 class MainActivity : ComponentActivity() {
     private val cameraViewModel: CameraViewModel by viewModels()
     private val galleryViewModel: GalleryViewModel by viewModels()
-    private val detectionViewModel: DetectionViewModel by viewModels()
     private val settingsViewModel: SettingsViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -51,7 +49,6 @@ class MainActivity : ComponentActivity() {
                 MainAppNavigation(
                     cameraViewModel = cameraViewModel,
                     galleryViewModel = galleryViewModel,
-                    detectionViewModel = detectionViewModel,
                     settingsViewModel = settingsViewModel
                 )
             }
