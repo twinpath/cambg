@@ -8,4 +8,7 @@
     
     <!-- Paths for sharing public external storage directories (like DCIM/CamBGRecord) -->
     <external-path name="public_recordings" path="." />
+    
+    <!-- Paths for sharing update apk in cache directory -->
+    <cache-path name="update_apk" path="." />
 </paths>

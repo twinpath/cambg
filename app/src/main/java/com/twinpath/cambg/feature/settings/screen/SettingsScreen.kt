@@ -93,11 +93,14 @@ import com.twinpath.cambg.core.constant.AudioConstants
 
 import androidx.compose.material3.IconButton
 import androidx.compose.material.icons.filled.ArrowBack
+import com.twinpath.cambg.feature.settings.model.UpdateChannel
+import com.twinpath.cambg.core.helper.UpdateState
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
     settings: AppSettings,
+    updateState: UpdateState,
     onUpdateResolution: (String) -> Unit,
     onUpdateFrameRate: (String) -> Unit,
     onUpdateBitrate: (String) -> Unit,
@@ -110,6 +113,12 @@ fun SettingsScreen(
     onUpdateThemeMode: (AppThemeMode) -> Unit,
     onToggleDynamicColor: () -> Unit,
     onUpdateLanguage: (AppLanguage) -> Unit,
+    onUpdateUpdateChannel: (UpdateChannel) -> Unit,
+    onToggleAutoCheck: () -> Unit,
+    onCheckForUpdates: () -> Unit,
+    onDownloadAndInstallUpdate: (com.twinpath.cambg.core.data.model.UpdateAsset) -> Unit,
+    onTriggerInstall: (java.io.File) -> Unit,
+    onResetUpdateState: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -345,6 +354,44 @@ fun SettingsScreen(
                 }
             }
 
+            // --- APPLICATION UPDATES SECTION ---
+            item {
+                SettingsSectionHeader(title = stringResource(id = R.string.settings_updates_title), icon = Icons.Default.Shield)
+                Card(
+                    shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 1.dp)
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        DropdownSettingItem(
+                            title = stringResource(id = R.string.settings_updates_channel),
+                            subtitle = settings.updateChannel.name,
+                            options = UpdateChannel.entries.map { it.name },
+                            selected = settings.updateChannel.name,
+                            onSelect = { onUpdateUpdateChannel(UpdateChannel.valueOf(it)) },
+                            testTagPrefix = "update_channel"
+                        )
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                        SwitchSettingItem(
+                            title = stringResource(id = R.string.settings_updates_auto_check),
+                            subtitle = if (settings.autoCheckUpdates) "Checking enabled on startup" else "Manual checks only",
+                            checked = settings.autoCheckUpdates,
+                            onCheckedChange = { onToggleAutoCheck() },
+                            testTag = "auto_check_updates_switch"
+                        )
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                        Button(
+                            onClick = onCheckForUpdates,
+                            modifier = Modifier.fillMaxWidth().testTag("check_updates_button")
+                        ) {
+                            Text(text = stringResource(id = R.string.settings_updates_check_button))
+                        }
+                    }
+                }
+            }
+
             // --- ABOUT SECTION ---
             item {
                 SettingsSectionHeader(title = "About App", icon = Icons.Default.Info)
@@ -392,6 +439,119 @@ fun SettingsScreen(
                 Spacer(modifier = Modifier.height(96.dp))
             }
         }
+    }
+
+    // --- Update dialogs handling ---
+    when (val state = updateState) {
+        is UpdateState.Checking -> {
+            AlertDialog(
+                onDismissRequest = {},
+                confirmButton = {},
+                dismissButton = {},
+                title = { Text(text = "Checking for updates...") },
+                text = { LinearProgressIndicator(modifier = Modifier.fillMaxWidth()) }
+            )
+        }
+        is UpdateState.UpdateAvailable -> {
+            AlertDialog(
+                onDismissRequest = onResetUpdateState,
+                title = { Text(text = stringResource(id = R.string.update_dialog_title)) },
+                text = {
+                    Column {
+                        Text(
+                            text = stringResource(id = R.string.update_dialog_version, state.release.version, state.release.releaseType),
+                            fontWeight = FontWeight.Bold
+                        )
+                        Text(
+                            text = stringResource(id = R.string.update_dialog_date, state.release.date),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = stringResource(id = R.string.update_dialog_notes),
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Text(
+                            text = state.release.notes,
+                            style = MaterialTheme.typography.bodyMedium
+                        )
+                    }
+                },
+                confirmButton = {
+                    Button(onClick = { onDownloadAndInstallUpdate(state.asset) }) {
+                        Text(text = stringResource(id = R.string.update_dialog_btn_download))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = onResetUpdateState) {
+                        Text(text = stringResource(id = R.string.update_dialog_btn_cancel))
+                    }
+                }
+            )
+        }
+        is UpdateState.Downloading -> {
+            AlertDialog(
+                onDismissRequest = {},
+                confirmButton = {},
+                title = { Text(text = stringResource(id = R.string.update_downloading, state.progress)) },
+                text = {
+                    Column {
+                        LinearProgressIndicator(
+                            progress = { state.progress / 100f },
+                            modifier = Modifier.fillMaxWidth()
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Text(
+                            text = "${state.progress}%",
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.align(Alignment.End)
+                        )
+                    }
+                }
+            )
+        }
+        is UpdateState.ReadyToInstall -> {
+            AlertDialog(
+                onDismissRequest = onResetUpdateState,
+                title = { Text(text = "Update Ready") },
+                text = { Text(text = "The update has been downloaded. Press install to update the app.") },
+                confirmButton = {
+                    Button(onClick = { onTriggerInstall(state.apkFile) }) {
+                        Text(text = "Install")
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = onResetUpdateState) {
+                        Text(text = stringResource(id = R.string.update_dialog_btn_cancel))
+                    }
+                }
+            )
+        }
+        is UpdateState.UpToDate -> {
+            AlertDialog(
+                onDismissRequest = onResetUpdateState,
+                title = { Text(text = "Up to Date") },
+                text = { Text(text = stringResource(id = R.string.update_no_updates)) },
+                confirmButton = {
+                    Button(onClick = onResetUpdateState) {
+                        Text(text = "OK")
+                    }
+                }
+            )
+        }
+        is UpdateState.Error -> {
+            AlertDialog(
+                onDismissRequest = onResetUpdateState,
+                title = { Text(text = "Error") },
+                text = { Text(text = state.message) },
+                confirmButton = {
+                    Button(onClick = onResetUpdateState) {
+                        Text(text = "OK")
+                    }
+                }
+            )
+        }
+        else -> {}
     }
 }
 

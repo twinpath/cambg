@@ -3,7 +3,7 @@ package com.twinpath.cambg
 import androidx.compose.material3.Text
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
-import com.twinpath.cambg.ui.theme.CamBGRecordTheme
+import com.twinpath.cambg.core.theme.CamBGRecordTheme
 import com.github.takahirom.roborazzi.RobolectricDeviceQualifiers
 import com.github.takahirom.roborazzi.captureRoboImage
 import org.junit.Rule

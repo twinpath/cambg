@@ -12,6 +12,9 @@ import kotlinx.coroutines.launch
 class SettingsViewModel(application: Application) : AndroidViewModel(application) {
 
     private val repository = SettingsRepository(application.applicationContext)
+    val updateManager = com.twinpath.cambg.core.helper.UpdateManager(application.applicationContext)
+
+    val updateState = updateManager.updateState
 
     val settings: StateFlow<AppSettings> = repository.settingsFlow
         .stateIn(
@@ -19,6 +22,38 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             started = SharingStarted.WhileSubscribed(5000),
             initialValue = AppSettings()
         )
+
+    fun checkForUpdates() {
+        viewModelScope.launch {
+            updateManager.checkForUpdates(settings.value.updateChannel)
+        }
+    }
+
+    fun downloadAndInstallUpdate(asset: com.twinpath.cambg.core.data.model.UpdateAsset) {
+        viewModelScope.launch {
+            updateManager.downloadAndInstallApk(asset).collect { progress ->
+                // Progress is automatically set on UpdateManager.updateState
+            }
+        }
+    }
+
+    fun triggerInstall(file: java.io.File) {
+        updateManager.triggerInstall(file)
+    }
+
+    fun resetUpdateState() {
+        updateManager.resetState()
+    }
+
+    fun updateUpdateChannel(newChannel: UpdateChannel) {
+        viewModelScope.launch { repository.updateUpdateChannel(newChannel) }
+    }
+
+    fun toggleAutoCheckUpdates() {
+        viewModelScope.launch {
+            repository.updateAutoCheckUpdates(!settings.value.autoCheckUpdates)
+        }
+    }
 
     fun updateResolution(newRes: String) {
         viewModelScope.launch { repository.updateResolution(newRes) }

@@ -28,4 +28,20 @@
     <string name="audio_record_desc">Enable sound recording with video</string>
     <string name="audio_source">Audio Source</string>
     <string name="audio_channels">Audio Channels</string>
+
+    <!-- Application Updates -->
+    <string name="settings_updates_title">Application Updates</string>
+    <string name="settings_updates_channel">Update Channel</string>
+    <string name="settings_updates_auto_check">Auto check updates on startup</string>
+    <string name="settings_updates_check_button">Check for Updates</string>
+    <string name="update_dialog_title">New Version Available</string>
+    <string name="update_dialog_version">Version: %1$s (%2$s)</string>
+    <string name="update_dialog_date">Released: %1$s</string>
+    <string name="update_dialog_notes">Release Notes:</string>
+    <string name="update_dialog_btn_download">Download &amp; Install</string>
+    <string name="update_dialog_btn_cancel">Later</string>
+    <string name="update_downloading">Downloading update… (%1$d%%)</string>
+    <string name="update_no_updates">You are using the latest version</string>
+    <string name="update_failed">Update check failed</string>
+    <string name="update_download_failed">Download failed</string>
 </resources>

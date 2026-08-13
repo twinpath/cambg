@@ -38,12 +38,21 @@ fun MainAppNavigation(
     val cameraState by cameraViewModel.uiState.collectAsState()
     val galleryState by galleryViewModel.uiState.collectAsState()
     val settingsState by settingsViewModel.settings.collectAsState()
+    val updateState by settingsViewModel.updateState.collectAsState(initial = com.twinpath.cambg.core.helper.UpdateState.Idle)
 
     val context = LocalContext.current
 
     LaunchedEffect(currentScreen) {
         if (currentScreen == Screen.GALLERY) {
             galleryViewModel.loadRecordedVideos(context)
+        }
+    }
+
+    var hasCheckedUpdates by remember { mutableStateOf(false) }
+    LaunchedEffect(settingsState.autoCheckUpdates) {
+        if (settingsState.autoCheckUpdates && !hasCheckedUpdates) {
+            hasCheckedUpdates = true
+            settingsViewModel.checkForUpdates()
         }
     }
 
@@ -126,8 +135,9 @@ fun MainAppNavigation(
                     onBack = { currentScreen = Screen.CAMERA }
                 )
 
-                Screen.SETTINGS -> SettingsScreen(
+                 Screen.SETTINGS -> SettingsScreen(
                     settings = settingsState,
+                    updateState = updateState,
                     onUpdateResolution = { settingsViewModel.updateResolution(it) },
                     onUpdateFrameRate = { settingsViewModel.updateFrameRate(it) },
                     onUpdateBitrate = { settingsViewModel.updateBitrate(it) },
@@ -140,6 +150,12 @@ fun MainAppNavigation(
                     onUpdateThemeMode = { settingsViewModel.updateThemeMode(it) },
                     onToggleDynamicColor = { settingsViewModel.toggleDynamicColor() },
                     onUpdateLanguage = { settingsViewModel.updateLanguage(it) },
+                    onUpdateUpdateChannel = { settingsViewModel.updateUpdateChannel(it) },
+                    onToggleAutoCheck = { settingsViewModel.toggleAutoCheckUpdates() },
+                    onCheckForUpdates = { settingsViewModel.checkForUpdates() },
+                    onDownloadAndInstallUpdate = { settingsViewModel.downloadAndInstallUpdate(it) },
+                    onTriggerInstall = { settingsViewModel.triggerInstall(it) },
+                    onResetUpdateState = { settingsViewModel.resetUpdateState() },
                     onBack = { currentScreen = Screen.CAMERA }
                 )
             }

@@ -47,5 +47,7 @@ data class AppSettings(
     val customStoragePath: String = StorageConstants.DEFAULT_CUSTOM_STORAGE_PATH,
     val themeMode: AppThemeMode = AppThemeMode.SYSTEM,
     val dynamicColor: Boolean = true,
-    val language: AppLanguage = AppLanguage.ENGLISH
+    val language: AppLanguage = AppLanguage.ENGLISH,
+    val updateChannel: UpdateChannel = UpdateChannel.STABLE,
+    val autoCheckUpdates: Boolean = true
 )

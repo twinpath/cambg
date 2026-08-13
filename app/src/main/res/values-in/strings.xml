@@ -28,4 +28,20 @@
     <string name="audio_record_desc">Aktifkan perekaman suara bersama video</string>
     <string name="audio_source">Sumber Audio</string>
     <string name="audio_channels">Saluran Audio</string>
+
+    <!-- Application Updates -->
+    <string name="settings_updates_title">Pembaruan Aplikasi</string>
+    <string name="settings_updates_channel">Saluran Pembaruan</string>
+    <string name="settings_updates_auto_check">Cek pembaruan saat mulai</string>
+    <string name="settings_updates_check_button">Cek Pembaruan</string>
+    <string name="update_dialog_title">Versi Baru Tersedia</string>
+    <string name="update_dialog_version">Versi: %1$s (%2$s)</string>
+    <string name="update_dialog_date">Dirilis: %1$s</string>
+    <string name="update_dialog_notes">Catatan Rilis:</string>
+    <string name="update_dialog_btn_download">Unduh &amp; Instal</string>
+    <string name="update_dialog_btn_cancel">Nanti</string>
+    <string name="update_downloading">Mengunduh pembaruan… (%1$d%%)</string>
+    <string name="update_no_updates">Anda sudah menggunakan versi terbaru</string>
+    <string name="update_failed">Gagal mengecek pembaruan</string>
+    <string name="update_download_failed">Unduhan gagal</string>
 </resources>

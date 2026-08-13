@@ -15,6 +15,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 
 import com.twinpath.cambg.core.constant.PreferenceKeys
+import com.twinpath.cambg.core.constant.UpdateConstants
+import com.twinpath.cambg.feature.settings.model.UpdateChannel
+
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "cambg_settings")
 
@@ -33,6 +36,8 @@ class SettingsRepository(private val context: Context) {
         val THEME_MODE = stringPreferencesKey(PreferenceKeys.KEY_THEME_MODE)
         val DYNAMIC_COLOR = booleanPreferencesKey(PreferenceKeys.KEY_DYNAMIC_COLOR)
         val LANGUAGE = stringPreferencesKey(PreferenceKeys.KEY_LANGUAGE)
+        val UPDATE_CHANNEL = stringPreferencesKey(UpdateConstants.KEY_UPDATE_CHANNEL)
+        val AUTO_CHECK_UPDATES = booleanPreferencesKey(UpdateConstants.KEY_AUTO_CHECK_UPDATES)
     }
  
      val settingsFlow: Flow<AppSettings> = context.dataStore.data.map { prefs ->
@@ -55,7 +60,11 @@ class SettingsRepository(private val context: Context) {
              dynamicColor = prefs[Keys.DYNAMIC_COLOR] ?: defaults.dynamicColor,
              language = prefs[Keys.LANGUAGE]?.let {
                  try { AppLanguage.valueOf(it) } catch (_: Exception) { defaults.language }
-             } ?: defaults.language
+             } ?: defaults.language,
+             updateChannel = prefs[Keys.UPDATE_CHANNEL]?.let {
+                 try { UpdateChannel.valueOf(it) } catch (_: Exception) { defaults.updateChannel }
+             } ?: defaults.updateChannel,
+             autoCheckUpdates = prefs[Keys.AUTO_CHECK_UPDATES] ?: defaults.autoCheckUpdates
          )
      }
 
@@ -105,5 +114,13 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun updateLanguage(value: AppLanguage) {
         context.dataStore.edit { it[Keys.LANGUAGE] = value.name }
+    }
+
+    suspend fun updateUpdateChannel(value: UpdateChannel) {
+        context.dataStore.edit { it[Keys.UPDATE_CHANNEL] = value.name }
+    }
+
+    suspend fun updateAutoCheckUpdates(value: Boolean) {
+        context.dataStore.edit { it[Keys.AUTO_CHECK_UPDATES] = value }
     }
 }
