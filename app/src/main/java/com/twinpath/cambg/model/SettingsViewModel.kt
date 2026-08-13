@@ -67,5 +67,9 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             repository.updateDynamicColor(!settings.value.dynamicColor)
         }
     }
+
+    fun updateLanguage(newLanguage: AppLanguage) {
+        viewModelScope.launch { repository.updateLanguage(newLanguage) }
+    }
 }
 

@@ -1,3 +1,31 @@
 <resources>
     <string name="app_name">CamBG Record</string>
+
+    <!-- Settings Navigation & Headers -->
+    <string name="title_settings">Settings</string>
+    <string name="section_video_settings">Video Settings</string>
+    <string name="section_audio_settings">Audio Settings</string>
+    <string name="section_appearance">Appearance</string>
+    <string name="section_about">About App</string>
+
+    <!-- Appearance -->
+    <string name="theme_preference">Theme Preference</string>
+    <string name="theme_light">Light Theme</string>
+    <string name="theme_dark">Dark Theme</string>
+    <string name="theme_system">System Default</string>
+    <string name="dynamic_color_title">Dynamic Color (Material You)</string>
+    <string name="dynamic_color_desc">Use colors extracted from device wallpaper (Android 12+)</string>
+    <string name="language_preference">Language</string>
+
+    <!-- Video Settings -->
+    <string name="video_resolution">Video Resolution</string>
+    <string name="video_framerate">Frame Rate</string>
+    <string name="video_bitrate">Bitrate</string>
+    <string name="video_aspect_ratio">Aspect Ratio</string>
+
+    <!-- Audio Settings -->
+    <string name="audio_record">Record Audio</string>
+    <string name="audio_record_desc">Enable sound recording with video</string>
+    <string name="audio_source">Audio Source</string>
+    <string name="audio_channels">Audio Channels</string>
 </resources>

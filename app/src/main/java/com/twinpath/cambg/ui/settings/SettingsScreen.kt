@@ -76,8 +76,11 @@ import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.twinpath.cambg.BuildConfig
+import com.twinpath.cambg.R
+import androidx.compose.ui.res.stringResource
 import com.twinpath.cambg.model.AppSettings
 import com.twinpath.cambg.model.AppThemeMode
+import com.twinpath.cambg.model.AppLanguage
 import com.twinpath.cambg.model.StorageLocation
 import com.twinpath.cambg.ui.components.SettingsSectionHeader
 import com.twinpath.cambg.ui.components.SwitchSettingItem
@@ -103,6 +106,7 @@ fun SettingsScreen(
     onUpdateCustomStoragePath: (String) -> Unit,
     onUpdateThemeMode: (AppThemeMode) -> Unit,
     onToggleDynamicColor: () -> Unit,
+    onUpdateLanguage: (AppLanguage) -> Unit,
     modifier: Modifier = Modifier
 ) {
 
@@ -111,7 +115,7 @@ fun SettingsScreen(
             TopAppBar(
                 title = {
                     Text(
-                        text = "Settings",
+                        text = stringResource(id = R.string.title_settings),
                         style = MaterialTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
                     )
@@ -137,7 +141,7 @@ fun SettingsScreen(
 
             // --- VIDEO SECTION ---
             item {
-                SettingsSectionHeader(title = "Video Settings", icon = Icons.Default.Videocam)
+                SettingsSectionHeader(title = stringResource(id = R.string.section_video_settings), icon = Icons.Default.Videocam)
                 Card(
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -146,7 +150,7 @@ fun SettingsScreen(
                     Column(modifier = Modifier.padding(12.dp)) {
                         // Resolution Dropdown Item
                         DropdownSettingItem(
-                            title = "Video Resolution",
+                            title = stringResource(id = R.string.video_resolution),
                             subtitle = settings.resolution,
                             options = VideoConstants.RESOLUTION_OPTIONS,
                             selected = settings.resolution,
@@ -157,7 +161,7 @@ fun SettingsScreen(
 
                         // Frame Rate Dropdown Item
                         DropdownSettingItem(
-                            title = "Frame Rate",
+                            title = stringResource(id = R.string.video_framerate),
                             subtitle = settings.frameRate,
                             options = VideoConstants.FPS_OPTIONS,
                             selected = settings.frameRate,
@@ -168,7 +172,7 @@ fun SettingsScreen(
 
                         // Bitrate Dropdown Item
                         DropdownSettingItem(
-                            title = "Bitrate Quality",
+                            title = stringResource(id = R.string.video_bitrate),
                             subtitle = settings.bitrate,
                             options = VideoConstants.BITRATE_OPTIONS,
                             selected = settings.bitrate,
@@ -179,7 +183,7 @@ fun SettingsScreen(
 
                         // Aspect Ratio Dropdown Item
                         DropdownSettingItem(
-                            title = "Aspect Ratio",
+                            title = stringResource(id = R.string.video_aspect_ratio),
                             subtitle = settings.aspectRatio,
                             options = VideoConstants.ASPECT_RATIO_OPTIONS,
                             selected = settings.aspectRatio,
@@ -194,7 +198,7 @@ fun SettingsScreen(
 
             // --- AUDIO SECTION ---
             item {
-                SettingsSectionHeader(title = "Audio Settings", icon = Icons.Default.Mic)
+                SettingsSectionHeader(title = stringResource(id = R.string.section_audio_settings), icon = Icons.Default.Mic)
                 Card(
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -203,8 +207,8 @@ fun SettingsScreen(
                     Column(modifier = Modifier.padding(12.dp)) {
                         // Toggle Audio Switch
                         SwitchSettingItem(
-                            title = "Record Audio",
-                            subtitle = if (settings.audioEnabled) "Capture microphone/camcorder sound" else "Muted video recording",
+                            title = stringResource(id = R.string.audio_record),
+                            subtitle = if (settings.audioEnabled) stringResource(id = R.string.audio_record_desc) else "Muted video recording",
                             checked = settings.audioEnabled,
                             onCheckedChange = { onToggleAudio() },
                             testTag = "record_audio_switch"
@@ -213,7 +217,7 @@ fun SettingsScreen(
                         if (settings.audioEnabled) {
                             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                             DropdownSettingItem(
-                                title = "Audio Source",
+                                title = stringResource(id = R.string.audio_source),
                                 subtitle = settings.audioSource,
                                 options = AudioConstants.AUDIO_SOURCE_OPTIONS,
                                 selected = settings.audioSource,
@@ -222,7 +226,7 @@ fun SettingsScreen(
                             )
                             HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
                             DropdownSettingItem(
-                                title = "Channels",
+                                title = stringResource(id = R.string.audio_channels),
                                 subtitle = settings.audioChannels,
                                 options = AudioConstants.AUDIO_CHANNEL_OPTIONS,
                                 selected = settings.audioChannels,
@@ -244,7 +248,7 @@ fun SettingsScreen(
 
             // --- APPEARANCE SECTION ---
             item {
-                SettingsSectionHeader(title = "Appearance", icon = Icons.Default.Palette)
+                SettingsSectionHeader(title = stringResource(id = R.string.section_appearance), icon = Icons.Default.Palette)
                 Card(
                     shape = RoundedCornerShape(16.dp),
                     colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
@@ -252,7 +256,7 @@ fun SettingsScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = "Theme Preference",
+                            text = stringResource(id = R.string.theme_preference),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -273,9 +277,9 @@ fun SettingsScreen(
                                 )
                                 Text(
                                     text = when (mode) {
-                                        AppThemeMode.LIGHT -> "Light Theme"
-                                        AppThemeMode.DARK -> "Dark Theme"
-                                        AppThemeMode.SYSTEM -> "System Default"
+                                        AppThemeMode.LIGHT -> stringResource(id = R.string.theme_light)
+                                        AppThemeMode.DARK -> stringResource(id = R.string.theme_dark)
+                                        AppThemeMode.SYSTEM -> stringResource(id = R.string.theme_system)
                                     },
                                     style = MaterialTheme.typography.bodyMedium,
                                     modifier = Modifier.padding(start = 8.dp)
@@ -286,12 +290,42 @@ fun SettingsScreen(
                         HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 
                         SwitchSettingItem(
-                            title = "Dynamic Color (Material You)",
-                            subtitle = "Use colors extracted from device wallpaper (Android 12+)",
+                            title = stringResource(id = R.string.dynamic_color_title),
+                            subtitle = stringResource(id = R.string.dynamic_color_desc),
                             checked = settings.dynamicColor,
                             onCheckedChange = { onToggleDynamicColor() },
                             testTag = "dynamic_color_switch"
                         )
+
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                        Text(
+                            text = stringResource(id = R.string.language_preference),
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.SemiBold
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        AppLanguage.entries.forEach { lang ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .clickable { onUpdateLanguage(lang) }
+                                    .padding(vertical = 4.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                RadioButton(
+                                    selected = settings.language == lang,
+                                    onClick = { onUpdateLanguage(lang) }
+                                )
+                                Text(
+                                    text = lang.displayName,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    modifier = Modifier.padding(start = 8.dp)
+                                )
+                            }
+                        }
                     }
                 }
             }

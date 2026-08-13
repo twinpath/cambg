@@ -4,6 +4,12 @@ import com.twinpath.cambg.constant.VideoConstants
 import com.twinpath.cambg.constant.AudioConstants
 import com.twinpath.cambg.constant.StorageConstants
 import com.twinpath.cambg.constant.DetectionConstants
+import com.twinpath.cambg.constant.LanguageConstants
+
+enum class AppLanguage(val code: String, val displayName: String) {
+    ENGLISH(LanguageConstants.LANG_EN, LanguageConstants.DISPLAY_EN),
+    INDONESIAN(LanguageConstants.LANG_IN, LanguageConstants.DISPLAY_IN)
+}
 
 enum class AppThemeMode {
     LIGHT,
@@ -45,5 +51,6 @@ data class AppSettings(
     val motionDetectionEnabled: Boolean = DetectionConstants.DEFAULT_MOTION_DETECTION_ENABLED,
     val motionSensitivity: Float = DetectionConstants.DEFAULT_MOTION_SENSITIVITY, // 0.0 - Low, 0.5 - Medium, 1.0 - High
     val personDetectionEnabled: Boolean = DetectionConstants.DEFAULT_PERSON_DETECTION_ENABLED,
-    val personConfidenceThreshold: Float = DetectionConstants.DEFAULT_PERSON_CONFIDENCE_THRESHOLD
+    val personConfidenceThreshold: Float = DetectionConstants.DEFAULT_PERSON_CONFIDENCE_THRESHOLD,
+    val language: AppLanguage = AppLanguage.ENGLISH
 )

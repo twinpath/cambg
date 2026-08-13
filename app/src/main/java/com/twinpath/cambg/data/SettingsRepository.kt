@@ -32,6 +32,7 @@ class SettingsRepository(private val context: Context) {
         val CUSTOM_STORAGE_PATH = stringPreferencesKey(PreferenceKeys.KEY_CUSTOM_STORAGE_PATH)
         val THEME_MODE = stringPreferencesKey(PreferenceKeys.KEY_THEME_MODE)
         val DYNAMIC_COLOR = booleanPreferencesKey(PreferenceKeys.KEY_DYNAMIC_COLOR)
+        val LANGUAGE = stringPreferencesKey(PreferenceKeys.KEY_LANGUAGE)
         val MOTION_DETECTION_ENABLED = booleanPreferencesKey(PreferenceKeys.KEY_MOTION_DETECTION_ENABLED)
         val MOTION_SENSITIVITY = floatPreferencesKey(PreferenceKeys.KEY_MOTION_SENSITIVITY)
         val PERSON_DETECTION_ENABLED = booleanPreferencesKey(PreferenceKeys.KEY_PERSON_DETECTION_ENABLED)
@@ -56,6 +57,9 @@ class SettingsRepository(private val context: Context) {
                 try { AppThemeMode.valueOf(it) } catch (_: Exception) { defaults.themeMode }
             } ?: defaults.themeMode,
             dynamicColor = prefs[Keys.DYNAMIC_COLOR] ?: defaults.dynamicColor,
+            language = prefs[Keys.LANGUAGE]?.let {
+                try { com.twinpath.cambg.model.AppLanguage.valueOf(it) } catch (_: Exception) { defaults.language }
+            } ?: defaults.language,
             motionDetectionEnabled = prefs[Keys.MOTION_DETECTION_ENABLED] ?: defaults.motionDetectionEnabled,
             motionSensitivity = prefs[Keys.MOTION_SENSITIVITY] ?: defaults.motionSensitivity,
             personDetectionEnabled = prefs[Keys.PERSON_DETECTION_ENABLED] ?: defaults.personDetectionEnabled,
@@ -121,5 +125,9 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun updatePersonConfidenceThreshold(value: Float) {
         context.dataStore.edit { it[Keys.PERSON_CONFIDENCE_THRESHOLD] = value }
+    }
+
+    suspend fun updateLanguage(value: com.twinpath.cambg.model.AppLanguage) {
+        context.dataStore.edit { it[Keys.LANGUAGE] = value.name }
     }
 }

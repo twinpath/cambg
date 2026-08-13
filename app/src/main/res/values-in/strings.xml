@@ -1,0 +1,31 @@
+<resources>
+    <string name="app_name">CamBG Record</string>
+
+    <!-- Settings Navigation & Headers -->
+    <string name="title_settings">Pengaturan</string>
+    <string name="section_video_settings">Pengaturan Video</string>
+    <string name="section_audio_settings">Pengaturan Audio</string>
+    <string name="section_appearance">Tampilan</string>
+    <string name="section_about">Tentang Aplikasi</string>
+
+    <!-- Appearance -->
+    <string name="theme_preference">Preferensi Tema</string>
+    <string name="theme_light">Tema Terang</string>
+    <string name="theme_dark">Tema Gelap</string>
+    <string name="theme_system">Default Sistem</string>
+    <string name="dynamic_color_title">Warna Dinamis (Material You)</string>
+    <string name="dynamic_color_desc">Gunakan warna yang disesuaikan dari wallpaper perangkat (Android 12+)</string>
+    <string name="language_preference">Bahasa</string>
+
+    <!-- Video Settings -->
+    <string name="video_resolution">Resolusi Video</string>
+    <string name="video_framerate">Frame Rate</string>
+    <string name="video_bitrate">Bitrate</string>
+    <string name="video_aspect_ratio">Rasio Aspek</string>
+
+    <!-- Audio Settings -->
+    <string name="audio_record">Rekam Audio</string>
+    <string name="audio_record_desc">Aktifkan perekaman suara bersama video</string>
+    <string name="audio_source">Sumber Audio</string>
+    <string name="audio_channels">Saluran Audio</string>
+</resources>

@@ -16,4 +16,5 @@ object PreferenceKeys {
     const val KEY_MOTION_SENSITIVITY = "motion_sensitivity"
     const val KEY_PERSON_DETECTION_ENABLED = "person_detection_enabled"
     const val KEY_PERSON_CONFIDENCE_THRESHOLD = "person_confidence_threshold"
+    const val KEY_LANGUAGE = "language"
 }

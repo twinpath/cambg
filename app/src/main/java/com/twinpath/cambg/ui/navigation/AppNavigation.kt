@@ -225,7 +225,8 @@ fun MainAppNavigation(
                     onUpdateStorageLocation = { settingsViewModel.updateStorageLocation(it) },
                     onUpdateCustomStoragePath = { settingsViewModel.updateCustomStoragePath(it) },
                     onUpdateThemeMode = { settingsViewModel.updateThemeMode(it) },
-                    onToggleDynamicColor = { settingsViewModel.toggleDynamicColor() }
+                    onToggleDynamicColor = { settingsViewModel.toggleDynamicColor() },
+                    onUpdateLanguage = { settingsViewModel.updateLanguage(it) }
                 )
             }
         }
