@@ -7,16 +7,21 @@ import { SITE_NAME, SITE_DESCRIPTION } from "@/data/site"
 interface Props {
   title?: string
   description?: string
+  image?: string
 }
 
 const {
   title = SITE_NAME,
   description = SITE_DESCRIPTION,
+  image = `${import.meta.env.BASE_URL}og-image.png`,
 } = Astro.props
 
 const currentPath = new URL(Astro.request.url).pathname
 const fullTitle =
   title === SITE_NAME ? title : `${title} - ${SITE_NAME}`
+
+const canonicalURL = new URL(Astro.url.pathname, Astro.site)
+const socialImageURL = new URL(image, Astro.site)
 
 ---
 
@@ -25,16 +30,28 @@ const fullTitle =
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}favicon.svg`} />
+    <link rel="canonical" href={canonicalURL} />
 
     <!-- SEO -->
     <title>{fullTitle}</title>
     <meta name="description" content={description} />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalURL} />
     <meta property="og:title" content={fullTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:type" content="website" />
-    <meta name="twitter:card" content="summary" />
+    <meta property="og:image" content={socialImageURL} />
+    <meta property="og:image:alt" content={fullTitle} />
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:locale" content="en_US" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content={canonicalURL} />
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={socialImageURL} />
 
     <!-- Prevent FOUC: apply saved theme before first paint -->
     <script is:inline>
