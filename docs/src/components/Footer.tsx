@@ -5,7 +5,7 @@ import {
   GITHUB_URL,
   FOOTER_SECTIONS,
 } from "@/data/site"
-import { GitFork, ExternalLink, Video } from "lucide-react"
+import { GitFork, ExternalLink } from "lucide-react"
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
@@ -18,7 +18,11 @@ export function Footer() {
           {/* Brand column */}
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <Video className="size-5 text-primary" />
+              <img
+                src={`${import.meta.env.BASE_URL}logo.svg`}
+                alt={`${SITE_NAME} Logo`}
+                className="size-5"
+              />
               <span className="font-heading text-sm font-medium">
                 {SITE_NAME}
               </span>

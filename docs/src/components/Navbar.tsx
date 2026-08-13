@@ -3,7 +3,6 @@ import { TooltipProvider } from "@/components/ui/tooltip"
 import { ThemeToggle } from "@/components/ThemeToggle"
 import { MobileNav } from "@/components/MobileNav"
 import { NAV_LINKS, SITE_NAME } from "@/data/site"
-import { Video } from "lucide-react"
 
 interface NavbarProps {
   currentPath: string
@@ -22,7 +21,11 @@ export function Navbar({ currentPath }: NavbarProps) {
 
             {/* Logo + wordmark */}
             <a href={import.meta.env.BASE_URL} className="flex items-center gap-2">
-              <Video className="size-5 text-primary" />
+              <img
+                src={`${import.meta.env.BASE_URL}logo.svg`}
+                alt={`${SITE_NAME} Logo`}
+                className="size-5"
+              />
               <span className="font-heading text-sm font-medium">
                 {SITE_NAME}
               </span>
