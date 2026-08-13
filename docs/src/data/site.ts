@@ -55,7 +55,7 @@ export const SYSTEM_REQUIREMENTS = [
 
 export const FOOTER_CONTENT = {
   githubLink: "View on GitHub",
-  copyright: "All rights reserved.",
+  copyright: "App is Proprietary. Web code is MIT.",
   brandingNote: "Built with precision. Designed for reliability.",
 } as const
 

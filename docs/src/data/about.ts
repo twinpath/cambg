@@ -7,7 +7,7 @@ export const ABOUT_PAGE_METADATA = {
 } as const
 
 export const ABOUT_HERO_CONTENT = {
-  badge: "Open Source Project",
+  badge: "Proprietary App & MIT Website",
   heading: "About CamBG Record",
   paragraphs: [
     "CamBG Record is a purpose-built Android application that enables continuous video recording in the background, operating seamlessly even when the device screen is locked or other applications are in the foreground.",
@@ -108,7 +108,7 @@ export const PROJECT_INFO_CONTENT = {
       icon: Scale,
       title: "License",
       description:
-        "This project is proprietary software. All rights reserved. Unauthorized copying, modification, distribution, or use is strictly prohibited without prior written consent.",
+        "The Android application is proprietary (all rights reserved by twinpath). The documentation website codebase is open-source under the MIT License.",
     },
     {
       icon: GitBranch,
