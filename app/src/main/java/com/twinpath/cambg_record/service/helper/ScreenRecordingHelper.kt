@@ -10,6 +10,7 @@ import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.util.Log
 import java.io.File
+import com.twinpath.cambg_record.util.AppConstants
 
 class ScreenRecordingHelper(private val context: Context) {
 
@@ -23,6 +24,8 @@ class ScreenRecordingHelper(private val context: Context) {
         data: Intent,
         storageLocation: String,
         customStoragePath: String,
+        frameRate: String,
+        bitrate: String,
         onStart: (File) -> Unit,
         onError: () -> Unit
     ) {
@@ -57,9 +60,21 @@ class ScreenRecordingHelper(private val context: Context) {
             recorder.setVideoSize(width, height)
             recorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264)
             recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-            recorder.setVideoEncodingBitRate(5 * 1024 * 1024)
-            recorder.setVideoFrameRate(30)
+
+            // Map and apply frame rate and bitrate from constants settings
+            val mappedFps = AppConstants.mapFpsStringToVal(frameRate)
+            val resolutionTag = when {
+                width >= 2160 || height >= 2160 -> AppConstants.RESOLUTION_4K
+                width >= 1080 || height >= 1080 -> AppConstants.RESOLUTION_1080P
+                width >= 720 || height >= 720 -> AppConstants.RESOLUTION_720P
+                else -> AppConstants.RESOLUTION_480P
+            }
+            val mappedBitrate = AppConstants.mapBitrateStringToVal(bitrate, resolutionTag)
+
+            recorder.setVideoEncodingBitRate(mappedBitrate)
+            recorder.setVideoFrameRate(mappedFps)
             recorder.prepare()
+
 
             virtualDisplay = mediaProjection?.createVirtualDisplay(
                 "CamBG_ScreenCapture",

@@ -33,6 +33,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.twinpath.cambg_record.model.CameraUiState
 
+import com.twinpath.cambg_record.util.AppConstants
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CameraSettingsSheet(
@@ -74,8 +76,9 @@ fun CameraSettingsSheet(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                listOf("480p", "720p", "1080p", "4K").forEach { qualityOpt ->
+                AppConstants.RESOLUTION_OPTIONS.forEach { qualityOpt ->
                     val isSelected = uiState.quality == qualityOpt
+
                     AssistChip(
                         onClick = { onSetQuality(qualityOpt) },
                         label = { Text(qualityOpt) },

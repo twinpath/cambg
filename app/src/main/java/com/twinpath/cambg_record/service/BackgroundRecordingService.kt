@@ -28,6 +28,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
+import com.twinpath.cambg_record.util.AppConstants
+
 
 data class ServiceRecordingState(
     val isServiceRunning: Boolean = false,
@@ -62,11 +64,13 @@ class BackgroundRecordingService : LifecycleService() {
         when (intent?.action) {
             ACTION_START_CAMERA_RECORDING -> {
                 val isFrontCamera = intent.getBooleanExtra(EXTRA_IS_FRONT_CAMERA, false)
-                val quality = intent.getStringExtra(EXTRA_QUALITY) ?: "1080p"
+                val quality = intent.getStringExtra(EXTRA_QUALITY) ?: AppConstants.DEFAULT_RESOLUTION
                 val isAudioEnabled = intent.getBooleanExtra(EXTRA_AUDIO_ENABLED, true)
                 val storageLocation = intent.getStringExtra(EXTRA_STORAGE_LOCATION) ?: "PUBLIC_DCIM"
                 val customStoragePath = intent.getStringExtra(EXTRA_CUSTOM_STORAGE_PATH) ?: "CamBGRecord"
-                startCameraRecording(isFrontCamera, quality, isAudioEnabled, storageLocation, customStoragePath)
+                val frameRate = intent.getStringExtra(EXTRA_FRAME_RATE) ?: AppConstants.DEFAULT_FPS
+                val bitrate = intent.getStringExtra(EXTRA_BITRATE) ?: AppConstants.DEFAULT_BITRATE
+                startCameraRecording(isFrontCamera, quality, isAudioEnabled, storageLocation, customStoragePath, frameRate, bitrate)
             }
 
             ACTION_START_MEDIA_PROJECTION -> {
@@ -79,8 +83,10 @@ class BackgroundRecordingService : LifecycleService() {
                 }
                 val storageLocation = intent.getStringExtra(EXTRA_STORAGE_LOCATION) ?: "PUBLIC_DCIM"
                 val customStoragePath = intent.getStringExtra(EXTRA_CUSTOM_STORAGE_PATH) ?: "CamBGRecord"
+                val frameRate = intent.getStringExtra(EXTRA_FRAME_RATE) ?: AppConstants.DEFAULT_FPS
+                val bitrate = intent.getStringExtra(EXTRA_BITRATE) ?: AppConstants.DEFAULT_BITRATE
                 if (data != null && resultCode != -1) {
-                    startMediaProjectionRecording(resultCode, data, storageLocation, customStoragePath)
+                    startMediaProjectionRecording(resultCode, data, storageLocation, customStoragePath, frameRate, bitrate)
                 } else {
                     Log.e(TAG, "Invalid MediaProjection intent data")
                     stopSelf()
@@ -100,7 +106,9 @@ class BackgroundRecordingService : LifecycleService() {
         qualityStr: String,
         isAudioEnabled: Boolean,
         storageLocation: String,
-        customStoragePath: String
+        customStoragePath: String,
+        frameRate: String,
+        bitrate: String
     ) {
         val notification = createNotification("CamBG Recording Active (Camera)", "Capturing background camera video...")
 
@@ -166,7 +174,9 @@ class BackgroundRecordingService : LifecycleService() {
         resultCode: Int,
         data: Intent,
         storageLocation: String,
-        customStoragePath: String
+        customStoragePath: String,
+        frameRate: String,
+        bitrate: String
     ) {
         val notification = createNotification("CamBG MediaProjection Active", "Recording screen & background media...")
 
@@ -192,6 +202,8 @@ class BackgroundRecordingService : LifecycleService() {
             data = data,
             storageLocation = storageLocation,
             customStoragePath = customStoragePath,
+            frameRate = frameRate,
+            bitrate = bitrate,
             onStart = { outputFile ->
                 currentOutputFile = outputFile
                 startTimer()
@@ -358,6 +370,9 @@ class BackgroundRecordingService : LifecycleService() {
         const val EXTRA_STORAGE_LOCATION = "extra_storage_location"
         const val EXTRA_CUSTOM_STORAGE_PATH = "extra_custom_storage_path"
 
+        const val EXTRA_FRAME_RATE = "extra_frame_rate"
+        const val EXTRA_BITRATE = "extra_bitrate"
+
         const val EXTRA_RESULT_CODE = "extra_result_code"
         const val EXTRA_PROJECTION_DATA = "extra_projection_data"
 
@@ -380,7 +395,9 @@ class BackgroundRecordingService : LifecycleService() {
             quality: String,
             isAudioEnabled: Boolean,
             storageLocation: String,
-            customStoragePath: String
+            customStoragePath: String,
+            frameRate: String,
+            bitrate: String
         ) {
             val intent = Intent(context, BackgroundRecordingService::class.java).apply {
                 action = ACTION_START_CAMERA_RECORDING
@@ -389,6 +406,8 @@ class BackgroundRecordingService : LifecycleService() {
                 putExtra(EXTRA_AUDIO_ENABLED, isAudioEnabled)
                 putExtra(EXTRA_STORAGE_LOCATION, storageLocation)
                 putExtra(EXTRA_CUSTOM_STORAGE_PATH, customStoragePath)
+                putExtra(EXTRA_FRAME_RATE, frameRate)
+                putExtra(EXTRA_BITRATE, bitrate)
             }
             ContextCompat.startForegroundService(context, intent)
         }
@@ -398,7 +417,9 @@ class BackgroundRecordingService : LifecycleService() {
             resultCode: Int,
             data: Intent,
             storageLocation: String,
-            customStoragePath: String
+            customStoragePath: String,
+            frameRate: String,
+            bitrate: String
         ) {
             val intent = Intent(context, BackgroundRecordingService::class.java).apply {
                 action = ACTION_START_MEDIA_PROJECTION
@@ -406,6 +427,8 @@ class BackgroundRecordingService : LifecycleService() {
                 putExtra(EXTRA_PROJECTION_DATA, data)
                 putExtra(EXTRA_STORAGE_LOCATION, storageLocation)
                 putExtra(EXTRA_CUSTOM_STORAGE_PATH, customStoragePath)
+                putExtra(EXTRA_FRAME_RATE, frameRate)
+                putExtra(EXTRA_BITRATE, bitrate)
             }
             ContextCompat.startForegroundService(context, intent)
         }

@@ -85,6 +85,8 @@ import com.twinpath.cambg_record.ui.components.DropdownSettingItem
 import com.twinpath.cambg_record.ui.components.SettingsBatteryCard
 import com.twinpath.cambg_record.ui.components.SettingsStorageCard
 
+import com.twinpath.cambg_record.util.AppConstants
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettingsScreen(
@@ -144,7 +146,7 @@ fun SettingsScreen(
                         DropdownSettingItem(
                             title = "Video Resolution",
                             subtitle = settings.resolution,
-                            options = listOf("480p", "720p", "1080p", "4K"),
+                            options = AppConstants.RESOLUTION_OPTIONS,
                             selected = settings.resolution,
                             onSelect = onUpdateResolution,
                             testTagPrefix = "res"
@@ -155,7 +157,7 @@ fun SettingsScreen(
                         DropdownSettingItem(
                             title = "Frame Rate",
                             subtitle = settings.frameRate,
-                            options = listOf("24 fps", "30 fps", "60 fps"),
+                            options = AppConstants.FPS_OPTIONS,
                             selected = settings.frameRate,
                             onSelect = onUpdateFrameRate,
                             testTagPrefix = "fps"
@@ -166,11 +168,12 @@ fun SettingsScreen(
                         DropdownSettingItem(
                             title = "Bitrate Quality",
                             subtitle = settings.bitrate,
-                            options = listOf("Auto", "Medium", "High"),
+                            options = AppConstants.BITRATE_OPTIONS,
                             selected = settings.bitrate,
                             onSelect = onUpdateBitrate,
                             testTagPrefix = "bitrate"
                         )
+
                     }
                 }
             }

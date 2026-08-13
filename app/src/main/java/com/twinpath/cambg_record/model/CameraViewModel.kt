@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
+import com.twinpath.cambg_record.util.AppConstants
+
 enum class RecordingState {
     IDLE,
     RECORDING,
@@ -19,7 +21,8 @@ enum class RecordingState {
 data class CameraUiState(
     val recordingState: RecordingState = RecordingState.IDLE,
     val elapsedTimeSeconds: Long = 0,
-    val quality: String = "1080p",
+    val quality: String = AppConstants.DEFAULT_RESOLUTION,
+
     val isFrontCamera: Boolean = false,
     val flashMode: String = "OFF", // "OFF", "ON", "AUTO"
     val isAudioEnabled: Boolean = true,

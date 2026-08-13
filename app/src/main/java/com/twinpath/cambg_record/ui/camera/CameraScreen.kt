@@ -151,7 +151,9 @@ fun CameraScreen(
                 resultCode = result.resultCode,
                 data = result.data!!,
                 storageLocation = appSettings.storageLocation.name,
-                customStoragePath = appSettings.customStoragePath
+                customStoragePath = appSettings.customStoragePath,
+                frameRate = appSettings.frameRate,
+                bitrate = appSettings.bitrate
             )
             onStartRecord()
         } else {
@@ -189,7 +191,9 @@ fun CameraScreen(
                 quality = uiState.quality,
                 isAudioEnabled = uiState.isAudioEnabled,
                 storageLocation = appSettings.storageLocation.name,
-                customStoragePath = appSettings.customStoragePath
+                customStoragePath = appSettings.customStoragePath,
+                frameRate = appSettings.frameRate,
+                bitrate = appSettings.bitrate
             )
             onStartRecord()
         }

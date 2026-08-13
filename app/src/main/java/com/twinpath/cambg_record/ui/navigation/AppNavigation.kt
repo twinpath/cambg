@@ -104,6 +104,13 @@ fun MainAppNavigation(
         galleryViewModel.loadRecordedVideos(context)
     }
 
+    LaunchedEffect(settingsState.resolution, settingsState.audioEnabled) {
+        cameraViewModel.setQuality(settingsState.resolution)
+        if (cameraState.isAudioEnabled != settingsState.audioEnabled) {
+            cameraViewModel.toggleAudio()
+        }
+    }
+
     Scaffold(
         bottomBar = {
             NavigationBar(
@@ -166,8 +173,14 @@ fun MainAppNavigation(
                     },
                     onToggleCamera = { cameraViewModel.toggleCamera() },
                     onCycleFlash = { cameraViewModel.cycleFlash() },
-                    onSetQuality = { cameraViewModel.setQuality(it) },
-                    onToggleAudio = { cameraViewModel.toggleAudio() },
+                    onSetQuality = {
+                        cameraViewModel.setQuality(it)
+                        settingsViewModel.updateResolution(it)
+                    },
+                    onToggleAudio = {
+                        cameraViewModel.toggleAudio()
+                        settingsViewModel.toggleAudio()
+                    },
                     onSetZoomRatio = { cameraViewModel.setZoomRatio(it) },
                     onToggleGrid = { cameraViewModel.toggleGridOverlay() },
                     onToggleStealth = { cameraViewModel.toggleStealthMode() },

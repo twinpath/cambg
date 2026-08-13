@@ -1,5 +1,7 @@
 package com.twinpath.cambg_record.model
 
+import com.twinpath.cambg_record.util.AppConstants
+
 enum class AppThemeMode {
     LIGHT,
     DARK,
@@ -26,14 +28,14 @@ enum class StorageLocation(val displayName: String, val description: String) {
 }
 
 data class AppSettings(
-    val resolution: String = "1080p",
-    val frameRate: String = "30 fps",
-    val bitrate: String = "High",
-    val audioEnabled: Boolean = true,
-    val audioSource: String = "Camcorder",
-    val audioChannels: String = "Stereo",
+    val resolution: String = AppConstants.DEFAULT_RESOLUTION,
+    val frameRate: String = AppConstants.DEFAULT_FPS,
+    val bitrate: String = AppConstants.DEFAULT_BITRATE,
+    val audioEnabled: Boolean = AppConstants.DEFAULT_AUDIO_ENABLED,
+    val audioSource: String = AppConstants.DEFAULT_AUDIO_SOURCE,
+    val audioChannels: String = AppConstants.DEFAULT_AUDIO_CHANNELS,
     val storageLocation: StorageLocation = StorageLocation.PUBLIC_DCIM,
-    val customStoragePath: String = "CamBGRecord",
+    val customStoragePath: String = AppConstants.DEFAULT_CUSTOM_STORAGE_PATH,
     val themeMode: AppThemeMode = AppThemeMode.SYSTEM,
     val dynamicColor: Boolean = true,
     val motionDetectionEnabled: Boolean = false,
@@ -41,3 +43,4 @@ data class AppSettings(
     val personDetectionEnabled: Boolean = false,
     val personConfidenceThreshold: Float = 0.75f
 )
+
