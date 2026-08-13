@@ -18,8 +18,8 @@ android {
     applicationId = "com.twinpath.cambg"
     minSdk = 24
     targetSdk = 35
-    versionCode = 6
-    versionName = "0.1.4-alpha.2"
+    versionCode = 7
+    versionName = "0.1.5"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
