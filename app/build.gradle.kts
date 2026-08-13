@@ -17,8 +17,8 @@ android {
     applicationId = "com.twinpath.cambg_record"
     minSdk = 24
     targetSdk = 35
-    versionCode = 4
-    versionName = "0.1.3-alpha.1"
+    versionCode = 5
+    versionName = "0.1.4-alpha.1"
 
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
@@ -54,11 +54,22 @@ android {
       isShrinkResources = true
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
       
-      val releaseSigning = signingConfigs.findByName("release")
-      if (releaseSigning != null && releaseSigning.storeFile != null && releaseSigning.storeFile!!.exists()) {
-        signingConfig = releaseSigning
+      val isReleaseTask = project.gradle.startParameter.taskNames.any { it.contains("Release", ignoreCase = true) }
+      if (isReleaseTask) {
+        val releaseSigning = signingConfigs.findByName("release")
+        if (releaseSigning != null && releaseSigning.storeFile != null && releaseSigning.storeFile!!.exists()) {
+          val storePw = releaseSigning.storePassword
+          val keyPw = releaseSigning.keyPassword
+          if (storePw.isNullOrEmpty() || keyPw.isNullOrEmpty()) {
+            throw GradleException("Release build requires STORE_PASSWORD and KEY_PASSWORD environment variables to be set!")
+          }
+          signingConfig = releaseSigning
+        } else {
+          val pathStr = releaseSigning?.storeFile?.absolutePath ?: "not configured"
+          throw GradleException("Release build requires a valid release keystore. Could not find keystore file at: $pathStr")
+        }
       } else {
-        // Fallback to AGP's built-in debug signing config (which uses ~/.android/debug.keystore)
+        // Fallback during configuration for non-release builds
         signingConfig = signingConfigs.getByName("debug")
       }
     }
