@@ -1,4 +1,5 @@
 import { RELEASE_ARCHIVE, type Release } from "@/data/releases"
+import { getArchitecture } from "./architecture"
 
 function formatBytes(bytes: number, decimals = 1) {
   if (bytes === 0) return "0 Bytes"
@@ -7,17 +8,6 @@ function formatBytes(bytes: number, decimals = 1) {
   const sizes = ["Bytes", "KB", "MB", "GB"]
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i]
-}
-
-function getArchitecture(fileName: string): string {
-  const lower = fileName.toLowerCase()
-  if (lower.includes("arm64-v8a") || lower.includes("arm64")) return "ARM64 (v8a)"
-  if (lower.includes("armeabi-v7a") || lower.includes("armeabi")) return "ARMv7 (32-bit)"
-  if (lower.includes("x86_64")) return "x86_64"
-  if (lower.includes("x86")) return "x86"
-  if (lower.includes("universal")) return "Universal"
-  if (lower.includes(".aab")) return "App Bundle (Universal)"
-  return "Universal"
 }
 
 export async function fetchGitHubReleases(): Promise<Release[]> {
