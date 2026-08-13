@@ -17,13 +17,13 @@ export function HeroSection() {
       </p>
 
       <div className="flex flex-wrap items-center justify-center gap-3">
-        <a href="/download">
+        <a href={`${import.meta.env.BASE_URL}download`}>
           <Button size="lg">
             <Download data-icon="inline-start" />
             Download
           </Button>
         </a>
-        <a href="/about">
+        <a href={`${import.meta.env.BASE_URL}about`}>
           <Button variant="outline" size="lg">
             Learn More
             <ArrowRight data-icon="inline-end" />

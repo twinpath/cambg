@@ -16,7 +16,7 @@ export function CtaSection() {
           recording with intelligent detection on your Android device.
         </p>
         <div className="flex flex-wrap items-center justify-center gap-3">
-          <a href="/download">
+          <a href={`${import.meta.env.BASE_URL}download`}>
             <Button size="lg">
               <Download data-icon="inline-start" />
               Download Now
