@@ -27,10 +27,10 @@ android {
     create("release") {
       val keystorePathEnv = System.getenv("KEYSTORE_PATH")
       val keystoreFile = if (!keystorePathEnv.isNullOrEmpty()) {
-        val f = file(keystorePathEnv)
-        if (f.isAbsolute) f else file("${rootDir}/${keystorePathEnv}")
+        val f = java.io.File(keystorePathEnv)
+        if (f.isAbsolute) f else java.io.File(rootDir, keystorePathEnv)
       } else {
-        file("${rootDir}/my-upload-key.jks")
+        java.io.File(rootDir, "my-upload-key.jks")
       }
       if (keystoreFile.exists()) {
         storeFile = keystoreFile
