@@ -1,3 +1,4 @@
+import { useState } from "react"
 import {
   Accordion,
   AccordionContent,
@@ -36,6 +37,9 @@ function formatDate(dateStr: string) {
 }
 
 export function ReleaseArchive({ releases }: { releases: Release[] }) {
+  const [visibleCount, setVisibleCount] = useState(5)
+  const visibleReleases = releases.slice(0, visibleCount)
+
   return (
     <section id="archive" className="px-4 py-16">
       <div className="mx-auto max-w-5xl">
@@ -49,9 +53,13 @@ export function ReleaseArchive({ releases }: { releases: Release[] }) {
           </p>
         </div>
 
-        <Accordion type="single" collapsible>
-          {releases.map((release) => (
-            <AccordionItem key={release.version} value={release.version}>
+        <Accordion type="single" collapsible className="space-y-2">
+          {visibleReleases.map((release) => (
+            <AccordionItem 
+              key={release.version} 
+              value={release.version}
+              className="transition-all duration-300 animate-in fade-in slide-in-from-bottom-2"
+            >
               <AccordionTrigger>
                 <div className="flex items-center gap-3">
                   <span className="font-mono text-xs font-medium">
@@ -108,6 +116,18 @@ export function ReleaseArchive({ releases }: { releases: Release[] }) {
             </AccordionItem>
           ))}
         </Accordion>
+
+        {releases.length > visibleCount && (
+          <div className="mt-8 flex justify-center">
+            <Button 
+              variant="outline"
+              onClick={() => setVisibleCount((prev) => prev + 5)}
+              className="min-w-32"
+            >
+              Load More
+            </Button>
+          </div>
+        )}
       </div>
     </section>
   )
