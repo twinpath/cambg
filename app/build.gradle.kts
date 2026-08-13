@@ -11,11 +11,11 @@ plugins {
 }
 
 android {
-  namespace = "com.twinpath.cambg_record"
+  namespace = "com.twinpath.cambg"
   compileSdk = 36
 
   defaultConfig {
-    applicationId = "com.twinpath.cambg_record"
+    applicationId = "com.twinpath.cambg"
     minSdk = 24
     targetSdk = 35
     versionCode = 5

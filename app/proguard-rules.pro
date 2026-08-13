@@ -51,5 +51,5 @@
 
 # --- Keep Model / Data Classes ---
 # Menjaga semua data classes di dalam paket UI dan Data agar serialization/deserialization Room & Retrofit tidak pecah
--keep class com.twinpath.cambg_record.data.** { *; }
--keep class com.twinpath.cambg_record.model.** { *; }
+-keep class com.twinpath.cambg.data.** { *; }
+-keep class com.twinpath.cambg.model.** { *; }
