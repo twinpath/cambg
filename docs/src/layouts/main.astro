@@ -66,11 +66,24 @@ const socialImageURL = new URL(image, Astro.site)
       })()
     </script>
   </head>
-  <body class="flex min-h-svh flex-col">
-    <Navbar client:load currentPath={currentPath} />
-    <main class="flex-1">
-      <slot />
-    </main>
-    <Footer client:load />
+  <body class="relative flex min-h-svh flex-col bg-background text-foreground transition-colors duration-300">
+    <!-- Modern background patterns and radial glows -->
+    <div class="pointer-events-none fixed inset-0 z-0 overflow-hidden select-none">
+      <!-- Glow effect (Deep in the Dark aura) -->
+      <div class="absolute -top-[40%] left-1/2 -translate-x-1/2 w-[800px] h-[800px] rounded-full bg-primary/8 dark:bg-primary/10 blur-[120px] opacity-75 md:w-[1200px] md:h-[1200px]"></div>
+      <div class="absolute top-[40%] right-[-10%] w-[600px] h-[600px] rounded-full bg-primary/4 dark:bg-primary/5 blur-[100px] opacity-50"></div>
+      
+      <!-- Grid / Dot Pattern -->
+      <div class="absolute inset-0 bg-dot-pattern opacity-80 [mask-image:radial-gradient(ellipse_at_center,black_60%,transparent_100%)]"></div>
+    </div>
+
+    <!-- Main Content wrapper (z-10) -->
+    <div class="relative z-10 flex flex-1 flex-col">
+      <Navbar client:load currentPath={currentPath} />
+      <main class="flex-1">
+        <slot />
+      </main>
+      <Footer client:load />
+    </div>
   </body>
 </html>
