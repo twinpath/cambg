@@ -1,0 +1,17 @@
+---
+import Layout from "@/layouts/main.astro"
+import { AboutHero } from "@/components/about/AboutHero"
+import { ArchitectureSection } from "@/components/about/ArchitectureSection"
+import { FaqSection } from "@/components/about/FaqSection"
+import { ProjectInfoSection } from "@/components/about/ProjectInfoSection"
+---
+
+<Layout
+  title="About"
+  description="Learn about CamBG Record, its MVVM architecture, technology stack, and project information. Find answers to frequently asked questions."
+>
+  <AboutHero client:load />
+  <ArchitectureSection client:load />
+  <FaqSection client:load />
+  <ProjectInfoSection client:load />
+</Layout>

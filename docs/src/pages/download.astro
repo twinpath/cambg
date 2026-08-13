@@ -1,0 +1,15 @@
+---
+import Layout from "@/layouts/main.astro"
+import { DownloadHero } from "@/components/download/DownloadHero"
+import { ReleaseArchive } from "@/components/download/ReleaseArchive"
+import { InstallGuide } from "@/components/download/InstallGuide"
+---
+
+<Layout
+  title="Download"
+  description="Download CamBG Record APK for Android. Browse the release archive for all available versions including stable, beta, and alpha builds."
+>
+  <DownloadHero client:load />
+  <ReleaseArchive client:load />
+  <InstallGuide client:load />
+</Layout>

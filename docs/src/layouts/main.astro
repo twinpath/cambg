@@ -1,0 +1,57 @@
+---
+import "@/styles/global.css"
+import { Navbar } from "@/components/Navbar"
+import { Footer } from "@/components/Footer"
+
+interface Props {
+  title?: string
+  description?: string
+}
+
+const {
+  title = "CamBG Record",
+  description = "A native Android application for persistent background video recording with intelligent detection capabilities and Material Design 3 aesthetics.",
+} = Astro.props
+
+const currentPath = new URL(Astro.request.url).pathname
+const fullTitle =
+  title === "CamBG Record" ? title : `${title} - CamBG Record`
+---
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!-- SEO -->
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={fullTitle} />
+    <meta name="twitter:description" content={description} />
+
+    <!-- Prevent FOUC: apply saved theme before first paint -->
+    <script is:inline>
+      ;(function () {
+        const theme = localStorage.getItem("cambg-theme") || "system"
+        const prefersDark = window.matchMedia(
+          "(prefers-color-scheme: dark)"
+        ).matches
+        if (theme === "dark" || (theme === "system" && prefersDark)) {
+          document.documentElement.classList.add("dark")
+        }
+      })()
+    </script>
+  </head>
+  <body class="flex min-h-svh flex-col">
+    <Navbar client:load currentPath={currentPath} />
+    <main class="flex-1">
+      <slot />
+    </main>
+    <Footer client:load />
+  </body>
+</html>
