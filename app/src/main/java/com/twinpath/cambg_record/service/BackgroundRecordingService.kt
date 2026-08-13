@@ -7,29 +7,17 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.ServiceInfo
-import android.hardware.display.DisplayManager
-import android.hardware.display.VirtualDisplay
-import android.media.MediaRecorder
-import android.media.projection.MediaProjection
-import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.IBinder
 import android.util.Log
-import androidx.camera.core.CameraSelector
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.camera.video.FallbackStrategy
-import androidx.camera.video.FileOutputOptions
-import androidx.camera.video.Quality
-import androidx.camera.video.QualitySelector
-import androidx.camera.video.Recorder
-import androidx.camera.video.Recording
-import androidx.camera.video.VideoCapture
-import androidx.camera.video.VideoRecordEvent
+import androidx.camera.view.PreviewView
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleService
 import com.twinpath.cambg_record.MainActivity
 import com.twinpath.cambg_record.model.RecordingState
+import com.twinpath.cambg_record.service.helper.CameraRecordingHelper
+import com.twinpath.cambg_record.service.helper.ScreenRecordingHelper
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -40,10 +28,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
-import androidx.camera.view.PreviewView
 
 data class ServiceRecordingState(
     val isServiceRunning: Boolean = false,
@@ -57,22 +41,18 @@ data class ServiceRecordingState(
 
 class BackgroundRecordingService : LifecycleService() {
 
-    private var activeRecording: Recording? = null
-    private var videoCapture: VideoCapture<Recorder>? = null
-    private var camera: androidx.camera.core.Camera? = null
-    private var currentPreviewUseCase: androidx.camera.core.Preview? = null
+    private lateinit var cameraHelper: CameraRecordingHelper
+    private lateinit var screenHelper: ScreenRecordingHelper
 
-    private var mediaProjection: MediaProjection? = null
-    private var mediaRecorder: MediaRecorder? = null
-    private var virtualDisplay: VirtualDisplay? = null
     private var currentOutputFile: File? = null
-
     private var timerJob: Job? = null
     private val serviceScope = CoroutineScope(Dispatchers.Main + Job())
 
     override fun onCreate() {
         super.onCreate()
         serviceInstance = this
+        cameraHelper = CameraRecordingHelper(this, this)
+        screenHelper = ScreenRecordingHelper(this)
         createNotificationChannel()
     }
 
@@ -141,110 +121,45 @@ class BackgroundRecordingService : LifecycleService() {
             )
         }
 
-        val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
-        cameraProviderFuture.addListener({
-            try {
-                val cameraProvider = cameraProviderFuture.get()
-
-                val quality = when (qualityStr) {
-                    "480p" -> Quality.SD
-                    "720p" -> Quality.HD
-                    "1080p" -> Quality.FHD
-                    "4K" -> Quality.UHD
-                    else -> Quality.HIGHEST
+        cameraHelper.startRecording(
+            isFrontCamera = isFrontCamera,
+            qualityStr = qualityStr,
+            isAudioEnabled = isAudioEnabled,
+            storageLocation = storageLocation,
+            customStoragePath = customStoragePath,
+            onStart = {
+                Log.d(TAG, "CameraX background recording started")
+                startTimer()
+                _serviceState.update {
+                    it.copy(
+                        recordingState = RecordingState.RECORDING,
+                        statusMessage = "Recording active..."
+                    )
                 }
-
-                val qualitySelector = QualitySelector.from(
-                    quality,
-                    FallbackStrategy.higherQualityOrLowerThan(quality)
-                )
-
-                val recorder = Recorder.Builder()
-                    .setQualitySelector(qualitySelector)
-                    .build()
-
-                videoCapture = VideoCapture.withOutput(recorder)
-
-                val cameraSelector = if (isFrontCamera) {
-                    CameraSelector.DEFAULT_FRONT_CAMERA
-                } else {
-                    CameraSelector.DEFAULT_BACK_CAMERA
-                }
-
-                val preview = androidx.camera.core.Preview.Builder().build().also {
-                    it.setSurfaceProvider(activePreviewView?.surfaceProvider)
-                }
-                currentPreviewUseCase = preview
-
-                cameraProvider.unbindAll()
-                camera = cameraProvider.bindToLifecycle(
-                    this,
-                    cameraSelector,
-                    preview,
-                    videoCapture
-                )
-
-                // Output File
-                val camTypeStr = if (isFrontCamera) "FRONT" else "BACK"
-                val outputFile = com.twinpath.cambg_record.camera.CameraXRecordingManager.createOutputFile(
-                    this@BackgroundRecordingService,
-                    storageLocation,
-                    customStoragePath,
-                    camTypeStr
-                )
-                currentOutputFile = outputFile
-
-                val fileOutputOptions = FileOutputOptions.Builder(outputFile).build()
-
-                var prepare = videoCapture?.output?.prepareRecording(this, fileOutputOptions)
-                if (isAudioEnabled) {
-                    prepare = prepare?.withAudioEnabled()
-                }
-
-                activeRecording = prepare?.start(ContextCompat.getMainExecutor(this)) { event ->
-                    when (event) {
-                        is VideoRecordEvent.Start -> {
-                            Log.d(TAG, "CameraX background recording started")
-                            startTimer()
-                            _serviceState.update {
-                                it.copy(
-                                    recordingState = RecordingState.RECORDING,
-                                    statusMessage = "Recording active..."
-                                )
-                            }
-                        }
-                        is VideoRecordEvent.Finalize -> {
-                            stopTimer()
-                            val fileSize = outputFile.length()
-                            if (!event.hasError() && fileSize > 0) {
-                                Log.d(TAG, "CameraX recording saved: ${outputFile.absolutePath} ($fileSize bytes)")
-                                // Scan to MediaStore so video appears in Gallery/Photos
-                                // Scan to MediaStore if saved publicly
-                                val isPublic = storageLocation == "PUBLIC_DCIM" || storageLocation == "CUSTOM"
-                                if (isPublic) {
-                                    com.twinpath.cambg_record.camera.CameraXRecordingManager.scanFileToMediaStore(
-                                        this@BackgroundRecordingService, outputFile
-                                    )
-                                }
-                                _serviceState.update {
-                                    it.copy(
-                                        recordingState = RecordingState.IDLE,
-                                        lastSavedFilePath = outputFile.absolutePath,
-                                        lastSavedFileSize = fileSize,
-                                        statusMessage = "Saved: ${outputFile.name}"
-                                    )
-                                }
-                            } else {
-                                Log.e(TAG, "CameraX recording error: ${event.error}")
-                            }
-                        }
+            },
+            onFinalize = { outputFile, fileSize, hasError ->
+                stopTimer()
+                if (!hasError && fileSize > 0) {
+                    Log.d(TAG, "CameraX recording saved: ${outputFile.absolutePath} ($fileSize bytes)")
+                    val isPublic = storageLocation == "PUBLIC_DCIM" || storageLocation == "CUSTOM"
+                    if (isPublic) {
+                        com.twinpath.cambg_record.camera.CameraXRecordingManager.scanFileToMediaStore(
+                            this@BackgroundRecordingService, outputFile
+                        )
                     }
+                    _serviceState.update {
+                        it.copy(
+                            recordingState = RecordingState.IDLE,
+                            lastSavedFilePath = outputFile.absolutePath,
+                            lastSavedFileSize = fileSize,
+                            statusMessage = "Saved: ${outputFile.name}"
+                        )
+                    }
+                } else {
+                    Log.e(TAG, "CameraX recording error")
                 }
-            } catch (e: Exception) {
-                Log.e(TAG, "Failed to start camera background recording", e)
-                stopSelf()
             }
-        }, ContextCompat.getMainExecutor(this))
+        )
     }
 
     private fun startMediaProjectionRecording(
@@ -272,69 +187,27 @@ class BackgroundRecordingService : LifecycleService() {
             )
         }
 
-        try {
-            val mpManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-            mediaProjection = mpManager.getMediaProjection(resultCode, data)
-
-            val outputFile = com.twinpath.cambg_record.camera.CameraXRecordingManager.createOutputFile(
-                this@BackgroundRecordingService,
-                storageLocation,
-                customStoragePath,
-                "SCREEN"
-            )
-            currentOutputFile = outputFile
-
-            val metrics = resources.displayMetrics
-            val width = metrics.widthPixels
-            val height = metrics.heightPixels
-            val dpi = metrics.densityDpi
-
-            val recorder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                MediaRecorder(this)
-            } else {
-                @Suppress("DEPRECATION")
-                MediaRecorder()
+        screenHelper.startRecording(
+            resultCode = resultCode,
+            data = data,
+            storageLocation = storageLocation,
+            customStoragePath = customStoragePath,
+            onStart = { outputFile ->
+                currentOutputFile = outputFile
+                startTimer()
+                Log.d(TAG, "MediaProjection screen recording started")
+            },
+            onError = {
+                stopSelf()
             }
-
-            recorder.setAudioSource(MediaRecorder.AudioSource.MIC)
-            recorder.setVideoSource(MediaRecorder.VideoSource.SURFACE)
-            recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-            recorder.setOutputFile(outputFile.absolutePath)
-            recorder.setVideoSize(width, height)
-            recorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264)
-            recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-            recorder.setVideoEncodingBitRate(5 * 1024 * 1024)
-            recorder.setVideoFrameRate(30)
-            recorder.prepare()
-
-            virtualDisplay = mediaProjection?.createVirtualDisplay(
-                "CamBG_ScreenCapture",
-                width,
-                height,
-                dpi,
-                DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                recorder.surface,
-                null,
-                null
-            )
-
-            recorder.start()
-            mediaRecorder = recorder
-            startTimer()
-
-            Log.d(TAG, "MediaProjection screen recording started")
-
-        } catch (e: Exception) {
-            Log.e(TAG, "Error initiating MediaProjection recording", e)
-            stopSelf()
-        }
+        )
     }
 
     private fun pauseRecording() {
-        if (activeRecording != null) {
-            activeRecording?.pause()
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && mediaRecorder != null) {
-            mediaRecorder?.pause()
+        if (_serviceState.value.mode == "CAMERA") {
+            cameraHelper.pause()
+        } else {
+            screenHelper.pause()
         }
         stopTimer()
         _serviceState.update {
@@ -347,10 +220,10 @@ class BackgroundRecordingService : LifecycleService() {
     }
 
     private fun resumeRecording() {
-        if (activeRecording != null) {
-            activeRecording?.resume()
-        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && mediaRecorder != null) {
-            mediaRecorder?.resume()
+        if (_serviceState.value.mode == "CAMERA") {
+            cameraHelper.resume()
+        } else {
+            screenHelper.resume()
         }
         startTimer()
         _serviceState.update {
@@ -365,39 +238,23 @@ class BackgroundRecordingService : LifecycleService() {
     private fun stopRecordingAndSelf() {
         stopTimer()
 
-        // Stop CameraX
-        activeRecording?.stop()
-        activeRecording = null
-
-        // Stop MediaProjection / MediaRecorder
-        try {
-            mediaRecorder?.stop()
-            mediaRecorder?.reset()
-            mediaRecorder?.release()
-            mediaRecorder = null
-        } catch (e: Exception) {
-            Log.e(TAG, "Error stopping MediaRecorder", e)
+        var savedFile: File? = null
+        if (_serviceState.value.mode == "CAMERA") {
+            cameraHelper.stop()
+        } else {
+            savedFile = screenHelper.stop()
         }
 
-        virtualDisplay?.release()
-        virtualDisplay = null
-
-        mediaProjection?.stop()
-        mediaProjection = null
-
-        camera = null
-        currentPreviewUseCase = null
-
-        val savedFile = currentOutputFile
-        val fileSize = savedFile?.length() ?: 0L
+        val finalFile = savedFile ?: currentOutputFile
+        val fileSize = finalFile?.length() ?: 0L
 
         _serviceState.update {
             it.copy(
                 isServiceRunning = false,
                 recordingState = RecordingState.IDLE,
-                lastSavedFilePath = savedFile?.absolutePath,
+                lastSavedFilePath = finalFile?.absolutePath,
                 lastSavedFileSize = fileSize,
-                statusMessage = savedFile?.let { f -> "Saved: ${f.name}" } ?: "Recording stopped"
+                statusMessage = finalFile?.let { f -> "Saved: ${f.name}" } ?: "Recording stopped"
             )
         }
 
@@ -480,8 +337,6 @@ class BackgroundRecordingService : LifecycleService() {
 
     override fun onDestroy() {
         stopTimer()
-        camera = null
-        currentPreviewUseCase = null
         serviceInstance = null
         super.onDestroy()
     }
@@ -510,25 +365,13 @@ class BackgroundRecordingService : LifecycleService() {
         val serviceState: StateFlow<ServiceRecordingState> = _serviceState.asStateFlow()
 
         private var serviceInstance: BackgroundRecordingService? = null
-        private var activePreviewView: PreviewView? = null
 
         fun setPreviewView(previewView: PreviewView?) {
-            activePreviewView = previewView
-            serviceInstance?.let { svc ->
-                svc.currentPreviewUseCase?.setSurfaceProvider(previewView?.surfaceProvider)
-            }
+            serviceInstance?.cameraHelper?.setPreviewView(previewView)
         }
 
         fun updateCameraControls(flashMode: String, zoomRatio: Float, isFrontCamera: Boolean) {
-            val svc = serviceInstance ?: return
-            try {
-                svc.camera?.cameraControl?.setZoomRatio(zoomRatio.coerceIn(1.0f, 5.0f))
-                if (!isFrontCamera) {
-                    svc.camera?.cameraControl?.enableTorch(flashMode == "ON")
-                }
-            } catch (e: Exception) {
-                Log.e(TAG, "Error updating service camera controls", e)
-            }
+            serviceInstance?.cameraHelper?.updateCameraControls(flashMode, zoomRatio, isFrontCamera)
         }
 
         fun startCameraService(
