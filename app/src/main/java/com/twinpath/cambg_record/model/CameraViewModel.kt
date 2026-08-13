@@ -22,7 +22,7 @@ data class CameraUiState(
     val recordingState: RecordingState = RecordingState.IDLE,
     val elapsedTimeSeconds: Long = 0,
     val quality: String = AppConstants.DEFAULT_RESOLUTION,
-
+    val aspectRatio: String = AppConstants.DEFAULT_ASPECT_RATIO,
     val isFrontCamera: Boolean = false,
     val flashMode: String = "OFF", // "OFF", "ON", "AUTO"
     val isAudioEnabled: Boolean = true,
@@ -126,6 +126,10 @@ class CameraViewModel : ViewModel() {
 
     fun setQuality(newQuality: String) {
         _uiState.update { it.copy(quality = newQuality) }
+    }
+
+    fun setAspectRatio(newRatio: String) {
+        _uiState.update { it.copy(aspectRatio = newRatio) }
     }
 
     fun toggleAudio() {

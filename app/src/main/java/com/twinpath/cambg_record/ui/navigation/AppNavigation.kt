@@ -104,8 +104,9 @@ fun MainAppNavigation(
         galleryViewModel.loadRecordedVideos(context)
     }
 
-    LaunchedEffect(settingsState.resolution, settingsState.audioEnabled) {
+    LaunchedEffect(settingsState.resolution, settingsState.audioEnabled, settingsState.aspectRatio) {
         cameraViewModel.setQuality(settingsState.resolution)
+        cameraViewModel.setAspectRatio(settingsState.aspectRatio)
         if (cameraState.isAudioEnabled != settingsState.audioEnabled) {
             cameraViewModel.toggleAudio()
         }
@@ -217,6 +218,7 @@ fun MainAppNavigation(
                     onUpdateResolution = { settingsViewModel.updateResolution(it) },
                     onUpdateFrameRate = { settingsViewModel.updateFrameRate(it) },
                     onUpdateBitrate = { settingsViewModel.updateBitrate(it) },
+                    onUpdateAspectRatio = { settingsViewModel.updateAspectRatio(it) },
                     onToggleAudio = { settingsViewModel.toggleAudio() },
                     onUpdateAudioSource = { settingsViewModel.updateAudioSource(it) },
                     onUpdateAudioChannels = { settingsViewModel.updateAudioChannels(it) },

@@ -31,6 +31,7 @@ data class AppSettings(
     val resolution: String = AppConstants.DEFAULT_RESOLUTION,
     val frameRate: String = AppConstants.DEFAULT_FPS,
     val bitrate: String = AppConstants.DEFAULT_BITRATE,
+    val aspectRatio: String = AppConstants.DEFAULT_ASPECT_RATIO,
     val audioEnabled: Boolean = AppConstants.DEFAULT_AUDIO_ENABLED,
     val audioSource: String = AppConstants.DEFAULT_AUDIO_SOURCE,
     val audioChannels: String = AppConstants.DEFAULT_AUDIO_CHANNELS,

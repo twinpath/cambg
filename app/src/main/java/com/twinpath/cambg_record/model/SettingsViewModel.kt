@@ -32,6 +32,10 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
         viewModelScope.launch { repository.updateBitrate(newBitrate) }
     }
 
+    fun updateAspectRatio(newRatio: String) {
+        viewModelScope.launch { repository.updateAspectRatio(newRatio) }
+    }
+
     fun toggleAudio() {
         viewModelScope.launch {
             repository.updateAudioEnabled(!settings.value.audioEnabled)

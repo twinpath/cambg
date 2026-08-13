@@ -9,6 +9,8 @@ import android.util.Log
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.Preview
+import androidx.camera.core.UseCaseGroup
+import androidx.camera.core.ViewPort
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.video.FallbackStrategy
 import androidx.camera.video.FileOutputOptions
@@ -21,6 +23,7 @@ import androidx.camera.video.VideoRecordEvent
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import android.util.Rational
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -41,11 +44,12 @@ class CameraXRecordingManager {
         previewView: PreviewView,
         isFrontCamera: Boolean,
         qualityString: String,
+        aspectRatioString: String,
         flashMode: String,
         zoomRatio: Float,
         onError: (Throwable) -> Unit = {}
     ) {
-        val newBindingKey = "${isFrontCamera}_${qualityString}"
+        val newBindingKey = "${isFrontCamera}_${qualityString}_${aspectRatioString}"
         if (newBindingKey == currentBindingKey && camera != null) {
             // Only update controls, don't rebind
             updateCameraControls(flashMode, zoomRatio, isFrontCamera)
@@ -87,14 +91,38 @@ class CameraXRecordingManager {
                 }
 
                 cameraProvider.unbindAll()
-                camera = cameraProvider.bindToLifecycle(
-                    lifecycleOwner,
-                    cameraSelector,
-                    preview,
-                    videoCapture
-                )
+
+                val rational = when (aspectRatioString) {
+                    "9:16" -> Rational(9, 16)
+                    "3:4" -> Rational(3, 4)
+                    else -> null
+                }
+
+                if (rational != null && previewView.display != null) {
+                    val viewPort = ViewPort.Builder(rational, previewView.display.rotation)
+                        .setScaleType(ViewPort.FILL_CENTER)
+                        .build()
+                    val useCaseGroup = UseCaseGroup.Builder()
+                        .setViewPort(viewPort)
+                        .addUseCase(preview)
+                        .addUseCase(videoCapture!!)
+                        .build()
+                    camera = cameraProvider.bindToLifecycle(
+                        lifecycleOwner,
+                        cameraSelector,
+                        useCaseGroup
+                    )
+                } else {
+                    camera = cameraProvider.bindToLifecycle(
+                        lifecycleOwner,
+                        cameraSelector,
+                        preview,
+                        videoCapture
+                    )
+                }
 
                 currentBindingKey = newBindingKey
+
 
                 // Apply zoom and flash control
                 camera?.cameraControl?.setZoomRatio(zoomRatio.coerceIn(1.0f, 5.0f))

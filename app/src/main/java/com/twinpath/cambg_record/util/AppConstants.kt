@@ -26,6 +26,14 @@ object AppConstants {
     val BITRATE_OPTIONS = listOf(BITRATE_AUTO, BITRATE_MEDIUM, BITRATE_HIGH)
     const val DEFAULT_BITRATE = BITRATE_MEDIUM
 
+    // Aspect Ratio constants
+    const val ASPECT_RATIO_9_16 = "9:16"
+    const val ASPECT_RATIO_3_4 = "3:4"
+    const val ASPECT_RATIO_FULL = "Full Screen"
+
+    val ASPECT_RATIO_OPTIONS = listOf(ASPECT_RATIO_9_16, ASPECT_RATIO_3_4, ASPECT_RATIO_FULL)
+    const val DEFAULT_ASPECT_RATIO = ASPECT_RATIO_9_16
+
     // Storage defaults
     const val DEFAULT_CUSTOM_STORAGE_PATH = "CamBGRecord"
     

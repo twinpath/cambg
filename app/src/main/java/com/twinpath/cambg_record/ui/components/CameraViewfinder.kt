@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -42,6 +44,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.twinpath.cambg_record.camera.CameraXRecordingManager
 import com.twinpath.cambg_record.model.CameraUiState
+import com.twinpath.cambg_record.util.AppConstants
 
 @Composable
 fun CameraViewfinder(
@@ -83,7 +86,16 @@ fun CameraViewfinder(
                 )
             }
 
-            Box(modifier = Modifier.fillMaxSize()) {
+            val aspectModifier = when (uiState.aspectRatio) {
+                AppConstants.ASPECT_RATIO_9_16 -> Modifier.aspectRatio(9f / 16f)
+                AppConstants.ASPECT_RATIO_3_4 -> Modifier.aspectRatio(3f / 4f)
+                else -> Modifier.fillMaxSize()
+            }
+
+            Box(
+                modifier = Modifier.fillMaxSize(),
+                contentAlignment = Alignment.Center
+            ) {
                 AndroidView(
                     factory = { ctx ->
                         PreviewView(ctx).apply {
@@ -92,7 +104,7 @@ fun CameraViewfinder(
                             previewViewRef.value = this
                         }
                     },
-                    modifier = Modifier.fillMaxSize()
+                    modifier = aspectModifier
                 )
 
                 // Black transition overlay
@@ -103,8 +115,14 @@ fun CameraViewfinder(
                 )
             }
 
-            // Bind camera only when camera direction, quality, service running state, or previewView changes
-            LaunchedEffect(uiState.isFrontCamera, uiState.quality, previewViewRef.value, serviceState.isServiceRunning) {
+            // Bind camera only when camera direction, quality, aspect ratio, service running state, or previewView changes
+            LaunchedEffect(
+                uiState.isFrontCamera,
+                uiState.quality,
+                uiState.aspectRatio,
+                previewViewRef.value,
+                serviceState.isServiceRunning
+            ) {
                 val pv = previewViewRef.value ?: return@LaunchedEffect
                 if (serviceState.isServiceRunning) {
                     com.twinpath.cambg_record.service.BackgroundRecordingService.setPreviewView(pv)
@@ -115,6 +133,7 @@ fun CameraViewfinder(
                         previewView = pv,
                         isFrontCamera = uiState.isFrontCamera,
                         qualityString = uiState.quality,
+                        aspectRatioString = uiState.aspectRatio,
                         flashMode = uiState.flashMode,
                         zoomRatio = uiState.zoomRatio
                     )

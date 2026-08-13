@@ -22,6 +22,7 @@ class SettingsRepository(private val context: Context) {
         val RESOLUTION = stringPreferencesKey("resolution")
         val FRAME_RATE = stringPreferencesKey("frame_rate")
         val BITRATE = stringPreferencesKey("bitrate")
+        val ASPECT_RATIO = stringPreferencesKey("aspect_ratio")
         val AUDIO_ENABLED = booleanPreferencesKey("audio_enabled")
         val AUDIO_SOURCE = stringPreferencesKey("audio_source")
         val AUDIO_CHANNELS = stringPreferencesKey("audio_channels")
@@ -41,6 +42,7 @@ class SettingsRepository(private val context: Context) {
              resolution = prefs[Keys.RESOLUTION] ?: defaults.resolution,
              frameRate = prefs[Keys.FRAME_RATE] ?: defaults.frameRate,
              bitrate = prefs[Keys.BITRATE] ?: defaults.bitrate,
+             aspectRatio = prefs[Keys.ASPECT_RATIO] ?: defaults.aspectRatio,
              audioEnabled = prefs[Keys.AUDIO_ENABLED] ?: defaults.audioEnabled,
              audioSource = prefs[Keys.AUDIO_SOURCE] ?: defaults.audioSource,
              audioChannels = prefs[Keys.AUDIO_CHANNELS] ?: defaults.audioChannels,
@@ -69,6 +71,10 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun updateBitrate(value: String) {
         context.dataStore.edit { it[Keys.BITRATE] = value }
+    }
+
+    suspend fun updateAspectRatio(value: String) {
+        context.dataStore.edit { it[Keys.ASPECT_RATIO] = value }
     }
 
     suspend fun updateAudioEnabled(value: Boolean) {

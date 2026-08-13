@@ -94,6 +94,7 @@ fun SettingsScreen(
     onUpdateResolution: (String) -> Unit,
     onUpdateFrameRate: (String) -> Unit,
     onUpdateBitrate: (String) -> Unit,
+    onUpdateAspectRatio: (String) -> Unit,
     onToggleAudio: () -> Unit,
     onUpdateAudioSource: (String) -> Unit,
     onUpdateAudioChannels: (String) -> Unit,
@@ -173,6 +174,18 @@ fun SettingsScreen(
                             onSelect = onUpdateBitrate,
                             testTagPrefix = "bitrate"
                         )
+                        HorizontalDivider(modifier = Modifier.padding(vertical = 4.dp))
+
+                        // Aspect Ratio Dropdown Item
+                        DropdownSettingItem(
+                            title = "Aspect Ratio",
+                            subtitle = settings.aspectRatio,
+                            options = AppConstants.ASPECT_RATIO_OPTIONS,
+                            selected = settings.aspectRatio,
+                            onSelect = onUpdateAspectRatio,
+                            testTagPrefix = "ratio"
+                        )
+
 
                     }
                 }
