@@ -24,6 +24,9 @@ concurrency:
   group: android-build-serialization
   cancel-in-progress: false
 
+env:
+  NODE_VERSION: "24.14.0"
+
 jobs:
   build-apk:
     name: Build Release APKs
@@ -161,7 +164,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24.14.0'
+          node-version: ${{ env.NODE_VERSION }}
 
       - name: Download APK Artifacts
         uses: actions/download-artifact@v4
