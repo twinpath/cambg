@@ -27,7 +27,7 @@ data class CameraUiState(
     val flashMode: String = "OFF", // "OFF", "ON", "AUTO"
     val isAudioEnabled: Boolean = true,
     val zoomRatio: Float = 1.0f,
-    val showGridOverlay: Boolean = true,
+    val showGridOverlay: Boolean = false,
     val isStealthMode: Boolean = false,
     val lastSavedFilePath: String? = null,
     val statusMessage: String? = null
