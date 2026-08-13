@@ -7,8 +7,8 @@ import type { Release } from "@/data/releases"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useLoading } from "@/hooks/use-loading"
 
-export function DownloadHero({ latest }: { latest: Release }) {
-  const loading = useLoading()
+export function DownloadHero({ latest, isLoading }: { latest: Release; isLoading: boolean }) {
+  const loading = isLoading
 
   return (
     <section className="flex flex-col items-center gap-6 px-4 py-20 text-center">

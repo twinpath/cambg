@@ -1,21 +1,18 @@
 ---
 import Layout from "@/layouts/main.astro"
-import { DownloadHero } from "@/components/download/DownloadHero"
-import { ReleaseArchive } from "@/components/download/ReleaseArchive"
+import { DownloadContent } from "@/components/download/DownloadContent"
 import { InstallGuide } from "@/components/download/InstallGuide"
-import { fetchGitHubReleases } from "@/lib/github"
+import { RELEASE_ARCHIVE } from "@/data/releases"
 import { DOWNLOAD_PAGE_METADATA } from "@/data/download"
 
-const releases = await fetchGitHubReleases()
-const latest = releases[0]
+const releases = RELEASE_ARCHIVE
 ---
 
 <Layout
   title={DOWNLOAD_PAGE_METADATA.title}
   description={DOWNLOAD_PAGE_METADATA.description}
 >
-  <DownloadHero latest={latest} client:load />
-  <ReleaseArchive releases={releases} client:load />
+  <DownloadContent fallbackReleases={releases} client:load />
   <InstallGuide client:load />
 </Layout>
 

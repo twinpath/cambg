@@ -1,11 +1,11 @@
 ---
 import Layout from "@/layouts/main.astro"
-import { fetchGitHubReleases } from "@/lib/github"
+import { RELEASE_ARCHIVE } from "@/data/releases"
 import { Badge } from "@/components/ui/badge"
 import { ChangelogList } from "@/components/changelog/ChangelogList"
 import { CHANGELOG_PAGE_METADATA } from "@/data/changelog"
 
-const releases = await fetchGitHubReleases()
+const releases = RELEASE_ARCHIVE
 ---
 
 <Layout

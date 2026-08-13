@@ -7,6 +7,7 @@ import { marked } from "marked"
 import type { Release } from "@/data/releases"
 import { getArchitecture } from "@/lib/architecture"
 import { CHANGELOG_LIST_CONTENT } from "@/data/changelog"
+import { API_ENDPOINTS } from "@/data/site"
 
 interface ChangelogListProps {
   fallbackReleases: Release[]
@@ -47,43 +48,11 @@ export function ChangelogList({ fallbackReleases }: ChangelogListProps) {
     async function loadReleases() {
       const startTime = Date.now()
       try {
-        const res = await fetch("https://api.github.com/repos/twinpath/cambg/releases")
+        const res = await fetch(API_ENDPOINTS.RELEASES)
         if (!res.ok) throw new Error("API Limit or Network error")
         const data = await res.json()
         if (Array.isArray(data)) {
-          const mapped: Release[] = data.map((item: any) => {
-            const tag = item.tag_name || ""
-            let releaseType: Release["releaseType"] = "stable"
-            const tagLower = tag.toLowerCase()
-
-            if (tagLower.includes("alpha")) {
-              releaseType = "alpha"
-            } else if (tagLower.includes("beta")) {
-              releaseType = "beta"
-            } else if (tagLower.includes("test")) {
-              releaseType = "test"
-            } else if (item.prerelease) {
-              releaseType = "beta"
-            }
-
-            const assets = (item.assets || [])
-              .filter((asset: any) => !asset.name.endsWith(".zip") && !asset.name.endsWith(".tar.gz"))
-              .map((asset: any) => ({
-                name: asset.name,
-                downloadUrl: asset.browser_download_url,
-                sizeLabel: asset.size ? `${(asset.size / (1024 * 1024)).toFixed(1)} MB` : "Unknown",
-                architecture: getArchitecture(asset.name),
-              }))
-
-            return {
-              version: tag,
-              releaseType,
-              date: item.published_at ? item.published_at.split("T")[0] : "",
-              notes: item.body || "",
-              assets,
-            }
-          })
-          setReleases(mapped)
+          setReleases(data)
         }
       } catch (err) {
         console.warn("Client-side releases fetch failed, falling back to static build data", err)

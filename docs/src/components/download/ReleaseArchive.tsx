@@ -40,10 +40,10 @@ function formatDate(dateStr: string) {
   })
 }
 
-export function ReleaseArchive({ releases }: { releases: Release[] }) {
+export function ReleaseArchive({ releases, isLoading }: { releases: Release[]; isLoading: boolean }) {
   const [visibleCount, setVisibleCount] = useState(5)
   const visibleReleases = releases.slice(0, visibleCount)
-  const loading = useLoading()
+  const loading = isLoading
 
   return (
     <section id="archive" className="px-4 py-16">

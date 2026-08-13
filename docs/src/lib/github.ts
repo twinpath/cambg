@@ -12,10 +12,17 @@ function formatBytes(bytes: number, decimals = 1) {
 
 export async function fetchGitHubReleases(): Promise<Release[]> {
   try {
+    const headers: Record<string, string> = {
+      "User-Agent": "Astro-Site-Build",
+    }
+
+    const token = typeof process !== "undefined" && process.env ? process.env.GITHUB_TOKEN : undefined
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`
+    }
+
     const res = await fetch("https://api.github.com/repos/twinpath/cambg/releases", {
-      headers: {
-        "User-Agent": "Astro-Site-Build",
-      },
+      headers,
     })
 
     if (!res.ok) {
