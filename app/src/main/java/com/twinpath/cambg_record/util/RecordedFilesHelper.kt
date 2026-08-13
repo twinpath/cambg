@@ -184,10 +184,23 @@ object RecordedFilesHelper {
     }
 
     /**
-     * Deletes a recorded video file from internal storage given its file path.
+     * Deletes a recorded video file from internal storage given its file path,
+     * and also removes its cached thumbnail if present.
      */
-    fun deleteRecordedFile(filePath: String?): Boolean {
+    fun deleteRecordedFile(context: Context, filePath: String?): Boolean {
         if (filePath.isNullOrEmpty()) return false
+        try {
+            val file = File(filePath)
+            val cacheDir = File(context.cacheDir, "video_thumbnails")
+            val thumbFile = File(cacheDir, "${file.nameWithoutExtension}.jpg")
+            if (thumbFile.exists()) {
+                val thumbDeleted = thumbFile.delete()
+                Log.d(TAG, "Deleted cached thumbnail for $filePath: $thumbDeleted")
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to delete cached thumbnail for $filePath", e)
+        }
+
         return try {
             val file = File(filePath)
             if (file.exists()) {

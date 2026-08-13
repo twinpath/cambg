@@ -55,11 +55,11 @@ class GalleryViewModel : ViewModel() {
         _uiState.update { it.copy(selectedVideoForPreview = video) }
     }
 
-    fun deleteVideo(videoId: String) {
+    fun deleteVideo(context: Context, videoId: String) {
         _uiState.update { currentState ->
             val videoToDelete = currentState.videos.find { it.id == videoId }
             videoToDelete?.filePath?.let { path ->
-                RecordedFilesHelper.deleteRecordedFile(path)
+                RecordedFilesHelper.deleteRecordedFile(context, path)
             }
             val updated = currentState.videos.filterNot { it.id == videoId }
             currentState.copy(

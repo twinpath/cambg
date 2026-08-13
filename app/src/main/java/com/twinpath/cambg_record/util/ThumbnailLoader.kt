@@ -1,11 +1,14 @@
 package com.twinpath.cambg_record.util
 
+import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.media.MediaMetadataRetriever
 import android.util.LruCache
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.io.FileOutputStream
 
 object ThumbnailLoader {
     private val maxMemory = (Runtime.getRuntime().maxMemory() / 1024).toInt()
@@ -20,9 +23,9 @@ object ThumbnailLoader {
 
     /**
      * Retrieves a thumbnail bitmap for the specified video file path.
-     * Checks the memory cache first, and extracts it using MediaMetadataRetriever if not cached.
+     * Checks the memory cache first, then disk cache, and extracts it using MediaMetadataRetriever if not cached.
      */
-    suspend fun getThumbnail(filePath: String): Bitmap? = withContext(Dispatchers.IO) {
+    suspend fun getThumbnail(context: Context, filePath: String): Bitmap? = withContext(Dispatchers.IO) {
         val cached = cache.get(filePath)
         if (cached != null) {
             return@withContext cached
@@ -31,6 +34,24 @@ object ThumbnailLoader {
         val file = File(filePath)
         if (!file.exists()) {
             return@withContext null
+        }
+
+        // Check disk cache first
+        val cacheDir = File(context.cacheDir, "video_thumbnails")
+        if (!cacheDir.exists()) {
+            cacheDir.mkdirs()
+        }
+        val thumbFile = File(cacheDir, "${file.nameWithoutExtension}.jpg")
+        if (thumbFile.exists()) {
+            try {
+                val bitmap = BitmapFactory.decodeFile(thumbFile.absolutePath)
+                if (bitmap != null) {
+                    cache.put(filePath, bitmap)
+                    return@withContext bitmap
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
 
         var retriever: MediaMetadataRetriever? = null
@@ -45,6 +66,16 @@ object ThumbnailLoader {
                 // Resize bitmap if it's too large to save memory
                 val scaledBitmap = scaleBitmapIfNeeded(bitmap, 320, 240)
                 cache.put(filePath, scaledBitmap)
+                
+                // Save to disk cache
+                try {
+                    FileOutputStream(thumbFile).use { out ->
+                        scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 85, out)
+                    }
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+
                 return@withContext scaledBitmap
             }
         } catch (e: Exception) {

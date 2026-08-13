@@ -186,7 +186,7 @@ fun MainAppNavigation(
                     onSelectFilter = { galleryViewModel.selectFilter(it) },
                     onToggleViewMode = { galleryViewModel.toggleViewMode() },
                     onSelectVideo = { galleryViewModel.selectVideoForPreview(it) },
-                    onDeleteVideo = { galleryViewModel.deleteVideo(it) }
+                    onDeleteVideo = { galleryViewModel.deleteVideo(context, it) }
                 )
 
                 2 -> DetectionScreen(
