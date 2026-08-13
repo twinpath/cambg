@@ -43,6 +43,7 @@ import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.camera.view.PreviewView
 
 data class ServiceRecordingState(
     val isServiceRunning: Boolean = false,
