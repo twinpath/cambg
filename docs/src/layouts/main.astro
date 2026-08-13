@@ -23,6 +23,20 @@ const fullTitle =
 const canonicalURL = new URL(Astro.url.pathname, Astro.site)
 const socialImageURL = new URL(image, Astro.site)
 
+const schemaJson = JSON.stringify({
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": SITE_NAME,
+  "description": description,
+  "operatingSystem": "Android",
+  "applicationCategory": "MultimediaApplication",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+})
+
 ---
 
 <html lang="en">
@@ -52,6 +66,9 @@ const socialImageURL = new URL(image, Astro.site)
     <meta name="twitter:title" content={fullTitle} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={socialImageURL} />
+
+    <!-- Structured Data (Schema.org) -->
+    <script type="application/ld+json" set:html={schemaJson} />
 
     <!-- Prevent FOUC: apply saved theme before first paint -->
     <script is:inline>

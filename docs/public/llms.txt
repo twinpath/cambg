@@ -1,0 +1,25 @@
+# CamBG Record
+
+A native Android application for persistent background video recording with intelligent detection capabilities and Material Design 3 aesthetics.
+
+## Key Features
+
+- **Background Video Recording**: Record video secretly or while using other apps, even when the screen is off.
+- **Intelligent Detection**: Advanced capabilities to trigger and optimize recordings.
+- **Material Design 3**: Modern, clean, and beautiful user interface.
+- **Optimized Size**: Lightweight application footprint (approx. 50 MB installation size).
+
+## System Requirements
+
+- **Operating System**: Android 7.0+ (Min SDK 24 - Nougat)
+- **Supported Architectures (ABIs)**: ARM & ARM64
+- **Permissions**: Hard camera access required
+
+## Resources & Links
+
+- **Main Website**: https://cambg.dyzulk.com/
+- **Downloads**: https://cambg.dyzulk.com/download
+- **Changelog**: https://cambg.dyzulk.com/changelog
+- **About & Documentation**: https://cambg.dyzulk.com/about
+- **Source Code**: https://github.com/twinpath/cambg
+- **Releases**: https://github.com/twinpath/cambg/releases
