@@ -7,6 +7,7 @@ import {
   FOOTER_CONTENT,
 } from "@/data/site"
 import { GitFork, ExternalLink } from "lucide-react"
+import { Logo } from "@/components/Logo"
 
 export function Footer() {
   const currentYear = new Date().getFullYear()
@@ -19,11 +20,7 @@ export function Footer() {
           {/* Brand column */}
           <div className="flex flex-col gap-3">
             <div className="flex items-center gap-2">
-              <img
-                src={`${import.meta.env.BASE_URL}logo.svg`}
-                alt={`${SITE_NAME} Logo`}
-                className="size-5"
-              />
+              <Logo className="size-6" />
               <span className="font-heading text-sm font-medium">
                 {SITE_NAME}
               </span>
