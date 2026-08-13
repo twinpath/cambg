@@ -17,6 +17,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import type { Release } from "@/data/releases"
 import { Download } from "lucide-react"
+import { getArchitecture } from "@/lib/architecture"
 
 const RELEASE_TYPE_VARIANT: Record<
   Release["releaseType"],
@@ -92,7 +93,7 @@ export function ReleaseArchive({ releases }: { releases: Release[] }) {
                             {asset.name}
                           </TableCell>
                           <TableCell className="text-xs text-muted-foreground">
-                            {asset.architecture || "Universal"}
+                            {asset.architecture || getArchitecture(asset.name)}
                           </TableCell>
                           <TableCell>{asset.sizeLabel}</TableCell>
                           <TableCell>
