@@ -48,7 +48,7 @@ data class AppSettings(
     val themeMode: AppThemeMode = AppThemeMode.SYSTEM,
     val dynamicColor: Boolean = true,
     val language: AppLanguage = AppLanguage.ENGLISH,
-    val updateChannel: UpdateChannel = UpdateChannel.STABLE,
+    val updateChannel: UpdateChannel = UpdateChannel.ANY,
     val autoCheckUpdates: Boolean = false,
     val updateArchPreference: UpdateArchitecturePreference = UpdateArchitecturePreference.DEVICE_ARCH
 )
