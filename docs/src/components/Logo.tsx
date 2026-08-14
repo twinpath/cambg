@@ -8,14 +8,6 @@ export function Logo({ className = "size-5" }: LogoProps) {
       viewBox="-15 -15 130 130"
       className={`${className} text-zinc-900 dark:text-zinc-50 transition-colors duration-200`}
       aria-label={`${SITE_NAME} Logo`}
-      style={{
-        filter: `
-          drop-shadow(1px 0px 0px currentColor)
-          drop-shadow(-1px 0px 0px currentColor)
-          drop-shadow(0px 1px 0px currentColor)
-          drop-shadow(0px -1px 0px currentColor)
-        `
-      }}
     >
       <defs>
         <linearGradient id="blueGrad" x1="0%" y1="0%" x2="100%" y2="100%">
@@ -34,7 +26,25 @@ export function Logo({ className = "size-5" }: LogoProps) {
           <stop offset="0%" stop-color="#EA4335"/>
           <stop offset="100%" stop-color="#B3281E"/>
         </linearGradient>
+
+        <mask id="shield-mask">
+          <rect x="-30" y="-30" width="160" height="160" fill="white" />
+          <path
+            d="M 50 10 L 82 23 L 82 50 C 82 70 68 85 50 92 C 32 85 18 70 18 50 L 18 23 Z"
+            fill="black"
+          />
+        </mask>
       </defs>
+
+      <path
+        d="M 50 10 L 82 23 L 82 50 C 82 70 68 85 50 92 C 32 85 18 70 18 50 L 18 23 Z"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="10"
+        stroke-linejoin="round"
+        stroke-linecap="round"
+        mask="url(#shield-mask)"
+      />
 
       <path
         d="M 50 10 L 82 23 L 82 50 C 82 70 68 85 50 92 C 32 85 18 70 18 50 L 18 23 Z" 
