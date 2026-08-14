@@ -7,19 +7,7 @@ import { Download, Smartphone } from "lucide-react"
 import type { Release } from "@/types/releases"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useLoading } from "@/hooks/use-loading"
-
-function getClientArch(): string {
-  if (typeof window === "undefined" || !window.navigator) return "universal"
-  const ua = window.navigator.userAgent.toLowerCase()
-  const platform = (window.navigator.platform || "").toLowerCase()
-  
-  if (ua.includes("arm64") || ua.includes("aarch64")) return "arm64-v8a"
-  if (ua.includes("arm") || ua.includes("armeabi")) return "armeabi-v7a"
-  if (ua.includes("x86_64") || ua.includes("amd64") || platform.includes("win64") || platform.includes("macintel")) return "x86_64"
-  if (ua.includes("x86") || ua.includes("i686")) return "x86"
-  
-  return "universal"
-}
+import { getClientArch } from "@/lib/architecture"
 
 export function DownloadHero({ latest, isLoading }: { latest: Release; isLoading: boolean }) {
   const loading = isLoading

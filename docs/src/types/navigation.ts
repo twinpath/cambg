@@ -11,3 +11,7 @@ export interface NavbarProps {
 export interface MobileNavProps {
   currentPath: string
 }
+
+export interface LogoProps {
+  className?: string
+}

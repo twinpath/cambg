@@ -17,32 +17,13 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import type { Release } from "@/types/releases"
 import { RELEASE_ARCHIVE_CONTENT } from "@/data/download"
-import { Download, Copy, Check } from "lucide-react"
+import { Download } from "lucide-react"
 import { getArchitecture } from "@/lib/architecture"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useLoading } from "@/hooks/use-loading"
 import { RELEASE_TYPE_VARIANT } from "@/data/changelog"
 import { formatDate } from "@/lib/changelog"
-
-function CopyButton({ text }: { text: string }) {
-  const [copied, setCopied] = useState(false)
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(text)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    } catch (err) {
-      console.error("Failed to copy", err)
-    }
-  }
-
-  return (
-    <Button variant="ghost" size="xs" onClick={handleCopy} className="size-6 p-0">
-      {copied ? <Check className="size-3 text-green-500" /> : <Copy className="size-3" />}
-    </Button>
-  )
-}
+import { CopyButton } from "@/components/ui/copy-button"
 
 export function ReleaseArchive({ releases, isLoading }: { releases: Release[]; isLoading: boolean }) {
   const [visibleCount, setVisibleCount] = useState(5)

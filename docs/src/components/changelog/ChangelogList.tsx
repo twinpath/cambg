@@ -7,44 +7,17 @@ import { marked } from "marked"
 import type { Release } from "@/types/releases"
 import { getArchitecture } from "@/lib/architecture"
 import { CHANGELOG_LIST_CONTENT, RELEASE_TYPE_VARIANT } from "@/data/changelog"
-import { API_ENDPOINTS } from "@/data/site"
 import { formatDate, cleanReleaseNotes } from "@/lib/changelog"
+import { useReleases } from "@/hooks/use-releases"
 
 interface ChangelogListProps {
   fallbackReleases: Release[]
 }
 
 export function ChangelogList({ fallbackReleases }: ChangelogListProps) {
-  const [releases, setReleases] = useState<Release[]>(fallbackReleases)
-  const [loading, setLoading] = useState(true)
+  const { releases, loading } = useReleases(fallbackReleases)
   const [visibleCount, setVisibleCount] = useState(5)
   const [parsedNotes, setParsedNotes] = useState<Record<string, string>>({})
-
-  useEffect(() => {
-    async function loadReleases() {
-      const startTime = Date.now()
-      try {
-        const res = await fetch(API_ENDPOINTS.RELEASES)
-        if (!res.ok) throw new Error("API Limit or Network error")
-        const data = await res.json()
-        if (Array.isArray(data)) {
-          setReleases(data)
-        }
-      } catch (err) {
-        console.warn("Client-side releases fetch failed, falling back to static build data", err)
-        // Keep static fallbackReleases
-      } finally {
-        const elapsed = Date.now() - startTime
-        const remaining = 600 - elapsed
-        if (remaining > 0) {
-          setTimeout(() => setLoading(false), remaining)
-        } else {
-          setLoading(false)
-        }
-      }
-    }
-    loadReleases()
-  }, [fallbackReleases])
 
   // Parse markdown to HTML asynchronously when releases change
   useEffect(() => {

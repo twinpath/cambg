@@ -1,8 +1,5 @@
 import { SITE_NAME } from "@/data/site"
-
-interface LogoProps {
-  className?: string;
-}
+import type { LogoProps } from "@/types/navigation"
 
 export function Logo({ className = "size-5" }: LogoProps) {
   return (
