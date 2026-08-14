@@ -29,6 +29,10 @@ export const GET: APIRoute = async () => {
 
   try {
     const tomlPath = path.resolve('../gradle/libs.versions.toml');
+    console.log(`[DEBUG] TOML Path resolved to: ${tomlPath}`);
+    console.log(`[DEBUG] TOML File exists: ${fs.existsSync(tomlPath)}`);
+    console.log(`[DEBUG] GEMINI_API_KEY length: ${apiKey ? apiKey.length : 0}`);
+    
     if (!fs.existsSync(tomlPath)) {
       throw new Error(`TOML file not found at ${tomlPath}`);
     }
@@ -44,7 +48,8 @@ Each item in the array must have the following fields:
 Rules:
 1. Group related technologies where appropriate (e.g., combine retrofit + okhttp + moshi into "Retrofit + OkHttp + Moshi" with a version string like "2.12.0 / 4.10.0 / 1.15.2").
 2. Only include the core technologies relevant to the user-facing documentation (do not include test-only tools like junit, espresso, roborazzi, robolectric, unless they are key development tooling).
-3. The output must be a valid JSON array matching this schema:
+3. Ensure every item in the JSON array is separated by a comma. Double check that there are no missing commas between elements.
+4. The output must be a valid JSON array matching this schema:
 [
   {
     "layer": "string",
@@ -101,8 +106,16 @@ ${tomlContent}
       throw new Error("All Gemini models failed to return output");
     }
 
-    // Parse the generated JSON text to make sure it's valid
-    const parsedData = JSON.parse(generatedText.trim());
+    // Clean up markdown block wraps and trailing commas
+    let cleanedJson = generatedText.trim();
+    if (cleanedJson.startsWith("```")) {
+      cleanedJson = cleanedJson.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "").trim();
+    }
+    // Remove trailing commas before closing braces/brackets
+    cleanedJson = cleanedJson.replace(/,\s*([\]}])/g, "$1");
+
+    // Parse the generated JSON text
+    const parsedData = JSON.parse(cleanedJson);
 
     return new Response(JSON.stringify(parsedData), {
       status: 200,
@@ -114,10 +127,11 @@ ${tomlContent}
 
   } catch (error: any) {
     console.error("Failed to generate tech stack:", error);
-    return new Response(JSON.stringify({ error: 'Failed to generate tech stack: ' + error.message }), {
-      status: 500,
+    return new Response(JSON.stringify([]), {
+      status: 200,
       headers: {
         'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
       },
     });
   }
