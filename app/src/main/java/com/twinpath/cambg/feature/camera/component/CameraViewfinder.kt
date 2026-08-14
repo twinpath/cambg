@@ -244,7 +244,7 @@ fun CameraViewfinder(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 modifier = Modifier
                     .align(Alignment.BottomCenter)
-                    .padding(bottom = 210.dp)
+                    .padding(bottom = 180.dp)
                     .alpha(0.7f)
             ) {
                 Text(

@@ -13,6 +13,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.activity.compose.BackHandler
 import com.twinpath.cambg.feature.camera.model.CameraViewModel
 import com.twinpath.cambg.feature.gallery.model.GalleryViewModel
 import com.twinpath.cambg.feature.settings.model.SettingsViewModel
@@ -41,6 +42,11 @@ fun MainAppNavigation(
     val updateState by settingsViewModel.updateState.collectAsState(initial = com.twinpath.cambg.core.helper.UpdateState.Idle)
 
     val context = LocalContext.current
+
+    // Handle system back button: return to Camera screen instead of exiting the app
+    BackHandler(enabled = currentScreen != Screen.CAMERA) {
+        currentScreen = Screen.CAMERA
+    }
 
     LaunchedEffect(currentScreen) {
         if (currentScreen == Screen.GALLERY) {

@@ -54,7 +54,7 @@ fun CameraControls(
         modifier = modifier
             .fillMaxWidth()
             .background(Color.Black.copy(alpha = 0.4f))
-            .padding(bottom = 96.dp, top = 16.dp, start = 24.dp, end = 24.dp),
+            .padding(bottom = 48.dp, top = 16.dp, start = 24.dp, end = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         // Zoom Slider Row
