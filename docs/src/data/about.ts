@@ -122,3 +122,15 @@ export const PROJECT_INFO_CONTENT = {
     githubReleases: "GitHub Releases",
   },
 } as const
+
+export const TECH_STACK_CONTENT = {
+  heading: "Technology Stack",
+  description:
+    "Built with modern Android development tools and libraries for maximum reliability and performance.",
+  tableHeaders: {
+    layer: "Layer",
+    technology: "Technology",
+    version: "Version",
+  },
+} as const
+

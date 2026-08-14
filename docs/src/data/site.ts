@@ -2,6 +2,7 @@ const BASE_URL = import.meta.env.BASE_URL
 
 export const API_ENDPOINTS = {
   RELEASES: `${BASE_URL}api/releases.json`,
+  TECH_STACK: `${BASE_URL}api/tech-stack.json`,
 } as const
 
 export const SITE_NAME = "CamBG Record"

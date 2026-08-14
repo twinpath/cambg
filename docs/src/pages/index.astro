@@ -2,13 +2,11 @@
 import Layout from "@/layouts/main.astro"
 import { HeroSection } from "@/components/home/HeroSection"
 import { FeaturesSection } from "@/components/home/FeaturesSection"
-import { TechStackSection } from "@/components/home/TechStackSection"
 import { CtaSection } from "@/components/home/CtaSection"
 ---
 
 <Layout>
   <HeroSection client:load />
   <FeaturesSection client:load />
-  <TechStackSection client:load />
   <CtaSection client:load />
 </Layout>

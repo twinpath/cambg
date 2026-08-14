@@ -7,12 +7,19 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { TECH_STACK_CONTENT } from "@/data/home"
+import { TECH_STACK_CONTENT } from "@/data/about"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useLoading } from "@/hooks/use-loading"
+import { useTechStack } from "@/hooks/use-tech-stack"
 
 export function TechStackSection() {
-  const loading = useLoading()
+  const uiLoading = useLoading()
+  const { techStack, loading: apiLoading } = useTechStack()
+  const loading = uiLoading || apiLoading
+
+  if (!loading && techStack.length === 0) {
+    return null
+  }
 
   return (
     <section className="px-4 py-16">
@@ -58,7 +65,7 @@ export function TechStackSection() {
                     </TableCell>
                   </TableRow>
                 ))
-              : TECH_STACK_CONTENT.items.map((row) => (
+              : techStack.map((row) => (
                   <TableRow key={row.layer}>
                     <TableCell>
                       <Badge variant="outline">{row.layer}</Badge>
@@ -75,4 +82,3 @@ export function TechStackSection() {
     </section>
   )
 }
-
