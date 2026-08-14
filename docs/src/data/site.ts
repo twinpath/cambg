@@ -1,4 +1,7 @@
 const BASE_URL = import.meta.env.BASE_URL
+export const SITE_URL = (
+  BASE_URL ?? "https://twinpath.github.io/cambg"
+).replace(/\/$/, "")
 
 export const API_ENDPOINTS = {
   RELEASES: `${BASE_URL}api/releases.json`,
