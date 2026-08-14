@@ -21,24 +21,8 @@ import { Download, Copy, Check } from "lucide-react"
 import { getArchitecture } from "@/lib/architecture"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useLoading } from "@/hooks/use-loading"
-
-const RELEASE_TYPE_VARIANT: Record<
-  Release["releaseType"],
-  "default" | "secondary" | "outline" | "destructive"
-> = {
-  stable: "default",
-  beta: "secondary",
-  alpha: "outline",
-  test: "destructive",
-}
-
-function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  })
-}
+import { RELEASE_TYPE_VARIANT } from "@/data/changelog"
+import { formatDate } from "@/lib/changelog"
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
@@ -116,7 +100,7 @@ export function ReleaseArchive({ releases, isLoading }: { releases: Release[]; i
                       {release.releaseType}
                     </Badge>
                     <span className="text-xs text-muted-foreground">
-                      {formatDate(release.date)}
+                      {formatDate(release.date, "short")}
                     </span>
                   </div>
                 </AccordionTrigger>

@@ -10,10 +10,7 @@ import {
 import { Separator } from "@/components/ui/separator"
 import { Menu } from "lucide-react"
 import { NAV_LINKS, SITE_NAME } from "@/data/site"
-
-interface MobileNavProps {
-  currentPath: string
-}
+import type { MobileNavProps } from "@/types/navigation"
 
 export function MobileNav({ currentPath }: MobileNavProps) {
   const [open, setOpen] = useState(false)

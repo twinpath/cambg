@@ -3,12 +3,8 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useLoading } from "@/hooks/use-loading"
 import { AlertTriangle, ServerCrash, Home } from "lucide-react"
-
-interface ErrorViewProps {
-  statusCode: number
-  title: string
-  description: string
-}
+import type { ErrorViewProps } from "@/types/error"
+import { ERROR_VIEW_CONTENT } from "@/data/error"
 
 export function ErrorView({ statusCode, title, description }: ErrorViewProps) {
   const loading = useLoading(500) // 500ms delay for skeleton transition
@@ -66,7 +62,7 @@ export function ErrorView({ statusCode, title, description }: ErrorViewProps) {
         <a href={import.meta.env.BASE_URL}>
           <Button size="lg">
             <Home data-icon="inline-start" />
-            Return Home
+            {ERROR_VIEW_CONTENT.buttonLabel}
           </Button>
         </a>
       )}

@@ -16,3 +16,10 @@ export const CHANGELOG_LIST_CONTENT = {
     loadMore: "Load More",
   },
 } as const
+
+export const RELEASE_TYPE_VARIANT = {
+  stable: "default",
+  beta: "secondary",
+  alpha: "outline",
+  test: "destructive",
+} as const

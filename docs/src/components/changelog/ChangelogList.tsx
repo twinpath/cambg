@@ -4,38 +4,14 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Calendar } from "lucide-react"
 import { marked } from "marked"
-import type { Release } from "@/data/releases"
+import type { Release } from "@/types/releases"
 import { getArchitecture } from "@/lib/architecture"
-import { CHANGELOG_LIST_CONTENT } from "@/data/changelog"
+import { CHANGELOG_LIST_CONTENT, RELEASE_TYPE_VARIANT } from "@/data/changelog"
 import { API_ENDPOINTS } from "@/data/site"
+import { formatDate, cleanReleaseNotes } from "@/lib/changelog"
 
 interface ChangelogListProps {
   fallbackReleases: Release[]
-}
-
-const RELEASE_TYPE_VARIANT = {
-  stable: "default",
-  beta: "secondary",
-  alpha: "outline",
-  test: "destructive",
-} as const
-
-function formatDate(dateStr: string) {
-  if (!dateStr) return CHANGELOG_LIST_CONTENT.labels.unknownDate
-  return new Date(dateStr).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  })
-}
-
-function cleanReleaseNotes(notes: string): string {
-  if (!notes) return CHANGELOG_LIST_CONTENT.labels.noDetails
-  let cleaned = notes
-  cleaned = cleaned.replace(/### Build Artifacts[\s\S]*$/, "")
-  cleaned = cleaned.replace(/### Artifacts[\s\S]*$/, "")
-  cleaned = cleaned.replace(/\| File Name \|[\s\S]*$/, "")
-  return cleaned.trim()
 }
 
 export function ChangelogList({ fallbackReleases }: ChangelogListProps) {

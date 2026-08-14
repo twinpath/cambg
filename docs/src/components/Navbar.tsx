@@ -6,10 +6,7 @@ import { NAV_LINKS, SITE_NAME } from "@/data/site"
 import { Logo } from "@/components/Logo"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useLoading } from "@/hooks/use-loading"
-
-interface NavbarProps {
-  currentPath: string
-}
+import type { NavbarProps } from "@/types/navigation"
 
 export function Navbar({ currentPath }: NavbarProps) {
   const loading = useLoading()
