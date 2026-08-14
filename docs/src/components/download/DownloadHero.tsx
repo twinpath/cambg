@@ -14,7 +14,9 @@ export function DownloadHero({ latest, isLoading }: { latest: Release; isLoading
   const [arch, setArch] = useState<string>("universal")
 
   useEffect(() => {
-    setArch(getClientArch())
+    getClientArch().then((detected) => {
+      setArch(detected)
+    })
   }, [])
 
   return (
@@ -55,7 +57,6 @@ export function DownloadHero({ latest, isLoading }: { latest: Release; isLoading
         </p>
       )}
 
-      {/* Primary & Universal download buttons */}
       {loading || !latest ? (
         <div className="flex flex-wrap items-center justify-center gap-4">
           <Skeleton className="h-11 w-48 rounded-md" />
@@ -63,15 +64,19 @@ export function DownloadHero({ latest, isLoading }: { latest: Release; isLoading
         </div>
       ) : (() => {
         const assets = latest.assets || []
-        let recommendedAsset = assets.find(asset => asset.name.toLowerCase().includes(arch))
-        if (!recommendedAsset) {
-          recommendedAsset = assets.find(asset => asset.name.toLowerCase().includes("universal"))
-        }
+        const targetArch = arch === "universal" ? "arm64-v8a" : arch
+        let recommendedAsset = assets.find(asset => asset.name.toLowerCase().includes(targetArch))
         if (!recommendedAsset && assets.length > 0) {
           recommendedAsset = assets[0]
         }
 
-        const universalAsset = assets.find(asset => asset.name.toLowerCase().includes("universal"))
+        let alternativeAsset = assets.find(asset => asset.name.toLowerCase().includes("universal"))
+        if (!alternativeAsset) {
+          alternativeAsset = assets.find(asset => asset.name.toLowerCase().includes("armeabi-v7a"))
+        }
+        if (!alternativeAsset && assets.length > 1) {
+          alternativeAsset = assets[1]
+        }
 
         return (
           <div className="flex flex-wrap items-center justify-center gap-4">
@@ -88,15 +93,15 @@ export function DownloadHero({ latest, isLoading }: { latest: Release; isLoading
               </a>
             )}
 
-            {universalAsset && universalAsset.downloadUrl !== recommendedAsset?.downloadUrl && (
+            {alternativeAsset && alternativeAsset.downloadUrl !== recommendedAsset?.downloadUrl && (
               <a
-                href={universalAsset.downloadUrl}
+                href={alternativeAsset.downloadUrl}
                 target="_blank"
                 rel="noopener noreferrer"
               >
                 <Button size="lg" variant="outline">
                   <Download data-icon="inline-start" />
-                  Download Universal ({universalAsset.sizeLabel})
+                  {DOWNLOAD_HERO_CONTENT.buttonAlternativeLabel} ({alternativeAsset.sizeLabel})
                 </Button>
               </a>
             )}

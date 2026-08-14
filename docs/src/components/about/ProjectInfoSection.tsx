@@ -85,7 +85,7 @@ export function ProjectInfoSection() {
                 className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
               >
                 <ExternalLink className="size-3" />
-                Source Code
+                {PROJECT_INFO_CONTENT.labels.sourceCode}
               </a>
               <span className="text-muted-foreground">|</span>
               <a
@@ -95,7 +95,7 @@ export function ProjectInfoSection() {
                 className="inline-flex items-center gap-1.5 text-xs text-muted-foreground transition-colors hover:text-foreground"
               >
                 <ExternalLink className="size-3" />
-                GitHub Releases
+                {PROJECT_INFO_CONTENT.labels.githubReleases}
               </a>
               <span className="text-muted-foreground">|</span>
               <Badge variant="outline">{PROJECT_INFO_CONTENT.badge}</Badge>

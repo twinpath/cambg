@@ -1,13 +1,14 @@
 ---
 import Layout from "@/layouts/main.astro"
 import { ErrorView } from "@/components/error/ErrorView"
+import { ERROR_VIEW_CONTENT } from "@/data/error"
 ---
 
-<Layout title="500 Internal Server Error" description="An internal server error occurred. Please try again later.">
+<Layout title={ERROR_VIEW_CONTENT[500].pageTitle} description={ERROR_VIEW_CONTENT[500].pageDescription}>
   <ErrorView
     statusCode={500}
-    title="Internal Server Error"
-    description="An internal error occurred on our server system. We are working to resolve the issue as soon as possible."
+    title={ERROR_VIEW_CONTENT[500].title}
+    description={ERROR_VIEW_CONTENT[500].description}
     client:load
   />
 </Layout>

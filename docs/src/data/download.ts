@@ -11,6 +11,7 @@ export const DOWNLOAD_HERO_CONTENT = {
   description:
     "Get the latest release of CamBG Record for your Android device. Available as a direct APK download from GitHub Releases.",
   buttonLabel: "Download APK",
+  buttonAlternativeLabel: "Download Universal",
 } as const
 
 export const INSTALL_GUIDE_CONTENT = {

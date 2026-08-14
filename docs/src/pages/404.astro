@@ -1,13 +1,14 @@
 ---
 import Layout from "@/layouts/main.astro"
 import { ErrorView } from "@/components/error/ErrorView"
+import { ERROR_VIEW_CONTENT } from "@/data/error"
 ---
 
-<Layout title="404 Page Not Found" description="Sorry, the page you are looking for could not be found. Please return to home.">
+<Layout title={ERROR_VIEW_CONTENT[404].pageTitle} description={ERROR_VIEW_CONTENT[404].pageDescription}>
   <ErrorView
     statusCode={404}
-    title="Page Not Found"
-    description="Sorry, the page you are looking for does not exist or has been moved to another address."
+    title={ERROR_VIEW_CONTENT[404].title}
+    description={ERROR_VIEW_CONTENT[404].description}
     client:load
   />
 </Layout>

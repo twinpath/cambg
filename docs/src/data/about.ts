@@ -124,4 +124,8 @@ export const PROJECT_INFO_CONTENT = {
     },
   ],
   badge: "Proprietary License",
+  labels: {
+    sourceCode: "Source Code",
+    githubReleases: "GitHub Releases",
+  },
 } as const
