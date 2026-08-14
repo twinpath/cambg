@@ -10,6 +10,27 @@ function formatBytes(bytes: number, decimals = 1) {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i]
 }
 
+function extractSHA256(body: string, filename: string): string | undefined {
+  if (!body) return undefined
+  const escapedFilename = filename.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&')
+  const patterns = [
+    new RegExp(`${escapedFilename}[\\s\\S]*?([a-fA-F0-9]{64})`, 'i'),
+    new RegExp(`([a-fA-F0-9]{64})[\\s\\S]*?${escapedFilename}`, 'i')
+  ]
+
+  for (const pattern of patterns) {
+    const match = body.match(pattern)
+    if (match) {
+      const indexFile = body.indexOf(filename)
+      const indexHash = body.indexOf(match[1])
+      if (Math.abs(indexFile - indexHash) < 500) {
+        return match[1]
+      }
+    }
+  }
+  return undefined
+}
+
 export async function fetchGitHubReleases(): Promise<Release[]> {
   try {
     const headers: Record<string, string> = {
@@ -57,6 +78,7 @@ export async function fetchGitHubReleases(): Promise<Release[]> {
           downloadUrl: asset.browser_download_url,
           sizeLabel: formatBytes(asset.size),
           architecture: getArchitecture(asset.name),
+          sha256: extractSHA256(item.body || "", asset.name),
         }))
 
       return {

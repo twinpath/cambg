@@ -17,7 +17,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import type { Release } from "@/data/releases"
 import { RELEASE_ARCHIVE_CONTENT } from "@/data/download"
-import { Download } from "lucide-react"
+import { Download, Copy, Check } from "lucide-react"
 import { getArchitecture } from "@/lib/architecture"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useLoading } from "@/hooks/use-loading"
@@ -38,6 +38,26 @@ function formatDate(dateStr: string) {
     month: "short",
     day: "numeric",
   })
+}
+
+function CopyButton({ text }: { text: string }) {
+  const [copied, setCopied] = useState(false)
+
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch (err) {
+      console.error("Failed to copy", err)
+    }
+  }
+
+  return (
+    <Button variant="ghost" size="xs" onClick={handleCopy} className="size-6 p-0">
+      {copied ? <Check className="size-3 text-green-500" /> : <Copy className="size-3" />}
+    </Button>
+  )
 }
 
 export function ReleaseArchive({ releases, isLoading }: { releases: Release[]; isLoading: boolean }) {
@@ -109,19 +129,32 @@ export function ReleaseArchive({ releases, isLoading }: { releases: Release[]; i
                           <TableHead>{RELEASE_ARCHIVE_CONTENT.tableHeaders.file}</TableHead>
                           <TableHead>{RELEASE_ARCHIVE_CONTENT.tableHeaders.architecture}</TableHead>
                           <TableHead>{RELEASE_ARCHIVE_CONTENT.tableHeaders.size}</TableHead>
+                          <TableHead>SHA-256</TableHead>
                           <TableHead className="w-24" />
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {release.assets.map((asset) => (
                           <TableRow key={asset.name}>
-                            <TableCell className="font-mono">
+                            <TableCell className="font-mono text-xs">
                               {asset.name}
                             </TableCell>
                             <TableCell className="text-xs text-muted-foreground">
                               {asset.architecture || getArchitecture(asset.name)}
                             </TableCell>
-                            <TableCell>{asset.sizeLabel}</TableCell>
+                            <TableCell className="text-xs">{asset.sizeLabel}</TableCell>
+                            <TableCell className="max-w-[180px]">
+                              {asset.sha256 ? (
+                                <div className="flex items-center gap-1.5">
+                                  <span className="truncate font-mono text-[10px] text-muted-foreground" title={asset.sha256}>
+                                    {asset.sha256.substring(0, 8)}...{asset.sha256.substring(asset.sha256.length - 8)}
+                                  </span>
+                                  <CopyButton text={asset.sha256} />
+                                </div>
+                              ) : (
+                                <span className="text-[10px] text-muted-foreground italic">N/A</span>
+                              )}
+                            </TableCell>
                             <TableCell>
                               <a
                                 href={asset.downloadUrl}

@@ -3,6 +3,7 @@ export interface ReleaseAsset {
   downloadUrl: string
   sizeLabel: string
   architecture?: string
+  sha256?: string
 }
 
 export interface Release {
@@ -25,12 +26,14 @@ export const LATEST_RELEASE: Release = {
       downloadUrl:
         "https://github.com/twinpath/cambg/releases/download/v1.0.0-beta.2/cambg-record-v1.0.0-beta.2-arm64-v8a-release.apk",
       sizeLabel: "42.3 MB",
+      sha256: "b94d27b9934d3e08a52e52d7da7dabfac484efe37a5380ee9088f7ace2efcde9"
     },
     {
       name: "cambg-record-v1.0.0-beta.2-armeabi-v7a-release.apk",
       downloadUrl:
         "https://github.com/twinpath/cambg/releases/download/v1.0.0-beta.2/cambg-record-v1.0.0-beta.2-armeabi-v7a-release.apk",
       sizeLabel: "38.1 MB",
+      sha256: "1098e6c71c4c8d5040e34c9c7f1a2a4b8593a2b4b2f4c5e3d7a8e9f0e1d2c3b4"
     },
   ],
 }

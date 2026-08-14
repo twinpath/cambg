@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { SYSTEM_REQUIREMENTS } from "@/data/site"
@@ -7,8 +8,26 @@ import type { Release } from "@/data/releases"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useLoading } from "@/hooks/use-loading"
 
+function getClientArch(): string {
+  if (typeof window === "undefined" || !window.navigator) return "universal"
+  const ua = window.navigator.userAgent.toLowerCase()
+  const platform = (window.navigator.platform || "").toLowerCase()
+  
+  if (ua.includes("arm64") || ua.includes("aarch64")) return "arm64-v8a"
+  if (ua.includes("arm") || ua.includes("armeabi")) return "armeabi-v7a"
+  if (ua.includes("x86_64") || ua.includes("amd64") || platform.includes("win64") || platform.includes("macintel")) return "x86_64"
+  if (ua.includes("x86") || ua.includes("i686")) return "x86"
+  
+  return "universal"
+}
+
 export function DownloadHero({ latest, isLoading }: { latest: Release; isLoading: boolean }) {
   const loading = isLoading
+  const [arch, setArch] = useState<string>("universal")
+
+  useEffect(() => {
+    setArch(getClientArch())
+  }, [])
 
   return (
     <section className="flex flex-col items-center gap-6 px-4 py-20 text-center">
@@ -48,23 +67,54 @@ export function DownloadHero({ latest, isLoading }: { latest: Release; isLoading
         </p>
       )}
 
-      {/* Primary download */}
+      {/* Primary & Universal download buttons */}
       {loading || !latest ? (
-        <Skeleton className="h-11 w-48 rounded-md" />
-      ) : (
-        latest.assets.length > 0 && (
-          <a
-            href={latest.assets[0].downloadUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Button size="lg">
-              <Download data-icon="inline-start" />
-              {DOWNLOAD_HERO_CONTENT.buttonLabel} ({latest.assets[0].sizeLabel})
-            </Button>
-          </a>
+        <div className="flex flex-wrap items-center justify-center gap-4">
+          <Skeleton className="h-11 w-48 rounded-md" />
+          <Skeleton className="h-11 w-48 rounded-md" />
+        </div>
+      ) : (() => {
+        const assets = latest.assets || []
+        let recommendedAsset = assets.find(asset => asset.name.toLowerCase().includes(arch))
+        if (!recommendedAsset) {
+          recommendedAsset = assets.find(asset => asset.name.toLowerCase().includes("universal"))
+        }
+        if (!recommendedAsset && assets.length > 0) {
+          recommendedAsset = assets[0]
+        }
+
+        const universalAsset = assets.find(asset => asset.name.toLowerCase().includes("universal"))
+
+        return (
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            {recommendedAsset && (
+              <a
+                href={recommendedAsset.downloadUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button size="lg" className="shadow-md">
+                  <Download data-icon="inline-start" />
+                  {DOWNLOAD_HERO_CONTENT.buttonLabel} ({recommendedAsset.sizeLabel})
+                </Button>
+              </a>
+            )}
+
+            {universalAsset && universalAsset.downloadUrl !== recommendedAsset?.downloadUrl && (
+              <a
+                href={universalAsset.downloadUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button size="lg" variant="outline">
+                  <Download data-icon="inline-start" />
+                  Download Universal ({universalAsset.sizeLabel})
+                </Button>
+              </a>
+            )}
+          </div>
         )
-      )}
+      })()}
 
       {/* System requirements */}
       <div className="flex flex-wrap items-center justify-center gap-2">

@@ -1,5 +1,3 @@
-import { ARCHITECTURE_MAP } from "./architectures"
-
 const BASE_URL = import.meta.env.BASE_URL
 
 export const API_ENDPOINTS = {
@@ -47,14 +45,10 @@ export const FOOTER_SECTIONS = [
   },
 ] as const
 
-const armv7Prefix = ARCHITECTURE_MAP["armeabi"].substring(0, 3) // "ARM"
-const arm64Prefix = ARCHITECTURE_MAP["arm64"].substring(0, 5) // "ARM64"
-
 export const SYSTEM_REQUIREMENTS = [
   { label: "Android 7.0+", detail: "Min SDK 24 (Nougat)" },
-  { label: `${armv7Prefix} / ${arm64Prefix}`, detail: "ABI support" },
-  { label: "Camera Required", detail: "Hardware camera access" },
-  { label: "50 MB", detail: "Approximate install size" },
+  { label: "ARM64 / ARMv7 / x86 / x86_64", detail: "ABI support" },
+  { label: "Approx. 40 MB", detail: "Install size" },
 ] as const
 
 export const FOOTER_CONTENT = {
