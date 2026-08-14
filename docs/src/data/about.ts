@@ -27,11 +27,9 @@ export const ARCHITECTURE_CONTENT = {
       components: [
         "CameraScreen",
         "GalleryScreen",
-        "DetectionScreen",
         "SettingsScreen",
         "CameraViewModel",
         "GalleryViewModel",
-        "DetectionViewModel",
         "SettingsViewModel",
       ],
     },
@@ -65,11 +63,6 @@ export const FAQ_CONTENT = {
       question: "Does the app record when the screen is off?",
       answer:
         "Yes. CamBG Record utilizes a persistent foreground service with camera, microphone, and media projection types to maintain recording continuity even when the device display is off or the application is moved to the background.",
-    },
-    {
-      question: "How does motion detection work?",
-      answer:
-        "The motion detection engine uses frame-differencing analysis to compare consecutive video frames. Sensitivity is adjustable across Low, Medium, and High levels. When movement is detected, the event is logged with a timestamp and confidence metric in the chronological event feed.",
     },
     {
       question: "What about battery consumption?",

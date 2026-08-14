@@ -1,8 +1,6 @@
 import {
   Video,
   Settings,
-  Radar,
-  User,
   Palette,
   BatteryCharging,
 } from "lucide-react"
@@ -31,18 +29,6 @@ export const FEATURES_CONTENT = {
       title: "Camera Configuration",
       description:
         "Configurable resolution, frame rate, bitrate presets, and audio capture with CameraX hardware abstraction.",
-    },
-    {
-      icon: Radar,
-      title: "Motion Detection",
-      description:
-        "Frame-differencing analysis with adjustable sensitivity levels to flag movement events during active recording sessions.",
-    },
-    {
-      icon: User,
-      title: "Person Detection",
-      description:
-        "Confidence-threshold-based human presence identification, configurable from 50% to 95% precision.",
     },
     {
       icon: Palette,

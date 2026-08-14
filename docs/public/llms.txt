@@ -1,11 +1,10 @@
 # CamBG Record
 
-A native Android application for persistent background video recording with intelligent detection capabilities and Material Design 3 aesthetics.
+A native Android application for persistent background video recording with Material Design 3 aesthetics.
 
 ## Key Features
 
 - **Background Video Recording**: Record video secretly or while using other apps, even when the screen is off.
-- **Intelligent Detection**: Advanced capabilities to trigger and optimize recordings.
 - **Material Design 3**: Modern, clean, and beautiful user interface.
 - **Optimized Size**: Lightweight application footprint (approx. 50 MB installation size).
 
