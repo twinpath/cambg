@@ -42,13 +42,19 @@ Ensure that the `main` branch is up to date and contains all the changes you wis
 Before creating a release tag, you must update the version details inside the application so that the correct version is shown in the app settings (compiled via `BuildConfig.VERSION_NAME`).
 
 Open [app/build.gradle.kts](app/build.gradle.kts) and update the `defaultConfig` block:
-- Increment `versionCode` (integer, e.g., `3` to `4`).
+- **Must increment `versionCode` (integer) by +1** for EVERY version update (both main versions and suffix updates like alpha, beta, test). Do not skip or reuse `versionCode` across different `versionName` values.
 - Update `versionName` (string, matching your release target, e.g., `"0.1.3-alpha.1"`).
+
+### Commit Message Convention for Version Bump
+Commit messages for changing version configurations must follow these established conventions (**Do not include the version code** in the commit message):
+
+- `build: bump version to <VERSION>` (e.g. `build: bump version to 0.1.7-alpha.1`)
+- `chore: bump version to <VERSION>` (e.g. `chore: bump version to 0.1.7-alpha.5`)
 
 Commit and push these changes to your release or development branch:
 ```bash
 git add app/build.gradle.kts
-git commit -m "build: bump version to <VERSION>"
+git commit -m "chore: bump version to <VERSION>"
 git push
 ```
 

@@ -100,6 +100,30 @@ fun DropdownSettingItem(
     onSelect: (String) -> Unit,
     testTagPrefix: String
 ) {
+    DropdownSettingItem(
+        title = title,
+        subtitle = subtitle,
+        options = options,
+        selected = selected,
+        onSelect = onSelect,
+        labelProvider = { it },
+        iconProvider = null,
+        testTagPrefix = testTagPrefix
+    )
+}
+
+@Composable
+fun <T> DropdownSettingItem(
+    title: String,
+    subtitle: String,
+    options: List<T>,
+    selected: T,
+    onSelect: (T) -> Unit,
+    labelProvider: @Composable (T) -> String,
+    iconProvider: (@Composable (T) -> ImageVector?)? = null,
+    testTagPrefix: String
+) {
+
     var expanded by remember { mutableStateOf(false) }
 
     Box {
@@ -113,17 +137,33 @@ fun DropdownSettingItem(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.SemiBold
                 )
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.primary
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(top = 2.dp)
+                ) {
+                    val selectedIcon = iconProvider?.invoke(selected)
+                    if (selectedIcon != null) {
+                        Icon(
+                            imageVector = selectedIcon,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier
+                                .padding(end = 6.dp)
+                                .size(16.dp)
+                        )
+                    }
+                    Text(
+                        text = labelProvider(selected),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
             Icon(
                 imageVector = Icons.Default.ChevronRight,
@@ -138,9 +178,22 @@ fun DropdownSettingItem(
         ) {
             options.forEach { option ->
                 DropdownMenuItem(
+                    leadingIcon = iconProvider?.let {
+                        val icon = it(option)
+                        if (icon != null) {
+                            {
+                                Icon(
+                                    imageVector = icon,
+                                    contentDescription = null,
+                                    tint = if (option == selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
+                        } else null
+                    },
                     text = {
                         Text(
-                            text = option,
+                            text = labelProvider(option),
                             fontWeight = if (option == selected) FontWeight.Bold else FontWeight.Normal
                         )
                     },
@@ -153,3 +206,4 @@ fun DropdownSettingItem(
         }
     }
 }
+
