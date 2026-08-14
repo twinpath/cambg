@@ -1,6 +1,17 @@
 const fs = require('fs');
 const path = require('path');
 const { execSync } = require('child_process');
+const crypto = require('crypto');
+
+function calculateSHA256(filePath) {
+  if (!fs.existsSync(filePath)) {
+    return 'N/A';
+  }
+  const fileBuffer = fs.readFileSync(filePath);
+  const hashSum = crypto.createHash('sha256');
+  hashSum.update(fileBuffer);
+  return hashSum.digest('hex');
+}
 
 async function run() {
   // Load .env if GEMINI_API_KEY is not set in environment (for local testing)
@@ -164,7 +175,7 @@ function generateArtifactTable(githubRepository, releaseVersion) {
 
   files.sort((a, b) => a.name.localeCompare(b.name));
 
-  let table = '| File Name | Architecture / Description | Download Link |\n| --- | --- | --- |\n';
+  let table = '| File Name | Architecture / Description | SHA-256 Checksum | Download Link |\n| --- | --- | --- | --- |\n';
   for (const file of files) {
     let arch = 'Universal';
     if (file.name.includes('arm64-v8a')) arch = 'ARM64 (v8a)';
@@ -176,8 +187,12 @@ function generateArtifactTable(githubRepository, releaseVersion) {
       arch += ' (App Bundle)';
     }
 
+    const dir = file.type === 'APK' ? apkDir : aabDir;
+    const filePath = path.join(dir, file.name);
+    const sha256 = calculateSHA256(filePath);
+
     const downloadUrl = `https://github.com/${githubRepository}/releases/download/${releaseVersion}/${file.name}`;
-    table += `| \`${file.name}\` | ${arch} | [Download](${downloadUrl}) |\n`;
+    table += `| \`${file.name}\` | ${arch} | \`${sha256}\` | [Download](${downloadUrl}) |\n`;
   }
 
   return table;
