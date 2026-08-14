@@ -70,13 +70,16 @@ class GalleryViewModel : ViewModel() {
     }
 
     fun addRecordedVideo(
+        context: Context,
         durationSeconds: Long,
         quality: String,
         isFrontCamera: Boolean,
         filePath: String? = null,
         fileSizeBytes: Long? = null
     ) {
-        val newVideo = if (filePath != null && File(filePath).exists()) {
+        val newVideo = if (filePath != null && filePath.startsWith("content://")) {
+            RecordedFilesHelper.extractVideoItem(context, filePath, sizeBytesOverride = fileSizeBytes)
+        } else if (filePath != null && File(filePath).exists()) {
             RecordedFilesHelper.extractVideoItem(File(filePath))
         } else {
             val minutes = durationSeconds / 60
@@ -89,7 +92,11 @@ class GalleryViewModel : ViewModel() {
                 (durationSeconds * 1.5).coerceAtLeast(1.0)
             }
             val fileName = if (filePath != null) {
-                File(filePath).name
+                if (filePath.startsWith("content://")) {
+                    android.net.Uri.parse(filePath).lastPathSegment ?: "video.mp4"
+                } else {
+                    File(filePath).name
+                }
             } else {
                 "VID_${currentTime}.mp4"
             }

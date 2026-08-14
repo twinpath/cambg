@@ -111,7 +111,7 @@ fun CameraScreen(
     onPauseRecord: () -> Unit,
     onResumeRecord: () -> Unit,
     onStopRecord: () -> Unit,
-    onVideoSaved: (File, Long) -> Unit = { _, _ -> },
+    onVideoSaved: (String, Long) -> Unit = { _, _ -> },
     onToggleCamera: () -> Unit,
     onCycleFlash: () -> Unit,
     onSetQuality: (String) -> Unit,

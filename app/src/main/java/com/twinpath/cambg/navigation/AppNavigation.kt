@@ -92,19 +92,21 @@ fun MainAppNavigation(
                     onStopRecord = {
                         val duration = cameraViewModel.stopRecording()
                         galleryViewModel.addRecordedVideo(
+                            context = context,
                             durationSeconds = duration,
                             quality = cameraState.quality,
                             isFrontCamera = cameraState.isFrontCamera,
                             filePath = cameraState.lastSavedFilePath
                         )
                     },
-                    onVideoSaved = { file, fileSize ->
-                        cameraViewModel.onVideoSaved(file.absolutePath, fileSize)
+                    onVideoSaved = { filePathStr, fileSize ->
+                        cameraViewModel.onVideoSaved(filePathStr, fileSize)
                         galleryViewModel.addRecordedVideo(
+                            context = context,
                             durationSeconds = cameraState.elapsedTimeSeconds,
                             quality = cameraState.quality,
                             isFrontCamera = cameraState.isFrontCamera,
-                            filePath = file.absolutePath,
+                            filePath = filePathStr,
                             fileSizeBytes = fileSize
                         )
                     },

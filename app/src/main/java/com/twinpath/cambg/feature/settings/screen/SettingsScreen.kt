@@ -22,6 +22,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import com.twinpath.cambg.R
 import com.twinpath.cambg.core.helper.UpdateState
 import com.twinpath.cambg.feature.settings.component.SettingsAboutSection
@@ -129,10 +131,30 @@ fun SettingsScreen(
 
             // --- STORAGE SECTION ---
             item {
+                val context = androidx.compose.ui.platform.LocalContext.current
+                val folderPickerLauncher = rememberLauncherForActivityResult(
+                    contract = ActivityResultContracts.OpenDocumentTree()
+                ) { uri ->
+                    if (uri != null) {
+                        try {
+                            context.contentResolver.takePersistableUriPermission(
+                                uri,
+                                android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION or android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION
+                            )
+                        } catch (e: Exception) {
+                            android.util.Log.e("SettingsScreen", "Failed to persist URI permission", e)
+                        }
+                        onUpdateCustomStoragePath(uri.toString())
+                    }
+                }
+
                 SettingsStorageCard(
                     settings = settings,
                     onUpdateStorageLocation = onUpdateStorageLocation,
-                    onUpdateCustomStoragePath = onUpdateCustomStoragePath
+                    onUpdateCustomStoragePath = onUpdateCustomStoragePath,
+                    onPickCustomFolder = {
+                        folderPickerLauncher.launch(null)
+                    }
                 )
             }
 

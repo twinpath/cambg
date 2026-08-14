@@ -7,7 +7,9 @@ import android.hardware.display.VirtualDisplay
 import android.media.MediaRecorder
 import android.media.projection.MediaProjection
 import android.media.projection.MediaProjectionManager
+import android.net.Uri
 import android.os.Build
+import android.os.ParcelFileDescriptor
 import android.util.Log
 import java.io.File
 import com.twinpath.cambg.core.constant.VideoConstants
@@ -17,7 +19,8 @@ class ScreenRecordingHelper(private val context: Context) {
     private var mediaProjection: MediaProjection? = null
     private var mediaRecorder: MediaRecorder? = null
     private var virtualDisplay: VirtualDisplay? = null
-    private var currentOutputFile: File? = null
+    private var currentOutputFilePath: String? = null
+    private var currentPfd: ParcelFileDescriptor? = null
 
     fun startRecording(
         resultCode: Int,
@@ -26,20 +29,19 @@ class ScreenRecordingHelper(private val context: Context) {
         customStoragePath: String,
         frameRate: String,
         bitrate: String,
-        onStart: (File) -> Unit,
+        onStart: (String) -> Unit,
         onError: () -> Unit
     ) {
         try {
             val mpManager = context.getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
             mediaProjection = mpManager.getMediaProjection(resultCode, data)
 
-            val outputFile = com.twinpath.cambg.feature.camera.helper.CameraXRecordingManager.createOutputFile(
+            val safUri = com.twinpath.cambg.feature.camera.helper.CameraXRecordingManager.createOutputUri(
                 context,
                 storageLocation,
                 customStoragePath,
                 "SCREEN"
             )
-            currentOutputFile = outputFile
 
             val metrics = context.resources.displayMetrics
             val width = metrics.widthPixels
@@ -56,7 +58,24 @@ class ScreenRecordingHelper(private val context: Context) {
             recorder.setAudioSource(MediaRecorder.AudioSource.MIC)
             recorder.setVideoSource(MediaRecorder.VideoSource.SURFACE)
             recorder.setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
-            recorder.setOutputFile(outputFile.absolutePath)
+
+            if (safUri != null) {
+                val pfd = context.contentResolver.openFileDescriptor(safUri, "rw")
+                    ?: throw java.io.IOException("Failed to open file descriptor for SAF URI: $safUri")
+                currentPfd = pfd
+                recorder.setOutputFile(pfd.fileDescriptor)
+                currentOutputFilePath = safUri.toString()
+            } else {
+                val outputFile = com.twinpath.cambg.feature.camera.helper.CameraXRecordingManager.createOutputFile(
+                    context,
+                    storageLocation,
+                    customStoragePath,
+                    "SCREEN"
+                )
+                recorder.setOutputFile(outputFile.absolutePath)
+                currentOutputFilePath = outputFile.absolutePath
+            }
+
             recorder.setVideoSize(width, height)
             recorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264)
             recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
@@ -75,7 +94,6 @@ class ScreenRecordingHelper(private val context: Context) {
             recorder.setVideoFrameRate(mappedFps)
             recorder.prepare()
 
-
             virtualDisplay = mediaProjection?.createVirtualDisplay(
                 "CamBG_ScreenCapture",
                 width,
@@ -89,12 +107,16 @@ class ScreenRecordingHelper(private val context: Context) {
 
             recorder.start()
             mediaRecorder = recorder
-            onStart(outputFile)
+            onStart(currentOutputFilePath!!)
 
             Log.d(TAG, "MediaProjection screen recording started")
 
         } catch (e: Exception) {
             Log.e(TAG, "Error initiating MediaProjection recording", e)
+            try {
+                currentPfd?.close()
+            } catch (_: Exception) {}
+            currentPfd = null
             onError()
         }
     }
@@ -111,7 +133,7 @@ class ScreenRecordingHelper(private val context: Context) {
         }
     }
 
-    fun stop(): File? {
+    fun stop(): String? {
         try {
             mediaRecorder?.stop()
             mediaRecorder?.reset()
@@ -121,15 +143,20 @@ class ScreenRecordingHelper(private val context: Context) {
             Log.e(TAG, "Error stopping MediaRecorder", e)
         }
 
+        try {
+            currentPfd?.close()
+        } catch (_: Exception) {}
+        currentPfd = null
+
         virtualDisplay?.release()
         virtualDisplay = null
 
         mediaProjection?.stop()
         mediaProjection = null
 
-        val file = currentOutputFile
-        currentOutputFile = null
-        return file
+        val path = currentOutputFilePath
+        currentOutputFilePath = null
+        return path
     }
 
     companion object {

@@ -18,20 +18,16 @@ enum class AppThemeMode {
 
 enum class StorageLocation(val displayName: String, val description: String) {
     PUBLIC_DCIM(
-        displayName = "DCIM/CamBGRecord (Public)",
+        displayName = "DCIM/CamBGRecord",
         description = "Visible in Gallery, Photos, and File Manager"
     ),
-    SD_CARD(
-        displayName = "SD Card (External)",
-        description = "Save recordings to the external SD card"
-    ),
     INTERNAL_PRIVATE(
-        displayName = "Internal App Storage (Private)",
+        displayName = "Internal App Storage",
         description = "Only visible inside this app"
     ),
     CUSTOM(
-        displayName = "Custom Location (Public)",
-        description = "Save recordings to a custom folder path"
+        displayName = "Custom Location",
+        description = "Choose any folder using your device's file manager"
     )
 }
 

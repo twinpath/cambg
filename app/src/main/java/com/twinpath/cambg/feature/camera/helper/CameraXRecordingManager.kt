@@ -23,6 +23,8 @@ import androidx.camera.video.VideoRecordEvent
 import androidx.camera.view.PreviewView
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.LifecycleOwner
+import android.net.Uri
+import android.provider.DocumentsContract
 import android.util.Rational
 import java.io.File
 import java.text.SimpleDateFormat
@@ -227,6 +229,38 @@ class CameraXRecordingManager {
     fun isRecording(): Boolean = activeRecording != null
 
     companion object {
+        /**
+         * Creates a document URI in a SAF tree folder when Custom storage is selected.
+         */
+        fun createOutputUri(
+            context: Context,
+            storageLocationName: String,
+            customStoragePath: String,
+            cameraTag: String = ""
+        ): Uri? {
+            if (storageLocationName == "CUSTOM" && customStoragePath.startsWith("content://")) {
+                try {
+                    val treeUri = Uri.parse(customStoragePath)
+                    val documentId = DocumentsContract.getTreeDocumentId(treeUri)
+                    val parentDocumentUri = DocumentsContract.buildDocumentUriUsingTree(treeUri, documentId)
+
+                    val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
+                    val prefix = if (cameraTag.isNotEmpty()) "VID_${cameraTag}_" else "VID_"
+                    val displayName = "${prefix}$timeStamp.mp4"
+
+                    return DocumentsContract.createDocument(
+                        context.contentResolver,
+                        parentDocumentUri,
+                        "video/mp4",
+                        displayName
+                    )
+                } catch (e: Exception) {
+                    Log.e("CameraXManager", "Failed to create SAF document URI: $customStoragePath", e)
+                }
+            }
+            return null
+        }
+
         /**
          * Creates an output file in the resolved storage directory.
          */

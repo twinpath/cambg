@@ -47,8 +47,10 @@ class BackgroundRecordingService : LifecycleService() {
     private lateinit var cameraHelper: CameraRecordingHelper
     private lateinit var screenHelper: ScreenRecordingHelper
 
-    private var currentOutputFile: File? = null
+    private var currentOutputFilePath: String? = null
     private var timerJob: Job? = null
+    private var stopTimeoutJob: Job? = null
+    private var pendingStopAndDestroy: Boolean = false
     private val serviceScope = CoroutineScope(Dispatchers.Main + Job())
 
     override fun onCreate() {
@@ -68,7 +70,7 @@ class BackgroundRecordingService : LifecycleService() {
                 val quality = intent.getStringExtra(EXTRA_QUALITY) ?: VideoConstants.DEFAULT_RESOLUTION
                 val isAudioEnabled = intent.getBooleanExtra(EXTRA_AUDIO_ENABLED, true)
                 val storageLocation = intent.getStringExtra(EXTRA_STORAGE_LOCATION) ?: "PUBLIC_DCIM"
-                val customStoragePath = intent.getStringExtra(EXTRA_CUSTOM_STORAGE_PATH) ?: "CamBGRecord"
+                val customStoragePath = intent.getStringExtra(EXTRA_CUSTOM_STORAGE_PATH) ?: ""
                 val frameRate = intent.getStringExtra(EXTRA_FRAME_RATE) ?: VideoConstants.DEFAULT_FPS
                 val bitrate = intent.getStringExtra(EXTRA_BITRATE) ?: VideoConstants.DEFAULT_BITRATE
                 startCameraRecording(isFrontCamera, quality, isAudioEnabled, storageLocation, customStoragePath, frameRate, bitrate)
@@ -83,7 +85,7 @@ class BackgroundRecordingService : LifecycleService() {
                     intent.getParcelableExtra(EXTRA_PROJECTION_DATA)
                 }
                 val storageLocation = intent.getStringExtra(EXTRA_STORAGE_LOCATION) ?: "PUBLIC_DCIM"
-                val customStoragePath = intent.getStringExtra(EXTRA_CUSTOM_STORAGE_PATH) ?: "CamBGRecord"
+                val customStoragePath = intent.getStringExtra(EXTRA_CUSTOM_STORAGE_PATH) ?: ""
                 val frameRate = intent.getStringExtra(EXTRA_FRAME_RATE) ?: VideoConstants.DEFAULT_FPS
                 val bitrate = intent.getStringExtra(EXTRA_BITRATE) ?: VideoConstants.DEFAULT_BITRATE
                 if (data != null && resultCode != -1) {
@@ -146,26 +148,48 @@ class BackgroundRecordingService : LifecycleService() {
                     )
                 }
             },
-            onFinalize = { outputFile, fileSize, hasError ->
+            onFinalize = { outputFilePath, fileSize, hasError ->
                 stopTimer()
+                stopTimeoutJob?.cancel()
+                stopTimeoutJob = null
                 if (!hasError && fileSize > 0) {
-                    Log.d(TAG, "CameraX recording saved: ${outputFile.absolutePath} ($fileSize bytes)")
+                    Log.d(TAG, "CameraX recording saved: $outputFilePath ($fileSize bytes)")
                     val isPublic = storageLocation == "PUBLIC_DCIM" || storageLocation == "CUSTOM"
-                    if (isPublic) {
+                    if (isPublic && !outputFilePath.startsWith("content://")) {
                         com.twinpath.cambg.feature.camera.helper.CameraXRecordingManager.scanFileToMediaStore(
-                            this@BackgroundRecordingService, outputFile
+                            this@BackgroundRecordingService, File(outputFilePath)
                         )
+                    }
+                    val fileName = if (outputFilePath.startsWith("content://")) {
+                        try {
+                            android.net.Uri.parse(outputFilePath).lastPathSegment ?: "video.mp4"
+                        } catch (_: Exception) {
+                            "video.mp4"
+                        }
+                    } else {
+                        File(outputFilePath).name
                     }
                     _serviceState.update {
                         it.copy(
                             recordingState = RecordingState.IDLE,
-                            lastSavedFilePath = outputFile.absolutePath,
+                            lastSavedFilePath = outputFilePath,
                             lastSavedFileSize = fileSize,
-                            statusMessage = "Saved: ${outputFile.name}"
+                            statusMessage = "Saved: $fileName"
                         )
                     }
                 } else {
                     Log.e(TAG, "CameraX recording error")
+                    _serviceState.update {
+                        it.copy(
+                            recordingState = RecordingState.IDLE,
+                            statusMessage = "Recording error"
+                        )
+                    }
+                }
+                // If stop was requested, now finalize and destroy the service
+                if (pendingStopAndDestroy) {
+                    pendingStopAndDestroy = false
+                    finalizeAndStopService()
                 }
             }
         )
@@ -205,8 +229,8 @@ class BackgroundRecordingService : LifecycleService() {
             customStoragePath = customStoragePath,
             frameRate = frameRate,
             bitrate = bitrate,
-            onStart = { outputFile ->
-                currentOutputFile = outputFile
+            onStart = { filePath ->
+                currentOutputFilePath = filePath
                 startTimer()
                 Log.d(TAG, "MediaProjection screen recording started")
             },
@@ -251,26 +275,73 @@ class BackgroundRecordingService : LifecycleService() {
     private fun stopRecordingAndSelf() {
         stopTimer()
 
-        var savedFile: File? = null
         if (_serviceState.value.mode == "CAMERA") {
+            // For CameraX: stop() is async — the Finalize callback will handle
+            // state update and service teardown. Set flag and add timeout safety.
+            pendingStopAndDestroy = true
             cameraHelper.stop()
+
+            // Safety timeout: if Finalize doesn't arrive within 5 seconds, force stop
+            stopTimeoutJob?.cancel()
+            stopTimeoutJob = serviceScope.launch {
+                delay(5000)
+                if (pendingStopAndDestroy) {
+                    Log.w(TAG, "Finalize callback timeout — forcing service stop")
+                    pendingStopAndDestroy = false
+                    _serviceState.update {
+                        it.copy(
+                            recordingState = RecordingState.IDLE,
+                            statusMessage = "Recording stopped (timeout)"
+                        )
+                    }
+                    finalizeAndStopService()
+                }
+            }
         } else {
-            savedFile = screenHelper.stop()
+            // For MediaProjection: stop() is synchronous
+            val savedFilePath = screenHelper.stop()
+
+            val finalPath = savedFilePath ?: currentOutputFilePath
+            val fileSize = if (finalPath != null) {
+                if (finalPath.startsWith("content://")) {
+                    try {
+                        contentResolver.openFileDescriptor(android.net.Uri.parse(finalPath), "r")?.use { it.statSize } ?: 0L
+                    } catch (_: Exception) { 0L }
+                } else {
+                    File(finalPath).length()
+                }
+            } else { 0L }
+
+            val fileName = if (finalPath != null) {
+                if (finalPath.startsWith("content://")) {
+                    try {
+                        android.net.Uri.parse(finalPath).lastPathSegment ?: "video.mp4"
+                    } catch (_: Exception) {
+                        "video.mp4"
+                    }
+                } else {
+                    File(finalPath).name
+                }
+            } else {
+                "video.mp4"
+            }
+
+            _serviceState.update {
+                it.copy(
+                    isServiceRunning = false,
+                    recordingState = RecordingState.IDLE,
+                    lastSavedFilePath = finalPath,
+                    lastSavedFileSize = fileSize,
+                    statusMessage = finalPath?.let { "Saved: $fileName" } ?: "Recording stopped"
+                )
+            }
+
+            finalizeAndStopService()
         }
+    }
 
-        val finalFile = savedFile ?: currentOutputFile
-        val fileSize = finalFile?.length() ?: 0L
-
-        _serviceState.update {
-            it.copy(
-                isServiceRunning = false,
-                recordingState = RecordingState.IDLE,
-                lastSavedFilePath = finalFile?.absolutePath,
-                lastSavedFileSize = fileSize,
-                statusMessage = finalFile?.let { f -> "Saved: ${f.name}" } ?: "Recording stopped"
-            )
-        }
-
+    private fun finalizeAndStopService() {
+        _serviceState.update { it.copy(isServiceRunning = false) }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_REMOVE)
         } else {
@@ -350,6 +421,8 @@ class BackgroundRecordingService : LifecycleService() {
 
     override fun onDestroy() {
         stopTimer()
+        stopTimeoutJob?.cancel()
+        stopTimeoutJob = null
         serviceInstance = null
         super.onDestroy()
     }

@@ -1,11 +1,13 @@
 package com.twinpath.cambg.feature.settings.component
 
+import android.net.Uri
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.SdCard
 import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.FolderOpen
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
@@ -15,10 +17,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.core.content.ContextCompat
 import androidx.compose.animation.*
 import com.twinpath.cambg.feature.settings.model.AppSettings
 import com.twinpath.cambg.feature.settings.model.StorageLocation
@@ -29,19 +30,11 @@ fun SettingsStorageCard(
     settings: AppSettings,
     onUpdateStorageLocation: (StorageLocation) -> Unit,
     onUpdateCustomStoragePath: (String) -> Unit,
+    onPickCustomFolder: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val context = LocalContext.current
-
-    val hasSdCard = remember {
-        val dirs = ContextCompat.getExternalFilesDirs(context, null)
-        dirs.size > 1 && dirs[1] != null
-    }
-
-    val availableLocations = remember(hasSdCard) {
-        StorageLocation.entries.filter {
-            it != StorageLocation.SD_CARD || hasSdCard
-        }
+    val availableLocations = remember {
+        StorageLocation.entries.toList()
     }
 
     var dropdownExpanded by remember { mutableStateOf(false) }
@@ -124,7 +117,7 @@ fun SettingsStorageCard(
                     }
                 }
 
-                // Custom Storage Path Text Field (only visible when Custom Location is selected)
+                // Custom Folder Picker (only visible when Custom Location is selected)
                 AnimatedVisibility(
                     visible = settings.storageLocation == StorageLocation.CUSTOM,
                     enter = fadeIn() + expandVertically(),
@@ -135,26 +128,65 @@ fun SettingsStorageCard(
                             .fillMaxWidth()
                             .padding(top = 16.dp)
                     ) {
-                        OutlinedTextField(
-                            value = settings.customStoragePath,
-                            onValueChange = onUpdateCustomStoragePath,
-                            label = { Text("Custom Folder Name") },
-                            placeholder = { Text("e.g. MySecretRecordings") },
-                            singleLine = true,
-                            shape = RoundedCornerShape(12.dp),
+                        // Show current selected folder path
+                        if (settings.customStoragePath.isNotBlank()) {
+                            val displayPath = getDisplayPathFromUri(settings.customStoragePath)
+                            Surface(
+                                color = MaterialTheme.colorScheme.surfaceVariant,
+                                shape = RoundedCornerShape(12.dp)
+                            ) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(12.dp),
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.FolderOpen,
+                                        contentDescription = null,
+                                        tint = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Text(
+                                        text = displayPath,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis,
+                                        modifier = Modifier.weight(1f)
+                                    )
+                                }
+                            }
+                            Spacer(modifier = Modifier.height(8.dp))
+                        }
+
+                        // Button to open folder picker
+                        OutlinedButton(
+                            onClick = onPickCustomFolder,
                             modifier = Modifier.fillMaxWidth(),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.outline
+                            shape = RoundedCornerShape(12.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.FolderOpen,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
                             )
-                        )
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Save files under DCIM/[Custom Folder Name]",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = if (settings.customStoragePath.isBlank()) "Choose Folder" else "Change Folder"
+                            )
+                        }
+
+                        if (settings.customStoragePath.isBlank()) {
+                            Spacer(modifier = Modifier.height(4.dp))
+                            Text(
+                                text = "No folder selected. Tap to choose a folder from your device.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.padding(start = 8.dp)
+                            )
+                        }
                     }
                 }
 
@@ -186,5 +218,30 @@ fun SettingsStorageCard(
                 )
             }
         }
+    }
+}
+
+/**
+ * Converts a SAF URI string to a human-readable display path.
+ */
+private fun getDisplayPathFromUri(uriString: String): String {
+    return try {
+        val uri = Uri.parse(uriString)
+        val path = uri.path ?: uriString
+        // SAF URIs typically have paths like /tree/primary:DCIM/MyFolder
+        // Extract the meaningful part after the colon
+        val treePath = path.substringAfter("/tree/", "")
+        if (treePath.isNotEmpty()) {
+            treePath.replace(":", "/").replace("%2F", "/")
+        } else {
+            val docPath = path.substringAfter("/document/", "")
+            if (docPath.isNotEmpty()) {
+                docPath.replace(":", "/").replace("%2F", "/")
+            } else {
+                uriString
+            }
+        }
+    } catch (_: Exception) {
+        uriString
     }
 }

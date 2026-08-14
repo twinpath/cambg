@@ -1,6 +1,8 @@
 package com.twinpath.cambg.feature.camera.helper
 
 import android.content.Context
+import android.net.Uri
+import android.os.ParcelFileDescriptor
 import android.util.Log
 import androidx.camera.core.Camera
 import androidx.camera.core.CameraSelector
@@ -42,7 +44,7 @@ class CameraRecordingHelper(private val context: Context, private val lifecycleO
         storageLocation: String,
         customStoragePath: String,
         onStart: () -> Unit,
-        onFinalize: (outputFile: File, fileSize: Long, error: Boolean) -> Unit
+        onFinalize: (outputFilePath: String, fileSize: Long, error: Boolean) -> Unit
     ) {
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
         cameraProviderFuture.addListener({
@@ -88,35 +90,67 @@ class CameraRecordingHelper(private val context: Context, private val lifecycleO
                 )
 
                 val camTypeStr = if (isFrontCamera) "FRONT" else "BACK"
-                val outputFile = com.twinpath.cambg.feature.camera.helper.CameraXRecordingManager.createOutputFile(
+
+                // Check if SAF tree URI is chosen
+                val safUri = com.twinpath.cambg.feature.camera.helper.CameraXRecordingManager.createOutputUri(
                     context,
                     storageLocation,
                     customStoragePath,
                     camTypeStr
                 )
 
-                val fileOutputOptions = FileOutputOptions.Builder(outputFile).build()
+                var outputFile: File? = null
+                var pfd: ParcelFileDescriptor? = null
 
-                var prepare = videoCapture?.output?.prepareRecording(context, fileOutputOptions)
-                if (isAudioEnabled) {
-                    prepare = prepare?.withAudioEnabled()
+                val prepare = if (safUri != null) {
+                    pfd = context.contentResolver.openFileDescriptor(safUri, "rw")
+                        ?: throw java.io.IOException("Failed to open file descriptor for SAF URI: $safUri")
+                    val fileOutputOptions = FileDescriptorOutputOptions.Builder(pfd).build()
+                    videoCapture?.output?.prepareRecording(context, fileOutputOptions)
+                } else {
+                    val file = com.twinpath.cambg.feature.camera.helper.CameraXRecordingManager.createOutputFile(
+                        context,
+                        storageLocation,
+                        customStoragePath,
+                        camTypeStr
+                    )
+                    outputFile = file
+                    val fileOutputOptions = FileOutputOptions.Builder(file).build()
+                    videoCapture?.output?.prepareRecording(context, fileOutputOptions)
                 }
 
-                activeRecording = prepare?.start(ContextCompat.getMainExecutor(context)) { event ->
+                var finalPrepare = prepare
+                if (isAudioEnabled) {
+                    finalPrepare = finalPrepare?.withAudioEnabled()
+                }
+
+                activeRecording = finalPrepare?.start(ContextCompat.getMainExecutor(context)) { event ->
                     when (event) {
                         is VideoRecordEvent.Start -> {
                             onStart()
                         }
                         is VideoRecordEvent.Finalize -> {
-                            val fileSize = outputFile.length()
+                            // Close file descriptor if open
+                            try {
+                                pfd?.close()
+                            } catch (_: Exception) {}
+
+                            val finalPath = safUri?.toString() ?: outputFile?.absolutePath ?: ""
+                            val fileSize = if (safUri != null) {
+                                try {
+                                    context.contentResolver.openFileDescriptor(safUri, "r")?.use { it.statSize } ?: 0L
+                                } catch (_: Exception) { 0L }
+                            } else {
+                                outputFile?.length() ?: 0L
+                            }
                             val hasError = event.hasError()
-                            onFinalize(outputFile, fileSize, hasError)
+                            onFinalize(finalPath, fileSize, hasError)
                         }
                     }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to start camera background recording", e)
-                onFinalize(File(""), 0L, true)
+                onFinalize("", 0L, true)
             }
         }, ContextCompat.getMainExecutor(context))
     }
