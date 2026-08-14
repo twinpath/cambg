@@ -11,7 +11,7 @@ export interface GradleVersion {
  * relative to the docs/ workspace (one level up).
  */
 export function readGradleVersion(): GradleVersion {
-  const gradlePath = resolve(import.meta.dirname, '..', '..', '..', 'app', 'build.gradle.kts')
+  const gradlePath = resolve(process.cwd(), '..', 'app', 'build.gradle.kts')
   const content = readFileSync(gradlePath, 'utf-8')
 
   const codeMatch = content.match(/versionCode\s*=\s*(\d+)/)

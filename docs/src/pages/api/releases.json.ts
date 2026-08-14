@@ -20,6 +20,7 @@ export const GET: APIRoute = async () => {
       },
     });
   } catch (error) {
+    console.error('Error in api/releases.json GET:', error);
     return new Response(JSON.stringify({ error: 'Failed to fetch releases' }), {
       status: 500,
       headers: {
