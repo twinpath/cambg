@@ -7,7 +7,7 @@ import type { ErrorViewProps } from "@/types/error"
 import { ERROR_VIEW_CONTENT } from "@/data/error"
 
 export function ErrorView({ statusCode, title, description }: ErrorViewProps) {
-  const loading = useLoading(500) // 500ms delay for skeleton transition
+  const loading = useLoading()
 
   return (
     <section className="flex flex-col items-center justify-center gap-6 px-4 py-20 text-center">
