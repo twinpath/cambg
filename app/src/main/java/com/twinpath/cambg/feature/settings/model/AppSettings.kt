@@ -49,5 +49,6 @@ data class AppSettings(
     val dynamicColor: Boolean = true,
     val language: AppLanguage = AppLanguage.ENGLISH,
     val updateChannel: UpdateChannel = UpdateChannel.STABLE,
-    val autoCheckUpdates: Boolean = true
+    val autoCheckUpdates: Boolean = false,
+    val updateArchPreference: UpdateArchitecturePreference = UpdateArchitecturePreference.DEVICE_ARCH
 )

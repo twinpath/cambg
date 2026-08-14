@@ -8,6 +8,7 @@ export interface ReleaseAsset {
 
 export interface Release {
   version: string
+  versionCode?: number
   releaseType: "stable" | "beta" | "alpha" | "test"
   date: string
   notes: string

@@ -23,9 +23,9 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
             initialValue = AppSettings()
         )
 
-    fun checkForUpdates() {
+    fun checkForUpdates(isManual: Boolean = false) {
         viewModelScope.launch {
-            updateManager.checkForUpdates(settings.value.updateChannel)
+            updateManager.checkForUpdates(settings.value.updateChannel, isManual)
         }
     }
 
@@ -39,6 +39,14 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
 
     fun triggerInstall(file: java.io.File) {
         updateManager.triggerInstall(file)
+    }
+
+    fun setReadyToInstall(file: java.io.File) {
+        updateManager.setReadyToInstall(file)
+    }
+
+    fun updateUpdateArchPreference(newValue: UpdateArchitecturePreference) {
+        viewModelScope.launch { repository.updateUpdateArchPreference(newValue) }
     }
 
     fun resetUpdateState() {

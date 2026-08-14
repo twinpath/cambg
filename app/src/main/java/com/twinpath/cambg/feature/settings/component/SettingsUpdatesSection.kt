@@ -23,15 +23,19 @@ import com.twinpath.cambg.core.component.SettingsSectionHeader
 import com.twinpath.cambg.core.component.SwitchSettingItem
 import com.twinpath.cambg.feature.settings.model.AppSettings
 import com.twinpath.cambg.feature.settings.model.UpdateChannel
+import com.twinpath.cambg.feature.settings.model.UpdateArchitecturePreference
 
 @Composable
 fun SettingsUpdatesSection(
     settings: AppSettings,
     onUpdateUpdateChannel: (UpdateChannel) -> Unit,
+    onUpdateArchPreference: (UpdateArchitecturePreference) -> Unit,
     onToggleAutoCheck: () -> Unit,
     onCheckForUpdates: () -> Unit,
     modifier: Modifier = Modifier
 ) {
+    val deviceArchLabel = stringResource(id = R.string.update_arch_device)
+    val universalArchLabel = stringResource(id = R.string.update_arch_universal)
     Column(modifier = modifier) {
         SettingsSectionHeader(title = stringResource(id = R.string.settings_updates_title), icon = Icons.Default.Shield)
         Card(
@@ -47,6 +51,29 @@ fun SettingsUpdatesSection(
                     selected = settings.updateChannel.name,
                     onSelect = { onUpdateUpdateChannel(UpdateChannel.valueOf(it)) },
                     testTagPrefix = "update_channel"
+                )
+                HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+
+                DropdownSettingItem(
+                    title = stringResource(id = R.string.settings_update_arch_pref),
+                    subtitle = when (settings.updateArchPreference) {
+                        UpdateArchitecturePreference.DEVICE_ARCH -> deviceArchLabel
+                        UpdateArchitecturePreference.UNIVERSAL -> universalArchLabel
+                    },
+                    options = listOf(deviceArchLabel, universalArchLabel),
+                    selected = when (settings.updateArchPreference) {
+                        UpdateArchitecturePreference.DEVICE_ARCH -> deviceArchLabel
+                        UpdateArchitecturePreference.UNIVERSAL -> universalArchLabel
+                    },
+                    onSelect = { selectedLabel ->
+                        val pref = if (selectedLabel == deviceArchLabel) {
+                            UpdateArchitecturePreference.DEVICE_ARCH
+                        } else {
+                            UpdateArchitecturePreference.UNIVERSAL
+                        }
+                        onUpdateArchPreference(pref)
+                    },
+                    testTagPrefix = "update_arch_pref"
                 )
                 HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
 

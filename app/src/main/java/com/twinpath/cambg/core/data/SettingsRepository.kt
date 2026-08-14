@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.map
 import com.twinpath.cambg.core.constant.PreferenceKeys
 import com.twinpath.cambg.core.constant.UpdateConstants
 import com.twinpath.cambg.feature.settings.model.UpdateChannel
+import com.twinpath.cambg.feature.settings.model.UpdateArchitecturePreference
 
 
 private val Context.dataStore: DataStore<Preferences> by preferencesDataStore(name = "cambg_settings")
@@ -38,6 +39,7 @@ class SettingsRepository(private val context: Context) {
         val LANGUAGE = stringPreferencesKey(PreferenceKeys.KEY_LANGUAGE)
         val UPDATE_CHANNEL = stringPreferencesKey(UpdateConstants.KEY_UPDATE_CHANNEL)
         val AUTO_CHECK_UPDATES = booleanPreferencesKey(UpdateConstants.KEY_AUTO_CHECK_UPDATES)
+        val UPDATE_ARCH_PREFERENCE = stringPreferencesKey(UpdateConstants.KEY_UPDATE_ARCH_PREFERENCE)
     }
  
      val settingsFlow: Flow<AppSettings> = context.dataStore.data.map { prefs ->
@@ -64,7 +66,10 @@ class SettingsRepository(private val context: Context) {
              updateChannel = prefs[Keys.UPDATE_CHANNEL]?.let {
                  try { UpdateChannel.valueOf(it) } catch (_: Exception) { defaults.updateChannel }
              } ?: defaults.updateChannel,
-             autoCheckUpdates = prefs[Keys.AUTO_CHECK_UPDATES] ?: defaults.autoCheckUpdates
+             autoCheckUpdates = prefs[Keys.AUTO_CHECK_UPDATES] ?: defaults.autoCheckUpdates,
+             updateArchPreference = prefs[Keys.UPDATE_ARCH_PREFERENCE]?.let {
+                 try { UpdateArchitecturePreference.valueOf(it) } catch (_: Exception) { defaults.updateArchPreference }
+             } ?: defaults.updateArchPreference
          )
      }
 
@@ -122,5 +127,9 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun updateAutoCheckUpdates(value: Boolean) {
         context.dataStore.edit { it[Keys.AUTO_CHECK_UPDATES] = value }
+    }
+
+    suspend fun updateUpdateArchPreference(value: UpdateArchitecturePreference) {
+        context.dataStore.edit { it[Keys.UPDATE_ARCH_PREFERENCE] = value.name }
     }
 }

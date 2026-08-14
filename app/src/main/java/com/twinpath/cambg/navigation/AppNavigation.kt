@@ -58,7 +58,7 @@ fun MainAppNavigation(
     LaunchedEffect(settingsState.autoCheckUpdates) {
         if (settingsState.autoCheckUpdates && !hasCheckedUpdates) {
             hasCheckedUpdates = true
-            settingsViewModel.checkForUpdates()
+            settingsViewModel.checkForUpdates(isManual = false)
         }
     }
 
@@ -157,10 +157,12 @@ fun MainAppNavigation(
                     onToggleDynamicColor = { settingsViewModel.toggleDynamicColor() },
                     onUpdateLanguage = { settingsViewModel.updateLanguage(it) },
                     onUpdateUpdateChannel = { settingsViewModel.updateUpdateChannel(it) },
+                    onUpdateArchPreference = { settingsViewModel.updateUpdateArchPreference(it) },
                     onToggleAutoCheck = { settingsViewModel.toggleAutoCheckUpdates() },
-                    onCheckForUpdates = { settingsViewModel.checkForUpdates() },
+                    onCheckForUpdates = { settingsViewModel.checkForUpdates(isManual = true) },
                     onDownloadAndInstallUpdate = { settingsViewModel.downloadAndInstallUpdate(it) },
                     onTriggerInstall = { settingsViewModel.triggerInstall(it) },
+                    onSetReadyToInstall = { settingsViewModel.setReadyToInstall(it) },
                     onResetUpdateState = { settingsViewModel.resetUpdateState() },
                     onBack = { currentScreen = Screen.CAMERA }
                 )

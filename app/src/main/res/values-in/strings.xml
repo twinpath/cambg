@@ -38,9 +38,16 @@
     <string name="update_dialog_version">Versi: %1$s (%2$s)</string>
     <string name="update_dialog_date">Dirilis: %1$s</string>
     <string name="update_dialog_notes">Catatan Rilis:</string>
-    <string name="update_dialog_btn_download">Unduh &amp; Instal</string>
+    <string name="update_dialog_btn_download">Unduh</string>
     <string name="update_dialog_btn_cancel">Nanti</string>
     <string name="update_downloading">Mengunduh pembaruan… (%1$d%%)</string>
+    <string name="update_permission_title">Izinkan Instalasi Aplikasi</string>
+    <string name="update_permission_desc">Untuk menginstal pembaruan, Anda harus memberikan izin untuk mempercayai aplikasi ini sebagai sumber instalasi di pengaturan sistem.</string>
+    <string name="update_permission_btn_settings">Buka Pengaturan</string>
+    <string name="settings_update_arch_pref">Tipe File Pembaruan</string>
+    <string name="settings_update_arch_pref_desc">Pilih untuk mengunduh pembaruan spesifik arsitektur atau universal</string>
+    <string name="update_arch_device">Spesifik Arsitektur (Disarankan)</string>
+    <string name="update_arch_universal">APK Universal</string>
     <string name="update_no_updates">Anda sudah menggunakan versi terbaru</string>
     <string name="update_failed">Gagal mengecek pembaruan</string>
     <string name="update_download_failed">Unduhan gagal</string>

@@ -36,6 +36,7 @@ import com.twinpath.cambg.feature.settings.model.AppLanguage
 import com.twinpath.cambg.feature.settings.model.AppSettings
 import com.twinpath.cambg.feature.settings.model.AppThemeMode
 import com.twinpath.cambg.feature.settings.model.StorageLocation
+import com.twinpath.cambg.feature.settings.model.UpdateArchitecturePreference
 import com.twinpath.cambg.feature.settings.model.UpdateChannel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -56,10 +57,12 @@ fun SettingsScreen(
     onToggleDynamicColor: () -> Unit,
     onUpdateLanguage: (AppLanguage) -> Unit,
     onUpdateUpdateChannel: (UpdateChannel) -> Unit,
+    onUpdateArchPreference: (UpdateArchitecturePreference) -> Unit,
     onToggleAutoCheck: () -> Unit,
     onCheckForUpdates: () -> Unit,
     onDownloadAndInstallUpdate: (com.twinpath.cambg.core.data.model.UpdateAsset) -> Unit,
     onTriggerInstall: (java.io.File) -> Unit,
+    onSetReadyToInstall: (java.io.File) -> Unit,
     onResetUpdateState: () -> Unit,
     onBack: () -> Unit,
     modifier: Modifier = Modifier
@@ -148,6 +151,7 @@ fun SettingsScreen(
                 SettingsUpdatesSection(
                     settings = settings,
                     onUpdateUpdateChannel = onUpdateUpdateChannel,
+                    onUpdateArchPreference = onUpdateArchPreference,
                     onToggleAutoCheck = onToggleAutoCheck,
                     onCheckForUpdates = onCheckForUpdates
                 )
@@ -165,6 +169,7 @@ fun SettingsScreen(
         updateState = updateState,
         onDownloadAndInstallUpdate = onDownloadAndInstallUpdate,
         onTriggerInstall = onTriggerInstall,
+        onSetReadyToInstall = onSetReadyToInstall,
         onResetUpdateState = onResetUpdateState
     )
 }

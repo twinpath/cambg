@@ -8,7 +8,8 @@ data class UpdateRelease(
     val releaseType: String, // "stable", "beta", "alpha", "test"
     val date: String,
     val notes: String,
-    val assets: List<UpdateAsset>
+    val assets: List<UpdateAsset>,
+    val versionCode: Int? = null
 )
 
 @JsonClass(generateAdapter = true)

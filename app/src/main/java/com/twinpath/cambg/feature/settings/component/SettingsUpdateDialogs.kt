@@ -1,5 +1,9 @@
 package com.twinpath.cambg.feature.settings.component
 
+import android.content.Intent
+import android.net.Uri
+import android.os.Build
+import android.provider.Settings
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -13,6 +17,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -24,8 +29,11 @@ fun SettingsUpdateDialogs(
     updateState: UpdateState,
     onDownloadAndInstallUpdate: (com.twinpath.cambg.core.data.model.UpdateAsset) -> Unit,
     onTriggerInstall: (java.io.File) -> Unit,
+    onSetReadyToInstall: (java.io.File) -> Unit,
     onResetUpdateState: () -> Unit
 ) {
+    val context = LocalContext.current
+
     when (val state = updateState) {
         is UpdateState.Checking -> {
             AlertDialog(
@@ -106,6 +114,34 @@ fun SettingsUpdateDialogs(
                 },
                 dismissButton = {
                     TextButton(onClick = onResetUpdateState) {
+                        Text(text = stringResource(id = R.string.update_dialog_btn_cancel))
+                    }
+                }
+            )
+        }
+        is UpdateState.RequirePermission -> {
+            AlertDialog(
+                onDismissRequest = { onSetReadyToInstall(state.apkFile) },
+                title = { Text(text = stringResource(id = R.string.update_permission_title)) },
+                text = { Text(text = stringResource(id = R.string.update_permission_desc)) },
+                confirmButton = {
+                    Button(onClick = {
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                            val intent = Intent(
+                                Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES,
+                                Uri.parse("package:${context.packageName}")
+                            )
+                            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                            context.startActivity(intent)
+                        }
+                        // Return to ReadyToInstall so user can try again after granting
+                        onSetReadyToInstall(state.apkFile)
+                    }) {
+                        Text(text = stringResource(id = R.string.update_permission_btn_settings))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { onSetReadyToInstall(state.apkFile) }) {
                         Text(text = stringResource(id = R.string.update_dialog_btn_cancel))
                     }
                 }
