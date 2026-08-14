@@ -1,4 +1,4 @@
-import { RELEASE_ARCHIVE, type Release } from "@/data/releases"
+import type { Release } from "@/types/releases"
 import { getArchitecture } from "./architecture"
 
 function formatBytes(bytes: number, decimals = 1) {
@@ -8,6 +8,13 @@ function formatBytes(bytes: number, decimals = 1) {
   const sizes = ["Bytes", "KB", "MB", "GB"]
   const i = Math.floor(Math.log(bytes) / Math.log(k))
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i]
+}
+
+function parseDigestSha256(digest?: string): string | undefined {
+  if (digest && digest.startsWith("sha256:")) {
+    return digest.replace("sha256:", "")
+  }
+  return undefined
 }
 
 function extractSHA256(body: string, filename: string): string | undefined {
@@ -48,12 +55,12 @@ export async function fetchGitHubReleases(): Promise<Release[]> {
 
     if (!res.ok) {
       console.warn("Failed to fetch releases from GitHub API, using fallback data:", res.statusText)
-      return RELEASE_ARCHIVE
+      return []
     }
 
     const data = await res.json()
     if (!Array.isArray(data)) {
-      return RELEASE_ARCHIVE
+      return []
     }
 
     return data.map((item: any) => {
@@ -78,7 +85,7 @@ export async function fetchGitHubReleases(): Promise<Release[]> {
           downloadUrl: asset.browser_download_url,
           sizeLabel: formatBytes(asset.size),
           architecture: getArchitecture(asset.name),
-          sha256: extractSHA256(item.body || "", asset.name),
+          sha256: parseDigestSha256(asset.digest) || extractSHA256(item.body || "", asset.name),
         }))
 
       return {
@@ -91,6 +98,6 @@ export async function fetchGitHubReleases(): Promise<Release[]> {
     })
   } catch (error) {
     console.error("Error fetching GitHub releases, falling back to static data:", error)
-    return RELEASE_ARCHIVE
+    return []
   }
 }

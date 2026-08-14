@@ -2,7 +2,7 @@ import { useState, useEffect } from "react"
 import { DownloadHero } from "./DownloadHero"
 import { ReleaseArchive } from "./ReleaseArchive"
 import { API_ENDPOINTS } from "@/data/site"
-import type { Release } from "@/data/releases"
+import type { Release } from "@/types/releases"
 
 export function DownloadContent({ fallbackReleases }: { fallbackReleases: Release[] }) {
   const [releases, setReleases] = useState<Release[]>(fallbackReleases)

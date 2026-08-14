@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import type { Release } from "@/data/releases"
+import type { Release } from "@/types/releases"
 import { RELEASE_ARCHIVE_CONTENT } from "@/data/download"
 import { Download, Copy, Check } from "lucide-react"
 import { getArchitecture } from "@/lib/architecture"

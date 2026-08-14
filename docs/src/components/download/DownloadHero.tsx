@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { SYSTEM_REQUIREMENTS } from "@/data/site"
 import { DOWNLOAD_HERO_CONTENT } from "@/data/download"
 import { Download, Smartphone } from "lucide-react"
-import type { Release } from "@/data/releases"
+import type { Release } from "@/types/releases"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useLoading } from "@/hooks/use-loading"
 
