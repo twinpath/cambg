@@ -23,7 +23,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useLoading } from "@/hooks/use-loading"
 import { RELEASE_TYPE_VARIANT } from "@/data/changelog"
 import { formatDate } from "@/lib/changelog"
-import { CopyButton } from "@/components/ui/copy-button"
+import { CopyButton } from "@/components/CopyButton"
 
 export function ReleaseArchive({ releases, isLoading }: { releases: Release[]; isLoading: boolean }) {
   const [visibleCount, setVisibleCount] = useState(5)
