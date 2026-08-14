@@ -219,4 +219,4 @@ jobs:
       - name: Trigger GitHub Pages Build (Rebuild API Proxy)
         run: gh workflow run github-pages.yml --ref canary
         env:
-          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+          GH_TOKEN: ${{ secrets.GH_PAT }}
