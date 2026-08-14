@@ -175,7 +175,7 @@ class UpdateManager(private val context: Context) {
             val client = OkHttpClient()
             val request = Request.Builder().url(asset.downloadUrl).build()
 
-            val response = withContext(Dispatchers.IO) { client.newCall(request).execute() }
+            val response = client.newCall(request).execute()
             if (!response.isSuccessful) {
                 _updateState.value = UpdateState.Error("Failed to download file from server")
                 return@flow
@@ -193,19 +193,17 @@ class UpdateManager(private val context: Context) {
             val totalBytes = body.contentLength()
             var bytesCopied = 0L
 
-            withContext(Dispatchers.IO) {
-                body.byteStream().use { input ->
-                    FileOutputStream(destinationFile).use { output ->
-                        val buffer = ByteArray(8 * 1024)
-                        var bytes = input.read(buffer)
-                        while (bytes >= 0) {
-                            output.write(buffer, 0, bytes)
-                            bytesCopied += bytes
-                            val progress = if (totalBytes > 0) ((bytesCopied * 100) / totalBytes).toInt() else 0
-                            emit(progress)
-                            _updateState.value = UpdateState.Downloading(progress)
-                            bytes = input.read(buffer)
-                        }
+            body.byteStream().use { input ->
+                FileOutputStream(destinationFile).use { output ->
+                    val buffer = ByteArray(8 * 1024)
+                    var bytes = input.read(buffer)
+                    while (bytes >= 0) {
+                        output.write(buffer, 0, bytes)
+                        bytesCopied += bytes
+                        val progress = if (totalBytes > 0) ((bytesCopied * 100) / totalBytes).toInt() else 0
+                        emit(progress)
+                        _updateState.value = UpdateState.Downloading(progress)
+                        bytes = input.read(buffer)
                     }
                 }
             }
